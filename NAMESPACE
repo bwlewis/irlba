@@ -1,0 +1,4 @@
+export("irlba")
+export("topm")
+export("bidiag")
+importFrom("Matrix",crossprod)

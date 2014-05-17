@@ -1,0 +1,10 @@
+Package: IRL
+Type: Package
+Title: Implicitly restarted Lanczos methods for factorization and network analysis
+Version: 0.0.1
+Date: 16-May-2014
+Author: Jim Baglama and Lothar Reichel
+Maintainer: Bryan W. Lewis <blewis@illposed.net>
+Description: Fast and memory efficient methods for partial singular and eigenvalue decompositions of large sparse or dense matrices, and for network analysis problems.
+Depends: R (>= 3.0.0), Matrix
+License: GPL
