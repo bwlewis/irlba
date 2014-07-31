@@ -44,7 +44,7 @@ function (A,                     # data matrix
   } else if(deflate==0)
   {
     deflate <- TRUE
-    if(length(s)>1) stop("deflation limited to one dimension")
+    if(length(ds)>1) stop("deflation limited to one dimension")
     if(!is.null(dim(dU))) dU <- dU[,1]
     if(!is.null(dim(dV))) dV <- dV[,1]
   } else stop("all three dU ds dV parameters must be specified for deflation")

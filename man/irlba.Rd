@@ -50,21 +50,37 @@ is set less than the maximum. The \code{irlba} function returns a number of
 estimated singular values equal to the maximum of the number of specified
 singular vectors \code{nu} and \code{nv}.
 
+Use the optional deflation parameters to compute the truncated SVD of
+the deflated matrix \eqn{A - dU ds\cdot dV^t}, for example, to efficiently
+compute principal components without explicitly forming the centered
+matrix. This is important to preserve sparsity in the matrix.
+
 Document restarting XXX
 
-Document deflation and include PCA example XXX
 
 }
 \references{"Augmented Implicitly Restarted Lanczos Bidiagonalization Methods",
      J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.  }
 \author{ Adapted for R by B. W. Lewis <blewis@illposed.net>}
 \examples{
-A <- matrix(runif(100*100),100,100)
-S <- irlba (A)
+set.seed(1)
+
+A <- matrix(runif(200),nrow=20)
+S <- irlba(A)
 S$d
 
 # Compare with svd
 svd(A)$d[1:5]
+
+# Principal components
+P <- irlba(A, nv=1, tol=1e-5, dU=rep(1,nrow(A)), ds=1, dV=colMeans(A))
+
+# Compare with singular vectors from
+Q <- svd(scale(A, center=TRUE, scale=FALSE), nv=1, nu=1)
+
+# The vectors are only guaranteed to be identical up to sign:
+cbind(P$v, Q$v)
+
 }
 \keyword{matrix}
 \keyword{svd}
