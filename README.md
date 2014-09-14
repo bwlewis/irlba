@@ -1,7 +1,12 @@
 IRL
 ===
 
-Implicitly restarted Lanczos methods fo R
+Implicitly restarted Lanczos methods for R
+
+## NOTE
+
+The package name is "irlba" for backward compatibility with the old irlba
+package on CRAN.
 
 
 ## WARNING
