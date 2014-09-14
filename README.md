@@ -6,19 +6,19 @@ Implicitly restarted Lanczos methods fo R
 
 ## WARNING
 
-This is an "alpha" version of the new IRL package, which remains under
+This is an "alpha" version of the new irlba package, which remains under
 substantial development. Not all planned features are implemented or even
 working. This package will replace the "irlba" package on CRAN sometime
-over the summer of 2014.
+over the autumn of 2014.
 
 Check back here periodically for updates.
 
 ## Plan for the package
 
-IRL contains an updated irlba algorithm for truncated SVD that supports
+The package contains an updated irlba algorithm for truncated SVD that supports
 restarting and other new features.
 
-IRL will soon contain:
+It will soon contain:
 
 * "Top M" style network analysis methods for centrality measures of
 directed and undirected networks.
