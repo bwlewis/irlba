@@ -271,7 +271,7 @@ function (A,                     # data matrix
         
 #       Compute block diagonal matrix 
         if (is.null(B)) B <- cbind(S, R)
-        else            B <- rbind(cbind(B,0),c(rep(0,j-1),S,R))
+        else            B <- rbind(cbind(B,0),c(rep(0,ncol(B)-1),S,R))
 
         jp1_w = ifelse(w_dim > 1, j+1, 1)
         w_old = W[,j_w]
@@ -394,8 +394,8 @@ function (A,                     # data matrix
       V[,1:(k+1)] <- cbind(V, F) %*% Bsvd$v
 
 #     Update and compute the k x k+1 part of B
-      UT <- t(R[1:(k+1), 1:k] + R[,k+1] %*% V_B_last)
-      B <- diag(Bsvd$d[1:k],nrow=k) %*% (UT*upper.tri(UT,diag=TRUE))
+      UT <- t(R[1:(k+1), 1:k] + R[,k+1] %*% rbind(V_B_last))
+      B <- diag(Bsvd$d[1:k],nrow=k) %*% (UT*upper.tri(UT,diag=TRUE))[1:k,1:(k+1)]
     }
     else {
 #     Use the Ritz vectors
