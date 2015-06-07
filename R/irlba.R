@@ -234,7 +234,7 @@ function (A,                     # data matrix
 #   Lanczos process
     while (j <= m_b)
     {
-      if(verbose) pb = txtProgressBar(min=0,max=mb)
+      if(verbose) pb = txtProgressBar(min=0,max=m_b)
       j_w = ifelse(w_dim > 1, j, 1)
       F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))
       mprod <- mprod + 1
