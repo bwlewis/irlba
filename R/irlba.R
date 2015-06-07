@@ -34,6 +34,8 @@ function (A,                     # data matrix
 # ---------------------------------------------------------------------
 # Check input parameters
 # ---------------------------------------------------------------------
+  ropts <- options(warn=1) # immediately show warnings
+  on.exit(options(ropts))  # reset on exit
   eps <- .Machine$double.eps
   deflate <- missing(dU) + missing(ds) + missing(dV)
   if(deflate==3)
@@ -50,10 +52,10 @@ function (A,                     # data matrix
   n <- ncol(A)
   if(missing(nu)) nu <- nv
   k <- max(nu,nv)
-
   k_org <- k;
   if (k<=0)  stop ("max(nu,nv)+adjust must be positive")
-  if (k>min(m,n)) stop ("max(nu,nv) must be less than min(nrow(A),ncol(A))")
+  if (k > min(m-1,n-1)) stop ("max(nu,nv) must be strictly less than min(nrow(A),ncol(A))")
+  if(k > 0.5*min(m,n)) warning("You're computing a large percentage of total singular values, standard svd will probably be faster!")
   if (m_b<=1) stop ("m_b must be greater than 1")
   if (tol<0) stop ("tol must be non-negative")
   if (maxit<=0) stop ("maxit must be positive")
@@ -234,7 +236,6 @@ function (A,                     # data matrix
 #   Lanczos process
     while (j <= m_b)
     {
-      if(verbose) pb = txtProgressBar(min=0,max=m_b)
       j_w = ifelse(w_dim > 1, j, 1)
       F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))
       mprod <- mprod + 1
@@ -291,11 +292,9 @@ function (A,                     # data matrix
         B <- rbind(B,c(rep(0,j-1),S))
       }
       j <- j + 1
-      if(verbose) setTxtProgressBar(pb, j)
     }
     if(verbose)
     {
-      close(pb)
       cat ("\niter = ",iter," j = ",j-1, "mprod = ",mprod,"\n")
       flush.console()
     }
