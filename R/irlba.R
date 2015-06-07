@@ -204,8 +204,7 @@ function (A,                     # data matrix
     j_w = ifelse(w_dim > 1, j, 1)
 
 #   Compute W=AV (the use of as.matrix here converts Matrix class objects)
-    if (interchange)  W[,j_w] <- t (as.matrix(crossprod (V[,j], A)))
-    else              W[,j_w] <- as.matrix(A %*% V[,j])
+    W[,j_w] <- as.matrix(A %*% V[,j])
     mprod <- mprod + 1
 
 #   Optionally apply deflation
@@ -235,9 +234,9 @@ function (A,                     # data matrix
 #   Lanczos process
     while (j <= m_b)
     {
+      if(verbose) pb = txtProgressBar(min=0,max=mb)
       j_w = ifelse(w_dim > 1, j, 1)
-      if (interchange) F <- as.matrix(A %*% W[,j_w])
-      else F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))
+      F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))
       mprod <- mprod + 1
       F <- F - S*V[,j, drop=FALSE]
 #     Orthogonalize
@@ -261,9 +260,7 @@ function (A,                     # data matrix
 
         jp1_w = ifelse(w_dim > 1, j+1, 1)
         w_old = W[,j_w]
-        if (interchange) 
-            W[,jp1_w] <- t (as.matrix(crossprod (V[,j+1],A)))
-        else             W[,jp1_w] <- as.matrix(A %*% V[,j+1])
+        W[,jp1_w] <- as.matrix(A %*% V[,j+1])
         mprod <- mprod + 1
 
 #       Optionally apply deflation
@@ -294,10 +291,11 @@ function (A,                     # data matrix
         B <- rbind(B,c(rep(0,j-1),S))
       }
       j <- j + 1
-      if(verbose) {cat(".");flush.console()}
+      if(verbose) setTxtProgressBar(pb, j)
     }
     if(verbose)
     {
+      close(pb)
       cat ("\niter = ",iter," j = ",j-1, "mprod = ",mprod,"\n")
       flush.console()
     }
