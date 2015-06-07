@@ -18,11 +18,9 @@
 # restart uses V,d,U from previous call
 # maybe still some issues with it, XXX
 
-`irlba` <-
+irlba <-
 function (A,                     # data matrix
           nv=5, nu,              # number of singular vectors to estimate
-          aug=c("ritz","harm"),  # ritz or harmonic ritz augmentation
-          sigma=c("ls","ss"),    # ls=largest singular values, ss=smallest
           maxit=1000,            # maximum number of iterations
           m_b=nu+5,              # working subspace size
           reorth=TRUE,           # TRUE=full reorthogonalization
@@ -52,18 +50,6 @@ function (A,                     # data matrix
   n <- ncol(A)
   if(missing(nu)) nu <- nv
   k <- max(nu,nv)
-  interchange <- FALSE
-  sigma <- match.arg(sigma)
-  aug   <- match.arg(aug)
-# Interchange dimensions m,n so that dim(A'A) = min(m,n) when seeking the
-# smallest singular values. This avoids finding zero smallest singular values.
-  if (n>m && sigma=="ss")
-  {
-    t <- m
-    m <- n
-    n <- t
-    interchange <- TRUE
-  }
 
   k_org <- k;
   if (k<=0)  stop ("max(nu,nv)+adjust must be positive")
@@ -329,7 +315,7 @@ function (A,                     # data matrix
 #   Estimate ||A|| using the largest singular value over all iterations
 #   and estimate the cond(A) using approximations to the largest and 
 #   smallest singular values. If a small singular value is less than sqrteps
-#   use only Ritz vectors to augment and require two-sided reorthogonalization.
+#   require two-sided reorthogonalization.
     if (iter ==1)
     {
       Smax <- Bsvd$d[1]
@@ -343,18 +329,8 @@ function (A,                     # data matrix
     Smax <- max(eps23,Smax)
     if ((Smin/Smax < sqrteps) && !reorth)
     {
-      warning ("The matrix is ill-conditioned. Switching to Ritz vector augmentation. Basis will be reorthogonalized.")
+      warning ("The matrix is ill-conditioned. Basis will be reorthogonalized.")
       reorth <- TRUE
-      aug <- "ritz"
-    }
-
-#   Re-order the singular values accordingly.
-    if (sigma=="ss")
-    {
-      jj <- seq (ncol (Bsvd$u), 1, by=-1)
-      Bsvd$u <- Bsvd$u[,jj]
-      Bsvd$d <- Bsvd$d[jj]
-      Bsvd$v <- Bsvd$v[,jj]
     }
 
 #   Compute the residuals
@@ -368,40 +344,9 @@ function (A,                     # data matrix
     if (iter>=maxit) break
 
 #   Compute the starting vectors and first block of B[1:k,1:(k+1), drop=FALSE]
-    if (aug=="harm") {
-#     Update the SVD of B to be the svd of [B ||F||E_m]
-      Bsvd2.d <- Bsvd$d
-      Bsvd2.d <- diag(Bsvd2.d, nrow=length(Bsvd2.d))
-      Bsvd2 <- svd (cbind (Bsvd2.d, t (R)))
-      if (sigma=="ss")
-      {
-        jj <- seq (ncol (Bsvd2$u), 1, by=-1)
-        Bsvd2$u <- Bsvd2$u[,jj]
-        Bsvd2$d <- Bsvd2$d[jj]
-        Bsvd2$v <- Bsvd2$v[,jj]
-      }
-      Bsvd$d <- Bsvd2$d
-      Bsvd$u <- Bsvd$u %*% Bsvd2$u
-      Bsvd$v <- cbind (rbind (Bsvd$v, rep (0,Bsz)), 
-                   c (rep (0,Bsz), 1)) %*% Bsvd2$v
-      V_B_last <- Bsvd$v [Bsz + 1, 1:k]
-      s <- R_F * solve (B, cbind (c (rep(0,Bsz-1), 1)))
-      Bsvd$v <- Bsvd$v[1:Bsz, , drop=FALSE] + s %*% Bsvd$v[Bsz+1, ]
-
-      qrv <- qr (cbind ( rbind (Bsvd$v[,1:k], 0), rbind (-s, 1)))
-      Bsvd$v <- qr.Q(qrv)
-      R <- qr.R(qrv)
-      V[,1:(k+1)] <- cbind(V, F) %*% Bsvd$v
-
-#     Update and compute the k x k+1 part of B
-      UT <- t(R[1:(k+1), 1:k] + R[,k+1] %*% rbind(V_B_last))
-      B <- diag(Bsvd$d[1:k],nrow=k) %*% (UT*upper.tri(UT,diag=TRUE))[1:k,1:(k+1)]
-    }
-    else {
-#     Use the Ritz vectors
+#   using the Ritz vectors
       V[,1:(k + dim(F)[2])] <- cbind(V[,1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[,1:k], F)
       B <- cbind( diag(Bsvd$d[1:k],nrow=k), R[1:k])
-    }
 
 #   Update the left approximate singular vectors
     if(w_dim>1)
@@ -421,15 +366,6 @@ function (A,                     # data matrix
     u <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[,1:k_org, drop=FALSE]
   }
   v <- V[,1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[,1:k_org, drop=FALSE]
-# Adjust ordering if smallest singular values selected so that singular values
-# are reported in non-increasing order.
-  if(sigma=="ss")
-  {
-    reverse <- seq(length(d),1)
-    d <- d[reverse]
-    if(!right_only) u <- u[,reverse]
-    v <- v[,reverse]
-  }
   if(right_only)
     return (list(d=d, v=v[,1:nv,drop=FALSE], iter=iter,mprod=mprod))
   return (list(d=d, u=u[,1:nu,drop=FALSE], v=v[,1:nv,drop=FALSE], iter=iter,mprod=mprod))
