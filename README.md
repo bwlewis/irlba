@@ -1,34 +1,24 @@
 IRL
 ===
 
-Implicitly restarted Lanczos methods for R
-
-## NOTE
-
-The package name is "irlba" for backward compatibility with the old irlba
-package on CRAN.
-
+Augmented, implicitly restarted Lanczos methods for singular value and
+eigenvalue decompositions.
 
 ## WARNING
 
 This is an "alpha" version of the new irlba package, which remains under
 substantial development. Not all planned features are implemented or even
-working. This package will replace the "irlba" package on CRAN sometime
-over the autumn of 2014.
-
-Check back here periodically for updates.
+working.
 
 ## Plan for the package
 
 The package contains an updated irlba algorithm for truncated SVD that supports
 restarting and other new features.
 
-It will soon contain:
+Planned additions
 
 * "Top M" style network analysis methods for centrality measures of
 directed and undirected networks.
-* Golub-Meurant Gauss/Gauss-Radau quadrature bounds for ordering the
-"top M" results, based on the work of Benzi, Boito and Estrada.
 * An implementation of the IRBLB method that trickles out singular
 triplets in bounded memory using fast Leja-based accelerating polynomials.
 * Some kind of symmetric implementation, either IRBLeigs or adaptations

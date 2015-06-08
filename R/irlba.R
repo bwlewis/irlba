@@ -1,34 +1,89 @@
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-# irlba: A fast and memory-efficient method for computing a few
-# approximate signular values and singular vectors of large matrices.
-#
-# Adapted from the algorithm by Jim Baglama, see:
-# Augmented Implicitly Restarted Lanczos Bidiagonalization Methods,
-# J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
-
-# restart uses V,d,U from previous call
-# maybe still some issues with it, XXX
-
+#' irlba Find a few approximate largest singular values and corresponding
+#' singular vectors of a matrix.
+#'
+#' The augmented implicitly restarted Lanczos bi-diagonalization (IRLBA)
+#' algorithm finds a few approximate largest singular values and corresponding
+#' singular vectors of a sparse or dense matrix using a method of Baglama and
+#' Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
+#' This implementation can also estimate largest eigenvalues and corresponding
+#' eigenvectors of a symmetric matrix.
+#'
+#' @param A Numeric real- or complex-valued matrix or real-valued sparse matrix
+#' @param nv Number of right singular vectors to estimate
+#' @param nu Number of left singular vectors to estimate (defaults to \code{nv})
+#' @param m_b Working subspace dimension, larger values can speed convergence at the cost of more memory use
+#' @param reorth Logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization
+#' @param tol Convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value
+#' @param v Optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes)
+#' @param right_only Logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE})
+#' @param verbose Logical value that when \code{TRUE} prints status messages during the computation
+#' @param du Optional deflation vector (see notes)
+#' @param ds Optional deflation scalar (see notes)
+#' @param dv Optional deflation vector (see notes)
+#' @param shift Optional shift value (square matrices only, see ntoes)
+#'
+#' @return
+#' Returns a list with entries:
+#' \itemize{
+#'   \item{d}{max (nu, nv) approximate singular values}
+#'   \item{u}{nu approximate left singular vectors (only when right_only=FALSE)}
+#'   \item{v}{nv approximate right singular vectors}
+#'   \item{iter}{The number of Lanczos iterations carried out}
+#'   \item{mprod}{The total number of matrix vector products carried out}
+#' }
+#'
+#' @note
+#' The syntax of \code{irlba} partially follows \code{svd}, with an important
+#' exception. The usual R \code{svd} function always returns a complete set of
+#' singular values, even if the number of singular vectors \code{nu} or \code{nv}
+#' is set less than the maximum. The \code{irlba} function returns a number of
+#' estimated singular values equal to the maximum of the number of specified
+#' singular vectors \code{nu} and \code{nv}.
+#' 
+#' Use the optional deflation parameters to compute the truncated SVD after
+#' deflating by a rank 1 matrix \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
+#' This option may be used to efficiently compute principal components without
+#' explicitly forming the centered matrix (which can, importantly, preserve
+#' sparsity in the matrix).
+#'
+#' Use the \code{v} option to supply a starting vector for the iterative
+#' method. A random vector is used by default. Optionally set \code{v} to
+#' the ouput of a previous run of \code{irlba} to restart the method, adding
+#' more singular values/vectors without recomputing the already computed
+#' subspace.
+#' 
+#' @references
+#' Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
+#' 
+#' @examples
+#' set.seed(1)
+#'
+#' A <- matrix(runif(200),nrow=20)
+#' S <- irlba(A)
+#' S$d
+#'
+#' # Compare with svd
+#' svd(A)$d[1:5]
+#'
+#' # Principal components
+#' P <- irlba(A, nv=1, du=rep(1,nrow(A)), ds=1, dv=colMeans(A))
+#'
+#' # Compare with prcomp (might vary up to sign)
+#' cbind(P$v, prcomp(A)$rotation[,1])
+#' 
+#' @seealso svd, prcomp
+#' @export
 irlba <-
 function (A,                     # data matrix
           nv=5, nu,              # number of singular vectors to estimate
           maxit=1000,            # maximum number of iterations
-          m_b=nu+5,              # working subspace size
+          m_b=nv + 5,            # working subspace size
           reorth=TRUE,           # TRUE=full reorthogonalization
           tol=1e-3,              # stopping tolerance
           v=NULL,                # optional starting vector or restart
           right_only=FALSE,      # TRUE=only return V
           verbose=FALSE,         # display status messages
-          dU,ds,dV,              # optional rank 1 deflation
+          du,ds,dv,              # optional rank 1 deflation
           shift)                 # optional shift for square matrices
 {
 # ---------------------------------------------------------------------
@@ -37,7 +92,7 @@ function (A,                     # data matrix
   ropts <- options(warn=1) # immediately show warnings
   on.exit(options(ropts))  # reset on exit
   eps <- .Machine$double.eps
-  deflate <- missing(dU) + missing(ds) + missing(dV)
+  deflate <- missing(du) + missing(ds) + missing(dv)
   if(deflate==3)
   {
     deflate <- FALSE
@@ -45,9 +100,9 @@ function (A,                     # data matrix
   {
     deflate <- TRUE
     if(length(ds)>1) stop("deflation limited to one dimension")
-    if(!is.null(dim(dU))) dU <- dU[,1]
-    if(!is.null(dim(dV))) dV <- dV[,1]
-  } else stop("all three dU ds dV parameters must be specified for deflation")
+    if(!is.null(dim(du))) du <- du[,1]
+    if(!is.null(dim(dv))) dv <- dv[,1]
+  } else stop("all three du ds dv parameters must be specified for deflation")
   m <- nrow(A)
   n <- ncol(A)
   if(missing(nu)) nu <- nv
@@ -220,7 +275,7 @@ function (A,                     # data matrix
 #   Optionally apply deflation
     if(deflate)
     {
-      W[,j] <- W[,j] - ds * crossprod(dV, V[,j]) * dU
+      W[,j] <- W[,j] - ds * crossprod(dv, V[,j]) * du
     }
 
 #   Orthogonalize W
@@ -283,7 +338,7 @@ function (A,                     # data matrix
 #       Optionally apply deflation
         if(deflate)
         {
-          W[,jp1_w] <- W[,jp1_w] - ds * crossprod(dV, V[,j+1]) * dU
+          W[,jp1_w] <- W[,jp1_w] - ds * crossprod(dv, V[,j+1]) * du
         }
 
 #       One step of the classical Gram-Schmidt process
@@ -373,6 +428,7 @@ function (A,                     # data matrix
 # End of the main iteration loop
 # Output results
 # ---------------------------------------------------------------------
+  if(iter>maxit) warn("did not converge")
   d <- Bsvd$d[1:k_org]
   if(!right_only)
   {
