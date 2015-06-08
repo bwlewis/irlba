@@ -16,6 +16,8 @@ irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
 
 \item{nu}{Number of left singular vectors to estimate (defaults to \code{nv})}
 
+\item{maxit}{Maximum number of iterations}
+
 \item{m_b}{Working subspace dimension, larger values can speed convergence at the cost of more memory use}
 
 \item{reorth}{Logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization}

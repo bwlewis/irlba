@@ -11,6 +11,7 @@
 #' @param A Numeric real- or complex-valued matrix or real-valued sparse matrix
 #' @param nv Number of right singular vectors to estimate
 #' @param nu Number of left singular vectors to estimate (defaults to \code{nv})
+#' @param maxit Maximum number of iterations
 #' @param m_b Working subspace dimension, larger values can speed convergence at the cost of more memory use
 #' @param reorth Logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization
 #' @param tol Convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value
@@ -72,6 +73,7 @@
 #' cbind(P$v, prcomp(A)$rotation[,1])
 #' 
 #' @seealso svd, prcomp
+#' @import Matrix
 #' @export
 irlba <-
 function (A,                     # data matrix
