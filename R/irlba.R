@@ -25,11 +25,11 @@ function (A,                     # data matrix
           m_b=nu+5,              # working subspace size
           reorth=TRUE,           # TRUE=full reorthogonalization
           tol=1e-3,              # stopping tolerance
-          V=NULL,                # optional starting vector or restart subspace
-          d, U,                  # optional restart diagonal and vectors
+          v=NULL,                # optional starting vector or restart
           right_only=FALSE,      # TRUE=only return V
-          verbose=FALSE,         # Display messages as we compute
-          dU,ds,dV)              # Optional deflation parameters
+          verbose=FALSE,         # display status messages
+          dU,ds,dV,              # optional rank 1 deflation
+          shift)                 # optional shift for square matrices
 {
 # ---------------------------------------------------------------------
 # Check input parameters
@@ -55,7 +55,7 @@ function (A,                     # data matrix
   k_org <- k;
   if (k<=0)  stop ("max(nu,nv)+adjust must be positive")
   if (k > min(m-1,n-1)) stop ("max(nu,nv) must be strictly less than min(nrow(A),ncol(A))")
-  if(k > 0.5*min(m,n)) warning("You're computing a large percentage of total singular values, standard svd will probably be faster!")
+  if(k > 0.5*min(m,n)) warning("You're computing a large percentage of total singular values, standard svd will likely work better!")
   if (m_b<=1) stop ("m_b must be greater than 1")
   if (tol<0) stop ("tol must be non-negative")
   if (maxit<=0) stop ("maxit must be positive")
@@ -69,17 +69,21 @@ function (A,                     # data matrix
   }
   if (tol<eps) tol <- eps
   w_dim <- m_b
-  if(!missing(d)) right_only <- FALSE
   if(right_only) w_dim <- 1
 
 # Allocate memory for W and F:
   W <- matrix(0.0,m,w_dim) 
-  if(!missing(U))
+  V <- v
+  restart <- FALSE
+  if(is.list(v))
   {
-    if(missing(d) || is.null(V)) stop("restart requires all three U, d, V")
+    if(is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
+    if(max(nu,nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
     right_only <- FALSE
-    W[,1:ncol(U)] <- U
-# Note we handle initiailzing V below.
+    W[,1:ncol(v$u)] <- v$u 
+    d <- v$d
+    V <- v$v
+    restart <- TRUE
   }
   F <- matrix(0.0,n,1)
 # If starting matrix V is not given then set V to be an (n x 1) matrix of
@@ -175,11 +179,9 @@ function (A,                     # data matrix
    }
 
 # Check for user-supplied restart condition
-  restart <- FALSE
-  if(!missing(d))
+  if(restart)
   {
     B <- cbind(diag(d),0)
-    restart <- TRUE
     k <- length(d)
 
     F <- rnorm(n)
@@ -209,6 +211,12 @@ function (A,                     # data matrix
     W[,j_w] <- as.matrix(A %*% V[,j])
     mprod <- mprod + 1
 
+#   Optionally apply shift
+    if(!missing(shift))
+    {
+      W[,j] <- W[,j] + shift*V[,j]
+    }
+
 #   Optionally apply deflation
     if(deflate)
     {
@@ -237,7 +245,9 @@ function (A,                     # data matrix
     while (j <= m_b)
     {
       j_w = ifelse(w_dim > 1, j, 1)
-      F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))
+#      F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))  # F = t(A) %*% W[,j_w]
+      F <- t(as.matrix(t(W[,j_w,drop=FALSE]) %*% A))
+      if(!missing(shift)) F <- F + shift * W[,j_w]
       mprod <- mprod + 1
       F <- F - S*V[,j, drop=FALSE]
 #     Orthogonalize
@@ -263,6 +273,12 @@ function (A,                     # data matrix
         w_old = W[,j_w]
         W[,jp1_w] <- as.matrix(A %*% V[,j+1])
         mprod <- mprod + 1
+
+#       Optionally apply shift
+        if(!missing(shift))
+        {
+          W[,jp1_w] <- W[,jp1_w] + shift*V[,j+1]
+        }
 
 #       Optionally apply deflation
         if(deflate)
