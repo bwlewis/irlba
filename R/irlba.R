@@ -22,7 +22,7 @@
 #' @param ds Optional deflation scalar (see notes)
 #' @param dv Optional deflation vector (see notes)
 #' @param shift Optional shift value (square matrices only, see ntoes)
-#' @param mult Optional custom matrix multiplication function (default is `%*%`)
+#' @param mult Optional custom matrix multiplication function (default is `\%*\%`)
 #'
 #' @return
 #' Returns a list with entries:
@@ -42,8 +42,8 @@
 #' estimated singular values equal to the maximum of the number of specified
 #' singular vectors \code{nu} and \code{nv}.
 #' 
-#' Use the optional deflation parameters to compute the truncated SVD after
-#' deflating by a rank 1 matrix \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
+#' Use the optional deflation parameters to compute the rank-one deflated truncated
+#' SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
 #' This option may be used to efficiently compute principal components without
 #' explicitly forming the centered matrix (which can, importantly, preserve
 #' sparsity in the matrix).
@@ -51,7 +51,7 @@
 #' Use the \code{v} option to supply a starting vector for the iterative
 #' method. A random vector is used by default. Optionally set \code{v} to
 #' the ouput of a previous run of \code{irlba} to restart the method, adding
-#' more singular values/vectors without recomputing the already computed
+#' additional singular values/vectors without recomputing the already computed
 #' subspace.
 #' 
 #' @references
@@ -88,7 +88,7 @@ function (A,                     # data matrix
           verbose=FALSE,         # display status messages
           du,ds,dv,              # optional rank 1 deflation
           shift,                 # optional shift for square matrices
-          mult=`%*%`)            # optional matrix multiplication function
+          mult)                  # optional matrix multiplication function
 {
 # ---------------------------------------------------------------------
 # Check input parameters
@@ -110,6 +110,7 @@ function (A,                     # data matrix
   m <- nrow(A)
   n <- ncol(A)
   if(missing(nu)) nu <- nv
+  if(missing(mult)) mult <- `%*%`
   k <- max(nu,nv)
   k_org <- k;
   if (k<=0)  stop ("max(nu,nv)+adjust must be positive")
@@ -435,7 +436,7 @@ function (A,                     # data matrix
 # End of the main iteration loop
 # Output results
 # ---------------------------------------------------------------------
-  if(iter>maxit) warn("did not converge")
+  if(iter>maxit) warning("did not converge")
   d <- Bsvd$d[1:k_org]
   if(!right_only)
   {

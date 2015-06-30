@@ -1,34 +1,42 @@
-IRL
-===
+# IRL
 
-Augmented, implicitly restarted Lanczos methods for singular value and
-eigenvalue decompositions.
+Augmented, implicitly restarted Lanczos methods for fast truncated singular
+value and symmetric eigenvalue decompositions of sparse and dense real-valued
+matrices.
 
-## WARNING
+Version 2.0.0 of the package is a major update that includes many changes, new
+features, and removal of some old features that did not work well. In
+particular, I removed the use of harmonic Ritz vector augmentation and with it
+the ability to estimate the smallest singular values of a matrix. That method
+almost never converged to a solution for ill-conditioned matrices. I'm thinking
+about a strategy to replace that ability.
 
-This is an "alpha" version of the new irlba package, which remains under
-substantial development. Not all planned features are implemented or even
-working.
+### Mostly the same
+- Fast truncated singular value decomposition
 
-## Plan for the package
+### Removed
+- Support for estimating smallest singular values
+- Harmonic Ritz vector augmentation
 
-The package contains an updated irlba algorithm for truncated SVD that supports
-restarting and other new features.
+### New
+- Support for fast symmetric eigenvalue decompositions
+- Efficient principal components decomposition
+- Restarting
+- Efficient subspace deflation (used by PCA)
+- Limited support for solution of some large-scale network problems
+- Fast estimates of large sparse thresholded correlation matrices
 
-Planned additions
+## What's still missing
 
-* "Top M" style network analysis methods for centrality measures of
-directed and undirected networks.
-* An implementation of the IRBLB method that trickles out singular
-triplets in bounded memory using fast Leja-based accelerating polynomials.
-* Some kind of symmetric implementation, either IRBLeigs or adaptations
-of IRBLB/IRLBA to symmetric problems.
+The following new feature didn't make it in but will appear in version 2.1.0:
+an implementation of the IRBLB method that trickles out singular triplets in
+bounded memory using fast Leja-based accelerating polynomials.
 
 ## References
 
-This work is almost totally based on work of Baglama, Reichel, Fenu, Rodriguez,
-and Benzi, Boito and Estrada. Here are links to important papers. Read them!
+This work is almost totally based on work of Baglama and Reichel, and also Fenu
+and Rodriguez.  Here are links to important papers. Read them!
 
+* Augmented Implicitly Restarted Lanczos Bidiagonalization Methods http://www.math.uri.edu/~jbaglama/papers/paper14.pdf
 * Network analysis via partial spectral factorization and Gauss quadrature http://www.math.kent.edu/~reichel/publications/netwrk.pdf
 * Quadrature Rule-Based Bounds for Functions of Adjacency Matrices http://www.mathcs.emory.edu/~benzi/Web_papers/adjacency_paper.pdf
-* Augmented Implicitly Restarted Lanczos Bidiagonalization Methods http://www.math.uri.edu/~jbaglama/papers/paper14.pdf
