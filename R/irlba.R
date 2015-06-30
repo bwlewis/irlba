@@ -22,6 +22,7 @@
 #' @param ds Optional deflation scalar (see notes)
 #' @param dv Optional deflation vector (see notes)
 #' @param shift Optional shift value (square matrices only, see ntoes)
+#' @param mult Optional custom matrix multiplication function (default is `%*%`)
 #'
 #' @return
 #' Returns a list with entries:
@@ -86,7 +87,8 @@ function (A,                     # data matrix
           right_only=FALSE,      # TRUE=only return V
           verbose=FALSE,         # display status messages
           du,ds,dv,              # optional rank 1 deflation
-          shift)                 # optional shift for square matrices
+          shift,                 # optional shift for square matrices
+          mult=`%*%`)            # optional matrix multiplication function
 {
 # ---------------------------------------------------------------------
 # Check input parameters
@@ -265,7 +267,8 @@ function (A,                     # data matrix
     j_w = ifelse(w_dim > 1, j, 1)
 
 #   Compute W=AV (the use of as.matrix here converts Matrix class objects)
-    W[,j_w] <- as.matrix(A %*% V[,j])
+#    W[,j_w] <- as.matrix(A %*% V[,j])
+    W[,j_w] <- as.matrix(mult(A,V[,j]))
     mprod <- mprod + 1
 
 #   Optionally apply shift
@@ -303,7 +306,8 @@ function (A,                     # data matrix
     {
       j_w = ifelse(w_dim > 1, j, 1)
 #      F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))  # F = t(A) %*% W[,j_w]
-      F <- t(as.matrix(t(W[,j_w,drop=FALSE]) %*% A))
+#      F <- t(as.matrix(t(W[,j_w,drop=FALSE]) %*% A))
+      F <- t(as.matrix(mult(t(W[,j_w,drop=FALSE]),A)))
       if(!missing(shift)) F <- F + shift * W[,j_w]
       mprod <- mprod + 1
       F <- F - S*V[,j, drop=FALSE]
@@ -328,7 +332,8 @@ function (A,                     # data matrix
 
         jp1_w = ifelse(w_dim > 1, j+1, 1)
         w_old = W[,j_w]
-        W[,jp1_w] <- as.matrix(A %*% V[,j+1])
+#        W[,jp1_w] <- as.matrix(A %*% V[,j+1])
+        W[,jp1_w] <- as.matrix(mult(A,V[,j+1]))
         mprod <- mprod + 1
 
 #       Optionally apply shift
