@@ -30,9 +30,9 @@ irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
 
 \item{verbose}{Logical value that when \code{TRUE} prints status messages during the computation}
 
-\item{scale}{Optional column scaling vector implicitly applied to \code{A}; must be as long as the number of columns of \code{A} (see notes)}
+\item{scale}{Optional column scaling vector whose values divide each column of \code{A}; must be as long as the number of columns of \code{A} (see notes)}
 
-\item{center}{Optional column centering vector implicitly applied to \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes)}
+\item{center}{Optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes)}
 
 \item{du}{Optional deflation vector (see notes)}
 

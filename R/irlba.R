@@ -16,8 +16,8 @@
 #' @param v Optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes)
 #' @param right_only Logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE})
 #' @param verbose Logical value that when \code{TRUE} prints status messages during the computation
-#' @param scale Optional column scaling vector implicitly applied to \code{A}; must be as long as the number of columns of \code{A} (see notes)
-#' @param center Optional column centering vector implicitly applied to \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes)
+#' @param scale Optional column scaling vector whose values divide each column of \code{A}; must be as long as the number of columns of \code{A} (see notes)
+#' @param center Optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes)
 #' @param du Optional deflation vector (see notes)
 #' @param ds Optional deflation scalar (see notes)
 #' @param dv Optional deflation vector (see notes)
@@ -256,6 +256,10 @@ function (A,                     # data matrix
 # AV  = WB
 # t(A)W = VB + Ft(E)
 # This routine updates W,V,F,B,mprod
+#
+# Note on scale and center: These options are applied implicitly below
+# for maximum computational efficiency. This complicates their application
+# somewhat, but saves a bit of flops.
 # ---------------------------------------------------------------------
     j <- 1
 #   Normalize starting vector:
