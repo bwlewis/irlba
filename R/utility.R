@@ -1,8 +1,23 @@
 # ---------------------------------------------------------------------
 # Internal supporting functions
 # ---------------------------------------------------------------------
+# General real/complex crossprod
+cross <- function(x,y)
+{
+  if(missing(y))
+  {
+    if(is.complex(x)) return(abs(Conj(t(x)) %*% x))
+    return(crossprod(x))
+  }
+  if(!is.complex(x) && !is.complex(y)) return(crossprod(x,y))
+  Conj(t(x)) %*% y
+}
+
 # Euclidean norm
-norm2 <- function (x) return(as.numeric(sqrt(crossprod(x))))
+norm2 <- function (x)
+{
+  as.numeric(sqrt(cross(x)))
+}
 # Orthogonalize vectors Y against vectors X. Y and X must be R matrix
 # objects (they must have a dim attribute).
 # Note: this function unnecessarily copies the contents of Y
@@ -12,8 +27,8 @@ orthog <- function (Y,X)
   if(is.null(dx2)) dx2=1
   dy2 = dim(Y)[2]
   if(is.null(dy2)) dy2=1
-  if (dx2 < dy2) dotY <- crossprod (X,Y)
-  else dotY <- t (crossprod(Y,X))
+  if (dx2 < dy2) dotY <- cross (X,Y)
+  else dotY <- t (cross(Y,X))
   return (Y - X %*% dotY)
  }
 

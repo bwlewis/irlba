@@ -160,6 +160,7 @@ function (A,                     # data matrix
     dv <- center
     deflate <- TRUE
   }
+  iscomplex <- is.complex(A)
   m <- nrow(A)
   n <- ncol(A)
   if(missing(nu)) nu <- nv
@@ -288,7 +289,7 @@ function (A,                     # data matrix
 #   Optionally apply deflation
     if(deflate)
     {
-      W[,j] <- W[,j] - ds * crossprod(dv, VJ) * du
+      W[,j] <- W[,j] - ds * cross(dv, VJ) * du
     }
 
 #   Orthogonalize W
@@ -315,7 +316,8 @@ function (A,                     # data matrix
       j_w = ifelse(w_dim > 1, j, 1)
 #      F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))  # F = t(A) %*% W[,j_w]
 #      F <- t(as.matrix(t(W[,j_w,drop=FALSE]) %*% A))
-      F <- t(as.matrix(mult(t(W[,j_w,drop=FALSE]),A)))
+      if(iscomplex) F <- Conj(t(as.matrix(mult(Conj(t(W[,j_w,drop=FALSE])),A))))
+      else F <- t(as.matrix(mult(t(W[,j_w,drop=FALSE]),A)))
 #     Optionally apply shift and scale
       if(!missing(shift)) F <- F + shift * W[,j_w]
       if(!missing(scale)) F <- F/scale
@@ -361,7 +363,7 @@ function (A,                     # data matrix
 #       Optionally apply deflation
         if(deflate)
         {
-          W[,jp1_w] <- W[,jp1_w] - ds * crossprod(dv, VJP1) * du
+          W[,jp1_w] <- W[,jp1_w] - ds * cross(dv, VJP1) * du
         }
 
 #       One step of the classical Gram-Schmidt process
