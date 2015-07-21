@@ -7,25 +7,24 @@ matrices.
 Version 2.0.0 of the package is a major update that includes many changes, new
 features, and removal of some old features that did not work well. In
 particular, use of harmonic Ritz vector augmentation and the ability to
-estimate the smallest singular values of a matrix was removed. That method
-doesn't work very well, and sometimes not at all. It suffered from poor
+estimate the smallest singular values of a matrix WAS REMOVED. That method
+didn't work very well, and sometimes not at all. It suffered from poor
 performance and rarely converged to a solution for ill-conditioned matrices.
 Replacements are under consideration but did not make it in to the update.
 
-### Mostly the same
+### Package features that are mostly the same
 - Fast truncated singular value decomposition
 
-### Removed
+### Package features that were removed
 - Support for estimating smallest singular values
 - Harmonic Ritz vector augmentation
 
-### New
-- Support for fast symmetric eigenvalue decompositions
+### New features
+- Support for fast symmetric partial eigenvalue decompositions
 - Efficient principal components decomposition
 - Restarting
 - Efficient subspace deflation (used by PCA)
-- Limited support for solution of some large-scale network problems
-- Fast estimates of large sparse thresholded correlation matrices
+- Nice syntax for centering and scaling
 
 ## What's still missing
 
@@ -35,9 +34,4 @@ bounded memory using fast Leja-based accelerating polynomials.
 
 ## References
 
-This work is almost totally based on work of Baglama and Reichel, and also Fenu
-and Rodriguez.  Here are links to important papers. Read them!
-
-* Augmented Implicitly Restarted Lanczos Bidiagonalization Methods http://www.math.uri.edu/~jbaglama/papers/paper14.pdf
-* Network analysis via partial spectral factorization and Gauss quadrature http://www.math.kent.edu/~reichel/publications/netwrk.pdf
-* Quadrature Rule-Based Bounds for Functions of Adjacency Matrices http://www.mathcs.emory.edu/~benzi/Web_papers/adjacency_paper.pdf
+* Jim Baglama and Lothar Reichel, Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, http://www.math.uri.edu/~jbaglama/papers/paper14.pdf
