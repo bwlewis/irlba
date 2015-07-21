@@ -282,13 +282,13 @@ function (A,                     # data matrix
 #   Optionally apply shift
     if(!missing(shift))
     {
-      W[,j] <- W[,j] + shift*V[,j]
+      W[,j] <- W[,j] + shift*VJ
     }
 
 #   Optionally apply deflation
     if(deflate)
     {
-      W[,j] <- W[,j] - ds * crossprod(dv, V[,j]) * du
+      W[,j] <- W[,j] - ds * crossprod(dv, VJ) * du
     }
 
 #   Orthogonalize W
@@ -355,13 +355,13 @@ function (A,                     # data matrix
 #       Optionally apply shift
         if(!missing(shift))
         {
-          W[,jp1_w] <- W[,jp1_w] + shift*V[,j+1]
+          W[,jp1_w] <- W[,jp1_w] + shift*VJP1
         }
 
 #       Optionally apply deflation
         if(deflate)
         {
-          W[,jp1_w] <- W[,jp1_w] - ds * crossprod(dv, V[,j+1]) * du
+          W[,jp1_w] <- W[,jp1_w] - ds * crossprod(dv, VJP1) * du
         }
 
 #       One step of the classical Gram-Schmidt process
