@@ -245,7 +245,11 @@ are only unique up to sign!
  [9,]  0.07680945 -0.07680577
 [10,] -0.13846032  0.13846091
 \end{lstlisting}
-
+The implementation of the {\tt center} and deflation options take advantage of
+computational efficiencies in the IRLB algorithm that result in a modest
+savings of a few vector inner products per iteration compared to a naive
+implementation that replaces the matrix product {\tt A \%*\% x} with
+{\tt A \%*\% x - ds*du \%*\% t(dv) \%*\% x}.
 
 \subsection{User-Defined Matrix Multiplication}
 
