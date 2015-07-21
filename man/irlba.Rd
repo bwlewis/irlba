@@ -7,7 +7,7 @@ singular vectors of a matrix.}
 \usage{
 irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
   tol = 0.001, v = NULL, right_only = FALSE, verbose = FALSE, du, ds,
-  dv, shift, mult)
+  dv, scale, shift, mult)
 }
 \arguments{
 \item{A}{Numeric real- or complex-valued matrix or real-valued sparse matrix}
@@ -36,18 +36,20 @@ irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
 
 \item{dv}{Optional deflation vector (see notes)}
 
-\item{shift}{Optional shift value (square matrices only, see ntoes)}
+\item{scale}{Optional column scaling vector to apply to \code{A}; must be as long as the number of columns of \code{A} (see notes)}
 
-\item{mult}{Optional custom matrix multiplication function (default is `\%*\%`)}
+\item{shift}{Optional shift value (square matrices only, see notes)}
+
+\item{mult}{Optional custom matrix multiplication function (default is `\%*\%`, see notes)}
 }
 \value{
 Returns a list with entries:
 \itemize{
-  \item{d}{max (nu, nv) approximate singular values}
-  \item{u}{nu approximate left singular vectors (only when right_only=FALSE)}
-  \item{v}{nv approximate right singular vectors}
-  \item{iter}{The number of Lanczos iterations carried out}
-  \item{mprod}{The total number of matrix vector products carried out}
+  \item{d}{ max (nu, nv) approximate singular values}
+  \item{u}{ nu approximate left singular vectors (only when right_only=FALSE)}
+  \item{v}{ nv approximate right singular vectors}
+  \item{iter}{ The number of Lanczos iterations carried out}
+  \item{mprod}{ The total number of matrix vector products carried out}
 }
 }
 \description{
@@ -55,8 +57,6 @@ The augmented implicitly restarted Lanczos bi-diagonalization (IRLBA)
 algorithm finds a few approximate largest singular values and corresponding
 singular vectors of a sparse or dense matrix using a method of Baglama and
 Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
-This implementation can also estimate largest eigenvalues and corresponding
-eigenvectors of a symmetric matrix.
 }
 \note{
 The syntax of \code{irlba} partially follows \code{svd}, with an important
@@ -70,7 +70,16 @@ Use the optional deflation parameters to compute the rank-one deflated truncated
 SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
 This option may be used to efficiently compute principal components without
 explicitly forming the centered matrix (which can, importantly, preserve
-sparsity in the matrix).
+sparsity in the matrix). See the examples.
+
+Use the optional \code{scale} parameter to efficiently compute the truncated
+SVD of the column-scaled \code{sweep(A,2,scale,FUN=`*`)}, or equivalently,
+\code{A \%*\% diag(scale)}, without explicitly forming the scaled matrix.
+
+Specify an optional alternative matrix multiplication operator in the
+\code{mult} parameter. \code{mult} must be a function of two arguments,
+and must handle both cases where one argument is a vector and the other
+a matrix. See the examples.
 
 Use the \code{v} option to supply a starting vector for the iterative
 method. A random vector is used by default. Optionally set \code{v} to
@@ -93,6 +102,27 @@ P <- irlba(A, nv=1, du=rep(1,nrow(A)), ds=1, dv=colMeans(A))
 
 # Compare with prcomp (might vary up to sign)
 cbind(P$v, prcomp(A)$rotation[,1])
+
+# A custom matrix multiplication function that scales the columns of A
+# (cf the scale option). This function scales the columns of A to unit norm.
+col_scale <- sqrt(apply(A,2,crossprod))
+mult <- function(x,y)
+        {
+          # check if x is a plain, row or column vector
+          if(is.vector(x) || ncol(x)==1 || nrow(x)==1)
+          {
+            return((x \%*\% y)/col_scale)
+          }
+          # else x is the matrix
+          x \%*\% (y/col_scale)
+        }
+irlba(A, 3, mult=mult)$d
+
+# Compare with:
+irlba(A, 3, scale=1/col_scale)$d
+
+# Compare with:
+svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3]
 }
 \references{
 Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.

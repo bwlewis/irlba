@@ -5,8 +5,6 @@
 #' algorithm finds a few approximate largest singular values and corresponding
 #' singular vectors of a sparse or dense matrix using a method of Baglama and
 #' Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
-#' This implementation can also estimate largest eigenvalues and corresponding
-#' eigenvectors of a symmetric matrix.
 #'
 #' @param A Numeric real- or complex-valued matrix or real-valued sparse matrix
 #' @param nv Number of right singular vectors to estimate
@@ -21,17 +19,18 @@
 #' @param du Optional deflation vector (see notes)
 #' @param ds Optional deflation scalar (see notes)
 #' @param dv Optional deflation vector (see notes)
-#' @param shift Optional shift value (square matrices only, see ntoes)
-#' @param mult Optional custom matrix multiplication function (default is `\%*\%`)
+#' @param scale Optional column scaling vector to apply to \code{A}; must be as long as the number of columns of \code{A} (see notes)
+#' @param shift Optional shift value (square matrices only, see notes)
+#' @param mult Optional custom matrix multiplication function (default is `\%*\%`, see notes)
 #'
 #' @return
 #' Returns a list with entries:
 #' \itemize{
-#'   \item{d}{max (nu, nv) approximate singular values}
-#'   \item{u}{nu approximate left singular vectors (only when right_only=FALSE)}
-#'   \item{v}{nv approximate right singular vectors}
-#'   \item{iter}{The number of Lanczos iterations carried out}
-#'   \item{mprod}{The total number of matrix vector products carried out}
+#'   \item{d}{ max (nu, nv) approximate singular values}
+#'   \item{u}{ nu approximate left singular vectors (only when right_only=FALSE)}
+#'   \item{v}{ nv approximate right singular vectors}
+#'   \item{iter}{ The number of Lanczos iterations carried out}
+#'   \item{mprod}{ The total number of matrix vector products carried out}
 #' }
 #'
 #' @note
@@ -46,13 +45,23 @@
 #' SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
 #' This option may be used to efficiently compute principal components without
 #' explicitly forming the centered matrix (which can, importantly, preserve
-#' sparsity in the matrix).
+#' sparsity in the matrix). See the examples.
+#'
+#' Use the optional \code{scale} parameter to efficiently compute the truncated
+#' SVD of the column-scaled \code{sweep(A,2,scale,FUN=`*`)}, or equivalently,
+#' \code{A \%*\% diag(scale)}, without explicitly forming the scaled matrix.
+#'
+#' Specify an optional alternative matrix multiplication operator in the
+#' \code{mult} parameter. \code{mult} must be a function of two arguments,
+#' and must handle both cases where one argument is a vector and the other
+#' a matrix. See the examples.
 #'
 #' Use the \code{v} option to supply a starting vector for the iterative
 #' method. A random vector is used by default. Optionally set \code{v} to
 #' the ouput of a previous run of \code{irlba} to restart the method, adding
 #' additional singular values/vectors without recomputing the already computed
 #' subspace.
+#'
 #' 
 #' @references
 #' Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
@@ -72,6 +81,27 @@
 #'
 #' # Compare with prcomp (might vary up to sign)
 #' cbind(P$v, prcomp(A)$rotation[,1])
+#'
+#' # A custom matrix multiplication function that scales the columns of A
+#' # (cf the scale option). This function scales the columns of A to unit norm.
+#' col_scale <- sqrt(apply(A,2,crossprod))
+#' mult <- function(x,y)
+#'         {
+#'           # check if x is a plain, row or column vector
+#'           if(is.vector(x) || ncol(x)==1 || nrow(x)==1)
+#'           {
+#'             return((x %*% y)/col_scale)
+#'           }
+#'           # else x is the matrix
+#'           x %*% (y/col_scale)
+#'         }
+#' irlba(A, 3, mult=mult)$d
+#'
+#' # Compare with:
+#' irlba(A, 3, scale=1/col_scale)$d
+#'
+#' # Compare with:
+#' svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3] 
 #' 
 #' @seealso svd, prcomp
 #' @import Matrix
@@ -87,6 +117,7 @@ function (A,                     # data matrix
           right_only=FALSE,      # TRUE=only return V
           verbose=FALSE,         # display status messages
           du,ds,dv,              # optional rank 1 deflation
+          scale,                 # optional column scaling
           shift,                 # optional shift for square matrices
           mult)                  # optional matrix multiplication function
 {
@@ -97,6 +128,7 @@ function (A,                     # data matrix
   on.exit(options(ropts))  # reset on exit
   eps <- .Machine$double.eps
   deflate <- missing(du) + missing(ds) + missing(dv)
+  if(!missing(mult) && !missing(scale)) stop("At least one of the scale and mult options must be empty (scale sets the mult option)")
   if(deflate==3)
   {
     deflate <- FALSE
@@ -111,6 +143,14 @@ function (A,                     # data matrix
   n <- ncol(A)
   if(missing(nu)) nu <- nv
   if(missing(mult)) mult <- `%*%`
+  if(!missing(scale))
+  {
+    mult <- function(x,y)
+            {
+              if(ncol(x)==1 || nrow(x)==1) return((x %*% y)*scale)
+              x %*% (y*scale)
+            }
+  }
   k <- max(nu,nv)
   k_org <- k;
   if (k<=0)  stop ("max(nu,nv)+adjust must be positive")
@@ -160,7 +200,6 @@ function (A,                     # data matrix
 # ---------------------------------------------------------------------
 # Initialize local variables
 # ---------------------------------------------------------------------
-
   B <- NULL                  # Bidiagonal matrix
   Bsz <- NULL                # Size of B
   eps23 <- eps^(2/3)         # Used for Smax/avoids using zero
@@ -182,61 +221,6 @@ function (A,                     # data matrix
   S_B2 <- NULL               # S.V. of [B ||F||]
   U_B2 <- NULL               # 
   V_B2 <- NULL               #  
-
-# ---------------------------------------------------------------------
-# Supporting functions
-# ---------------------------------------------------------------------
-# Euclidean norm
-  norm2 <- function (x) return(as.numeric(sqrt(crossprod(x))))
-# Orthogonalize vectors Y against vectors X. Y and X must be R matrix
-# objects (they must have a dim attribute).
-# Note: this function unnecessarily copies the contents of Y
-  orthog <- function (Y,X)
-   {
-    dx2 = dim(X)[2]
-    if(is.null(dx2)) dx2=1
-    dy2 = dim(Y)[2]
-    if(is.null(dy2)) dy2=1
-    if (dx2 < dy2) dotY <- crossprod (X,Y)
-    else dotY <- t (crossprod(Y,X))
-    return (Y - X %*% dotY)
-   }
-
-# Convergence tests
-# Input parameters
-# Bsz            Number of rows of the bidiagonal matrix B
-# tol
-# k_org
-# U_B            Left singular vectors of small matrix B
-# S_B            Singular values of B
-# V_B            Right singular vectors of B
-# residuals      
-# k
-# SVTol
-# Smax
-#
-# Output parameter list
-# converged      TRUE/FALSE
-# U_B            Left singular vectors of small matrix B
-# S_B            Singular values of B
-# V_B            Right singular vectors of B
-# k              Number of singular vectors returned 
-  convtests <- function (Bsz, tol, k_org, U_B, S_B, V_B, 
-                         residuals, k, SVTol, Smax)
-   {
-    Len_res <- sum(residuals[1:k_org] < tol*Smax)
-    if(is.na(Len_res)) Len_res <- 0
-    if (Len_res == k_org) {
-      return (list(converged=TRUE, U_B=U_B[,1:k_org, drop=FALSE], 
-                    S_B=S_B[1:k_org, drop=FALSE], V_B=V_B[,1:k_org, drop=FALSE], k=k) )
-    } 
-#   Not converged yet...
-#   Adjust k to include more vectors as the number of vectors converge.
-    Len_res <- sum(residuals[1:k_org] < SVTol*Smax)
-    k <- max(k, k_org + Len_res)
-    if (k > Bsz - 3) k <- max(Bsz - 3,1)
-    return (list(converged=FALSE, U_B=U_B, S_B=S_B, V_B=V_B, k=k) )
-   }
 
 # Check for user-supplied restart condition
   if(restart)
@@ -432,6 +416,7 @@ function (A,                     # data matrix
 
     iter <- iter + 1
   }
+#browser()
 # ---------------------------------------------------------------------
 # End of the main iteration loop
 # Output results

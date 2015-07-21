@@ -6,10 +6,11 @@ matrices.
 
 Version 2.0.0 of the package is a major update that includes many changes, new
 features, and removal of some old features that did not work well. In
-particular, I removed the use of harmonic Ritz vector augmentation and with it
-the ability to estimate the smallest singular values of a matrix. That method
-almost never converged to a solution for ill-conditioned matrices. I'm thinking
-about a strategy to replace that ability.
+particular, use of harmonic Ritz vector augmentation and the ability to
+estimate the smallest singular values of a matrix was removed. That method
+doesn't work very well, and sometimes not at all. It suffered from poor
+performance and rarely converged to a solution for ill-conditioned matrices.
+Replacements are under consideration but did not make it in to the update.
 
 ### Mostly the same
 - Fast truncated singular value decomposition
