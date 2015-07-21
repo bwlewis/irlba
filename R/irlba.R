@@ -12,7 +12,7 @@
 #' @param maxit Maximum number of iterations
 #' @param m_b Working subspace dimension, larger values can speed convergence at the cost of more memory use
 #' @param reorth Logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization
-#' @param tol Convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively.
+#' @param tol Convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively
 #' @param v Optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes)
 #' @param right_only Logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE})
 #' @param verbose Logical value that when \code{TRUE} prints status messages during the computation

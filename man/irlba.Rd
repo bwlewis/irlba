@@ -22,7 +22,7 @@ irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
 
 \item{reorth}{Logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization}
 
-\item{tol}{Convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively.}
+\item{tol}{Convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively}
 
 \item{v}{Optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes)}
 
