@@ -22,9 +22,10 @@ Replacements are under consideration but did not make it in to the update.
 ### New features
 - Support for fast symmetric partial eigenvalue decompositions
 - Efficient principal components decomposition
-- Restarting
-- Efficient subspace deflation (used by PCA)
+- Restarting (picking up where you left off to add more vectors/values)
 - Nice syntax for centering and scaling
+- Efficient generic subspace deflation (used by PCA)
+- Fixed support for complex-valued dense matrices
 
 ## What's still missing
 
@@ -34,4 +35,4 @@ bounded memory using fast Leja-based accelerating polynomials.
 
 ## References
 
-* Jim Baglama and Lothar Reichel, Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, http://www.math.uri.edu/~jbaglama/papers/paper14.pdf
+* Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005. (http://www.math.uri.edu/~jbaglama/papers/paper14.pdf)

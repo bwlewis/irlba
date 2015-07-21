@@ -28,7 +28,7 @@ orthog <- function (Y,X)
   dy2 = dim(Y)[2]
   if(is.null(dy2)) dy2=1
   if (dx2 < dy2) dotY <- cross (X,Y)
-  else dotY <- t (cross(Y,X))
+  else dotY <- Conj(t (cross(Y,X)))
   return (Y - X %*% dotY)
  }
 

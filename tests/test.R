@@ -41,3 +41,12 @@ if(!isTRUE(all.equal(partial_eigen(x, 3)$values, c(10,8,6))))
 {
   stop("Failed partial_eigen test")
 }
+
+# Dense complex-valued matrix
+A <- matrix(rnorm(400),20) + 1i * matrix(rnorm(400),20)
+L <- irlba(A,nu=2,nv=2,tol=1e-9)
+S <- svd(A,nu=2,nv=2)
+if(!isTRUE(all.equal(L$d, S$d[1:2])))
+{
+  stop("Failed complex-valued dense signular value test")
+}
