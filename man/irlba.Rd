@@ -2,7 +2,7 @@
 % Please edit documentation in R/irlba.R
 \name{irlba}
 \alias{irlba}
-\title{irlba Find a few approximate largest singular values and corresponding
+\title{Find a few approximate largest singular values and corresponding
 singular vectors of a matrix.}
 \usage{
 irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
@@ -10,39 +10,39 @@ irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
   center, du, ds, dv, shift, mult)
 }
 \arguments{
-\item{A}{Numeric real- or complex-valued matrix or real-valued sparse matrix}
+\item{A}{numeric real- or complex-valued matrix or real-valued sparse matrix.}
 
-\item{nv}{Number of right singular vectors to estimate}
+\item{nv}{number of right singular vectors to estimate.}
 
-\item{nu}{Number of left singular vectors to estimate (defaults to \code{nv})}
+\item{nu}{number of left singular vectors to estimate (defaults to \code{nv}).}
 
-\item{maxit}{Maximum number of iterations}
+\item{maxit}{maximum number of iterations.}
 
-\item{m_b}{Working subspace dimension, larger values can speed convergence at the cost of more memory use}
+\item{m_b}{working subspace dimension, larger values can speed convergence at the cost of more memory use.}
 
-\item{reorth}{Logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization}
+\item{reorth}{logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization.}
 
-\item{tol}{Convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively}
+\item{tol}{convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively.}
 
-\item{v}{Optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes)}
+\item{v}{optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes).}
 
-\item{right_only}{Logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE})}
+\item{right_only}{logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE}).}
 
-\item{verbose}{Logical value that when \code{TRUE} prints status messages during the computation}
+\item{verbose}{logical value that when \code{TRUE} prints status messages during the computation.}
 
-\item{scale}{Optional column scaling vector whose values divide each column of \code{A}; must be as long as the number of columns of \code{A} (see notes)}
+\item{scale}{optional column scaling vector whose values divide each column of \code{A}; must be as long as the number of columns of \code{A} (see notes).}
 
-\item{center}{Optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes)}
+\item{center}{optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes).}
 
-\item{du}{Optional general deflation vector (see notes)}
+\item{du}{optional general deflation vector (see notes).}
 
-\item{ds}{Optional general deflation scalar (see notes)}
+\item{ds}{optional general deflation scalar (see notes).}
 
-\item{dv}{Optional general deflation vector (see notes)}
+\item{dv}{optional general deflation vector (see notes).}
 
-\item{shift}{Optional shift value (square matrices only, see notes)}
+\item{shift}{optional shift value (square matrices only, see notes).}
 
-\item{mult}{Optional custom matrix multiplication function (default is `\%*\%`, see notes)}
+\item{mult}{optional custom matrix multiplication function (default is `\%*\%`, see notes).}
 }
 \value{
 Returns a list with entries:

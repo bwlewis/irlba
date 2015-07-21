@@ -13,7 +13,7 @@ function(A,
          tol=1e-3,
          maxit=min(100,ncol(A)),
          verbose=FALSE,
-         ...) # additional arguments passed on to irlba or irblb
+         ...) # additional arguments passed on to irlba
 {
 # Note, we will dispatch to an appropriate undirected algorithm here...
 # For now, we only support IRLBA-based methods for directed problems.

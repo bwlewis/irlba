@@ -1,4 +1,4 @@
-#' irlba Find a few approximate largest singular values and corresponding
+#' Find a few approximate largest singular values and corresponding
 #' singular vectors of a matrix.
 #'
 #' The augmented implicitly restarted Lanczos bi-diagonalization (IRLBA)
@@ -6,23 +6,23 @@
 #' singular vectors of a sparse or dense matrix using a method of Baglama and
 #' Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
 #'
-#' @param A Numeric real- or complex-valued matrix or real-valued sparse matrix
-#' @param nv Number of right singular vectors to estimate
-#' @param nu Number of left singular vectors to estimate (defaults to \code{nv})
-#' @param maxit Maximum number of iterations
-#' @param m_b Working subspace dimension, larger values can speed convergence at the cost of more memory use
-#' @param reorth Logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization
-#' @param tol Convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively
-#' @param v Optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes)
-#' @param right_only Logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE})
-#' @param verbose Logical value that when \code{TRUE} prints status messages during the computation
-#' @param scale Optional column scaling vector whose values divide each column of \code{A}; must be as long as the number of columns of \code{A} (see notes)
-#' @param center Optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes)
-#' @param du Optional general deflation vector (see notes)
-#' @param ds Optional general deflation scalar (see notes)
-#' @param dv Optional general deflation vector (see notes)
-#' @param shift Optional shift value (square matrices only, see notes)
-#' @param mult Optional custom matrix multiplication function (default is `\%*\%`, see notes)
+#' @param A numeric real- or complex-valued matrix or real-valued sparse matrix.
+#' @param nv number of right singular vectors to estimate.
+#' @param nu number of left singular vectors to estimate (defaults to \code{nv}).
+#' @param maxit maximum number of iterations.
+#' @param m_b working subspace dimension, larger values can speed convergence at the cost of more memory use.
+#' @param reorth logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization.
+#' @param tol convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively.
+#' @param v optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes).
+#' @param right_only logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE}).
+#' @param verbose logical value that when \code{TRUE} prints status messages during the computation.
+#' @param scale optional column scaling vector whose values divide each column of \code{A}; must be as long as the number of columns of \code{A} (see notes).
+#' @param center optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes).
+#' @param du optional general deflation vector (see notes).
+#' @param ds optional general deflation scalar (see notes).
+#' @param dv optional general deflation vector (see notes).
+#' @param shift optional shift value (square matrices only, see notes).
+#' @param mult optional custom matrix multiplication function (default is `\%*\%`, see notes).
 #'
 #' @return
 #' Returns a list with entries:
