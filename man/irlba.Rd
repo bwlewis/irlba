@@ -6,8 +6,8 @@
 singular vectors of a matrix.}
 \usage{
 irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
-  tol = 0.001, v = NULL, right_only = FALSE, verbose = FALSE, du, ds,
-  dv, scale, shift, mult)
+  tol = 0.001, v = NULL, right_only = FALSE, verbose = FALSE, scale,
+  center, du, ds, dv, shift, mult)
 }
 \arguments{
 \item{A}{Numeric real- or complex-valued matrix or real-valued sparse matrix}
@@ -30,13 +30,15 @@ irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
 
 \item{verbose}{Logical value that when \code{TRUE} prints status messages during the computation}
 
+\item{scale}{Optional column scaling vector implicitly applied to \code{A}; must be as long as the number of columns of \code{A} (see notes)}
+
+\item{center}{Optional column centering vector implicitly applied to \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes)}
+
 \item{du}{Optional deflation vector (see notes)}
 
 \item{ds}{Optional deflation scalar (see notes)}
 
 \item{dv}{Optional deflation vector (see notes)}
-
-\item{scale}{Optional column scaling vector to apply to \code{A}; must be as long as the number of columns of \code{A} (see notes)}
 
 \item{shift}{Optional shift value (square matrices only, see notes)}
 
@@ -66,20 +68,31 @@ is set less than the maximum. The \code{irlba} function returns a number of
 estimated singular values equal to the maximum of the number of specified
 singular vectors \code{nu} and \code{nv}.
 
+Use the optional \code{scale} parameter to implicitly scale each column of
+the matrix \code{A} by the values in the \code{scale} vector, computing the
+truncated SVD of the column-scaled \code{sweep(A,2,scale,FUN=`/`)}, or
+equivalently, \code{A \%*\% diag(1/scale)}, without explicitly forming the
+scaled matrix. \code{scale} must be a non-zero vector of length equal
+to the number of columns of \code{A}.
+
+Use the optional \code{center} parameter to implicitly subtract the values
+in the \code{center} vector from each column of \code{A}, computing the
+truncated SVD of \code{sweep(A,2,center,FUN=`-`)},
+without explicitly forming the centered matrix. This option may not be
+used together with the general rank 1 deflation options. \code{center}
+must be a vector of length equal to the number of columns of \code{A}.
+
 Use the optional deflation parameters to compute the rank-one deflated truncated
 SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
 This option may be used to efficiently compute principal components without
 explicitly forming the centered matrix (which can, importantly, preserve
 sparsity in the matrix). See the examples.
 
-Use the optional \code{scale} parameter to efficiently compute the truncated
-SVD of the column-scaled \code{sweep(A,2,scale,FUN=`*`)}, or equivalently,
-\code{A \%*\% diag(scale)}, without explicitly forming the scaled matrix.
-
 Specify an optional alternative matrix multiplication operator in the
 \code{mult} parameter. \code{mult} must be a function of two arguments,
 and must handle both cases where one argument is a vector and the other
-a matrix. See the examples.
+a matrix. See the examples. Special care must be taken when deflation
+is also desired; see the package vignette for details.
 
 Use the \code{v} option to supply a starting vector for the iterative
 method. A random vector is used by default. Optionally set \code{v} to
@@ -98,7 +111,7 @@ S$d
 svd(A)$d[1:5]
 
 # Principal components
-P <- irlba(A, nv=1, du=rep(1,nrow(A)), ds=1, dv=colMeans(A))
+P <- irlba(A, nv=1, center=colMeans(A))
 
 # Compare with prcomp (might vary up to sign)
 cbind(P$v, prcomp(A)$rotation[,1])
@@ -119,7 +132,7 @@ mult <- function(x,y)
 irlba(A, 3, mult=mult)$d
 
 # Compare with:
-irlba(A, 3, scale=1/col_scale)$d
+irlba(A, 3, scale=col_scale)$d
 
 # Compare with:
 svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3]

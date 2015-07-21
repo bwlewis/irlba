@@ -16,10 +16,11 @@
 #' @param v Optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes)
 #' @param right_only Logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE})
 #' @param verbose Logical value that when \code{TRUE} prints status messages during the computation
+#' @param scale Optional column scaling vector implicitly applied to \code{A}; must be as long as the number of columns of \code{A} (see notes)
+#' @param center Optional column centering vector implicitly applied to \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes)
 #' @param du Optional deflation vector (see notes)
 #' @param ds Optional deflation scalar (see notes)
 #' @param dv Optional deflation vector (see notes)
-#' @param scale Optional column scaling vector to apply to \code{A}; must be as long as the number of columns of \code{A} (see notes)
 #' @param shift Optional shift value (square matrices only, see notes)
 #' @param mult Optional custom matrix multiplication function (default is `\%*\%`, see notes)
 #'
@@ -41,20 +42,31 @@
 #' estimated singular values equal to the maximum of the number of specified
 #' singular vectors \code{nu} and \code{nv}.
 #' 
+#' Use the optional \code{scale} parameter to implicitly scale each column of
+#' the matrix \code{A} by the values in the \code{scale} vector, computing the
+#' truncated SVD of the column-scaled \code{sweep(A,2,scale,FUN=`/`)}, or
+#' equivalently, \code{A \%*\% diag(1/scale)}, without explicitly forming the
+#' scaled matrix. \code{scale} must be a non-zero vector of length equal
+#' to the number of columns of \code{A}.
+#'
+#' Use the optional \code{center} parameter to implicitly subtract the values
+#' in the \code{center} vector from each column of \code{A}, computing the
+#' truncated SVD of \code{sweep(A,2,center,FUN=`-`)}, 
+#' without explicitly forming the centered matrix. This option may not be
+#' used together with the general rank 1 deflation options. \code{center}
+#' must be a vector of length equal to the number of columns of \code{A}.
+#'
 #' Use the optional deflation parameters to compute the rank-one deflated truncated
 #' SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
 #' This option may be used to efficiently compute principal components without
 #' explicitly forming the centered matrix (which can, importantly, preserve
 #' sparsity in the matrix). See the examples.
 #'
-#' Use the optional \code{scale} parameter to efficiently compute the truncated
-#' SVD of the column-scaled \code{sweep(A,2,scale,FUN=`*`)}, or equivalently,
-#' \code{A \%*\% diag(scale)}, without explicitly forming the scaled matrix.
-#'
 #' Specify an optional alternative matrix multiplication operator in the
 #' \code{mult} parameter. \code{mult} must be a function of two arguments,
 #' and must handle both cases where one argument is a vector and the other
-#' a matrix. See the examples.
+#' a matrix. See the examples. Special care must be taken when deflation
+#' is also desired; see the package vignette for details.
 #'
 #' Use the \code{v} option to supply a starting vector for the iterative
 #' method. A random vector is used by default. Optionally set \code{v} to
@@ -77,7 +89,7 @@
 #' svd(A)$d[1:5]
 #'
 #' # Principal components
-#' P <- irlba(A, nv=1, du=rep(1,nrow(A)), ds=1, dv=colMeans(A))
+#' P <- irlba(A, nv=1, center=colMeans(A))
 #'
 #' # Compare with prcomp (might vary up to sign)
 #' cbind(P$v, prcomp(A)$rotation[,1])
@@ -98,7 +110,7 @@
 #' irlba(A, 3, mult=mult)$d
 #'
 #' # Compare with:
-#' irlba(A, 3, scale=1/col_scale)$d
+#' irlba(A, 3, scale=col_scale)$d
 #'
 #' # Compare with:
 #' svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3] 
@@ -116,10 +128,11 @@ function (A,                     # data matrix
           v=NULL,                # optional starting vector or restart
           right_only=FALSE,      # TRUE=only return V
           verbose=FALSE,         # display status messages
-          du,ds,dv,              # optional rank 1 deflation
           scale,                 # optional column scaling
+          center,                # optional column centering
+          du,ds,dv,              # optional general rank 1 deflation
           shift,                 # optional shift for square matrices
-          mult)                  # optional matrix multiplication function
+          mult)                  # optional custom matrix multiplication function
 {
 # ---------------------------------------------------------------------
 # Check input parameters
@@ -128,7 +141,6 @@ function (A,                     # data matrix
   on.exit(options(ropts))  # reset on exit
   eps <- .Machine$double.eps
   deflate <- missing(du) + missing(ds) + missing(dv)
-  if(!missing(mult) && !missing(scale)) stop("At least one of the scale and mult options must be empty (scale sets the mult option)")
   if(deflate==3)
   {
     deflate <- FALSE
@@ -139,18 +151,19 @@ function (A,                     # data matrix
     if(!is.null(dim(du))) du <- du[,1]
     if(!is.null(dim(dv))) dv <- dv[,1]
   } else stop("all three du ds dv parameters must be specified for deflation")
+  if(!missing(center))
+  {
+    if(deflate) stop("the center parameter can't be specified together with deflation parameters.")
+    if(length(center)!=ncol(A)) stop("center must be a vector of length ncol(A)")
+    du <- rep(1,nrow(A))
+    ds <- 1
+    dv <- center
+    deflate <- TRUE
+  }
   m <- nrow(A)
   n <- ncol(A)
   if(missing(nu)) nu <- nv
   if(missing(mult)) mult <- `%*%`
-  if(!missing(scale))
-  {
-    mult <- function(x,y)
-            {
-              if(ncol(x)==1 || nrow(x)==1) return((x %*% y)*scale)
-              x %*% (y*scale)
-            }
-  }
   k <- max(nu,nv)
   k_org <- k;
   if (k<=0)  stop ("max(nu,nv)+adjust must be positive")
@@ -252,8 +265,14 @@ function (A,                     # data matrix
     j_w = ifelse(w_dim > 1, j, 1)
 
 #   Compute W=AV (the use of as.matrix here converts Matrix class objects)
-#    W[,j_w] <- as.matrix(A %*% V[,j])
-    W[,j_w] <- as.matrix(mult(A,V[,j]))
+#   Optionally apply scale
+    VJ <- V[,j]
+    if(!missing(scale))
+    {
+      VJ <- VJ/scale
+    }
+    W[,j_w] <- as.matrix(mult(A,VJ))
+
     mprod <- mprod + 1
 
 #   Optionally apply shift
@@ -293,7 +312,9 @@ function (A,                     # data matrix
 #      F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))  # F = t(A) %*% W[,j_w]
 #      F <- t(as.matrix(t(W[,j_w,drop=FALSE]) %*% A))
       F <- t(as.matrix(mult(t(W[,j_w,drop=FALSE]),A)))
+#     Optionally apply shift and scale
       if(!missing(shift)) F <- F + shift * W[,j_w]
+      if(!missing(scale)) F <- F/scale
       mprod <- mprod + 1
       F <- F - S*V[,j, drop=FALSE]
 #     Orthogonalize
@@ -317,8 +338,14 @@ function (A,                     # data matrix
 
         jp1_w = ifelse(w_dim > 1, j+1, 1)
         w_old = W[,j_w]
-#        W[,jp1_w] <- as.matrix(A %*% V[,j+1])
-        W[,jp1_w] <- as.matrix(mult(A,V[,j+1]))
+
+#       Optionally apply scale
+        VJP1 <- V[,j+1]
+        if(!missing(scale))
+        {
+          VJP1 <- VJP1/scale
+        }
+        W[,jp1_w] <- as.matrix(mult(A,VJP1))
         mprod <- mprod + 1
 
 #       Optionally apply shift
