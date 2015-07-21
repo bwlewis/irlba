@@ -115,7 +115,7 @@
 #' # Compare with:
 #' svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3] 
 #' 
-#' @seealso svd, prcomp
+#' @seealso \code{\link{svd}}, \code{\link{prcomp}}
 #' @import Matrix
 #' @export
 irlba <-
