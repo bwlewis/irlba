@@ -2,11 +2,21 @@ require("irlba")
 # Dense matrix
 set.seed(1)
 A <- matrix(rnorm(400),20)
-L <- irlba(A,nu=2,nv=2,tol=1e-8)
+L <- irlba(A,nu=2,nv=2,tol=1e-9)
 S <- svd(A,nu=2,nv=2)
 if(!isTRUE(all.equal(L$d, S$d[1:2])))
 {
   stop("Failed simple dense signular value test")
+}
+
+# Scaling and centering
+s <- sqrt(apply(A,2,crossprod))
+m <- colMeans(A)
+L <- irlba(A, 3, tol=1e-9, center=m, scale=s)
+S <- svd(scale(A,center=TRUE, scale=s))
+if(!isTRUE(all.equal(L$d, S$d[1:3])))
+{
+  stop("Failed scaling/centering test")
 }
 
 # Sparse matrix
@@ -16,7 +26,7 @@ N <- 2000
 i <- sample(K, size=(N), replace=TRUE)
 j <- sample(K, size=(N), replace=TRUE)
 A <- sparseMatrix(i,j,x=rnorm(N))
-L <- irlba(A,nu=2,nv=2,tol=1e-8)
+L <- irlba(A,nu=2,nv=2,tol=1e-9)
 S <- svd(A,nu=2,nv=2)
 if(!isTRUE(all.equal(L$d, S$d[1:2])))
 {
