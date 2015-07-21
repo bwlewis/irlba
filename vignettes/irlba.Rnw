@@ -85,38 +85,38 @@ and Lothar Reichel (Kent State University).
 
 \section{Introduction}
 
-The {\tt irlba} package provides a fast way to compute partial singular
-value decompositions (SVD) of large matrices. It is an R implementation
-of the {\it implicitly restarted Lanczos bidiagonalization algorithm}
-of Jim Baglama and Lothar Reichel\footnote{Restarted Block Lanczos Bidiagonalization Methods (with L. Reichel) Numerical Algorithms, 43 (2006), pp. 251-272}.
-The {\tt irlba} package source code is maintained at
-\href{http://rforge.net/irlba/}{http://rforge.net/irlba/}.
-The web homepage for the {\tt irlba} package is
-\href{http://illposed.net/irlba.html}{http://illposed.net/irlba.html}.
-An introductory example using the Netflix prize data set may be found 
-at the web link\break 
+The {\tt irlba} package provides a fast way to compute partial singular value
+decompositions (SVD) of large matrices. It is an R implementation of the {\it
+augmented implicitly restarted Lanczos bidiagonalization algorithm} of Jim
+Baglama and Lothar Reichel\footnote{Augmented Implicitly Restarted Lanczos
+Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput.
+2005.}.  The {\tt irlba} package source code is maintained at
+\href{https://github.com/bwlewis/IRL}{https://github.com/bwlewis/IRL}.  An old
+introductory example using the Netflix prize data set can be found at
 \href{http://goo.gl/fRech}{http://goo.gl/fRech}.
 
-The {\tt irlba} package works with regular dense real- and complex-valued R
-matrices and sparse real-valued matrices from the {\tt Matrix} package. The
-package provides a simple way to work with other matrix classes including {\tt
-big.matrix} from the {\tt bigmemory} package and others.  The {\tt irlba} is
-both faster and more memory efficient than the usual R {\tt svd} function for
-computing a few singular vectors and corresponding singular values of a matrix.
-It may be used to compute a partial SVD corresponding to largest singular
-values of a matrix, and includes an experimental routine that can estimate the
-singular vectors associated with the smallest few singular values too. The
-package takes advantage of available high-performance linear algebra libraries
-if R is compiled to use them.
+The {\tt irlba} package works with real- and complex-valued dense R
+matrices and real-valued sparse matrices from the {\tt Matrix} package. The
+package provides a simple way to define custom matrix arithmetic that works
+with other matrix classes including {\tt big.matrix} from the {\tt bigmemory}
+package and others.  The {\tt irlba} is both faster and more memory efficient
+than the usual R {\tt svd} function for computing a few of the largest singular
+vectors and corresponding singular values of a matrix.  The package takes
+advantage of available high-performance linear algebra libraries if R is
+compiled to use them.
 
-We summarize the algorithm and provide a few examples. A much more
-detailed description and discussion of the algorithm may be found in the
+A whirlwind summary of the algorithm follows, along with a few basic examples.
+See the companion package vignette for more substantial applications. A much
+more detailed description and discussion of the algorithm may be found in the
 cited Baglama-Reichel reference.
 
-\pagebreak
-\section{The SVD and Partial SVD}
-The singular value decomposition of the matrix
-$A\in\R^{\ell\times n}, \ell \ge n$ may be defined as:
+
+\section{Partial Singular Value Decomposition}
+
+Let $A\in\R^{\ell\times n}$ and assume $\ell\ge n$. These notes simplify the
+presentation by considering only real-valued matrices and assuming without
+losing generality that there are at least as many rows as columns. A singular
+value decomposition of $A$ can be expressed as:
 
 \[
 A = \sum_{j=1}^n \sigma_j u_j v_j^T,
@@ -132,11 +132,11 @@ v_j^Tv_k = u_j^Tu_k =
 where $u_j\in\R^\ell $, $v_j\in\R^n $,
 $j=1,2,\ldots, n$, and
 $ \sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_n \ge 0 $.
-Let $1 \le k<n$. We define the partial SVD of $A$ to be:
-\begin{eqnarray*}
-A_k &:=& \sum_{j=1}^k \sigma_j u_j v_j^T\\
-\end{eqnarray*}
 
+Let $1 \le k<n$. A rank $k$ \emph{partial SVD} of $A$ is defined as:
+\begin{eqnarray*}
+A_k &:=& \sum_{j=1}^k \sigma_j u_j v_j^T.\\
+\end{eqnarray*}
 
 
 
@@ -189,7 +189,8 @@ value decomposition. It is largely compatible with the usual R {\tt svd}
 function but there are some differences. In particular:
 \begin{enumerate}
 \item The {\tt irlba} function only computes the number of singular values
-corresponding to the {\tt nu} and {\tt nv} parameters. For example, if 5
+corresponding to the maximum of the desired singular vectors,
+{\tt max(nu, nv)}. For example, if 5
 singular vectors are desired ({\tt nu=nv=5}), then only the five corresponding
 singular values are computed. The standard R {\tt svd} function always
 returns the {\it total} set of singular values for the matrix, regardless of how
@@ -201,41 +202,94 @@ references for more information). Such problems are not likely to be
 encountered, but the method will fail with an error after the iteration limit
 is reached in those cases.
 \end{enumerate}
-Watch out for the first difference noted above.
+Watch out for the first difference noted above!
 
-\subsection{Computing the Smallest Singular Values}
-The {\tt irlba} function may be used to compute either the largest or
-smallest singular values (and corresponding singular vectors) of a
-matrix. The default is to compute the largest singular values.
-Use the {\tt sigma='ss'} option to compute the smallest values,
-illustrated below:
+
+\subsection{Principal Components}
+
+Version 2.0.0 of the package introduces simple syntax for efficiently computing
+partial SVDs of matrices after centering and scaling their columns and other
+adjustments. These options are useful, for example, to compute principal
+components analysis (PCA). Three categories of options are available:
+\begin{itemize}
+\item {\tt center}: if {\tt center} is a numeric vector with length equal to
+     the number of columns of the matrix, then each column of the matrix has the
+     corresponding value from {\tt center} subtracted from it.
+\item {\tt scale}: if 'scale' is a numeric vector with length
+     equal to the number of columns of the matrix, then each column is
+     divided by the corresponding value from {\tt scale}.
+\item {\tt dU, dS, dV}:  Optional real-valued deflation parameters to compute
+     the rank-one deflated partial SVD of {\tt A - ds*du \%*\% t(dv)}, where
+     {\tt A} is the data matrix, {\tt dS} a real-valued scalar,
+     and {\tt dU} and {\tt dV} real-valued numeric vectors defining the
+     subspace.
+\end{itemize}
+In particular, you can use the {\tt center} option for PCA. The following
+example compares the output of {\tt irlba} with the {\tt prcomp} function.
+Note that in general, singular vectors and principal component vectors
+are only unique up to sign!
 \begin{lstlisting}
-L <- irlba(A, nu=5, nv=5, sigma='ss')
+> set.seed(1)
+> A <- matrix(runif(200),nrow=20)
+> P <- irlba(A, nv=1, center=colMeans(A))
+> cbind(P$v, prcomp(A)$rotation[,1])
+             [,1]        [,2]
+ [1,] -0.46776256  0.46776158
+ [2,]  0.26335590 -0.26335688
+ [3,]  0.40484529 -0.40484233
+ [4,]  0.20867236 -0.20867277
+ [5,] -0.35983641  0.35983677
+ [6,]  0.47980186 -0.47980195
+ [7,] -0.04156462  0.04156139
+ [8,]  0.34337641 -0.34338070
+ [9,]  0.07680945 -0.07680577
+[10,] -0.13846032  0.13846091
 \end{lstlisting}
-Harmonic Ritz vectors are used by default to augment the Lanczos process
-when the smallest singular values are desired. See the reference for
-a discussion of the Lanczos process augmentation strategy.
 
-\subsection{User-defined Matrix Operations}
-The {\tt irlba} function includes a provision for specifying  custom
-matrix operators. Using this feature, {\tt irlba} may be
-used with the {\tt big.matrix} class from the {\tt bigmemory}/{\tt bigalgebra}
-packages,
-or to compute the partial SVD of matrix-free linear operators, for example.
 
-User-defined matrix operations are specified using the optional
-{\tt matmul} parameter. If defined, it must be a function that takes
-three arguments as follows:
+\subsection{User-Defined Matrix Multiplication}
+
+The {\tt irlba} function includes an option for specifying a custom matrix
+multiplication function. Use this option, for example, the {\tt big.matrix}
+class from the {\tt bigmemory}/{\tt bigalgebra} packages, or to compute the
+partial SVD of matrix-free linear operators, for example.
+
+User-defined matrix operations are specified using the optional {\tt mult}
+parameter. If defined, it must be a function of two arguments that computes
+matrix vector products. Either argument can be a vector, and the {\tt mult}
+function must deal with that. The following example illustrates a simple
+custom matrix function that scales the columns of the matrix, and then
+compares it with other ways of doing the same thing.
 \begin{lstlisting}
-matmul <- function (A, B, transpose)
-{
-  if(transpose) return(t(A) %*% B)
-  return(A %*% B)
-}
-\end{lstlisting}
-Replace the above transpose and matrix multiply operations with ones
-appropriate to your matrix class.
+> set.seed(1)
+> A <- matrix(runif(200),nrow=20)
+> mult <- function(x,y)
++         {
++           # check if x is a plain, row or column vector
++           if(is.vector(x) || ncol(x)==1 || nrow(x)==1)
++           {
++             return((x %*% y)/col_scale)
++           }
++           # else x is the matrix
++           x %*% (y/col_scale)
++         }
 
+> irlba(A, 3, mult=mult)$d
+[1] 2.8383609 0.7442858 0.6470490
+
+> # Compare with:
+> irlba(A, 3, scale=col_scale)$d
+[1] 2.8383609 0.7442858 0.6470492
+
+> # Compare with:
+> svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3]
+[1] 2.8383609 0.7442858 0.6470492
+\end{lstlisting}
+Due to technical implementation details, you are prohibited from using
+custom matrix product functions together with the rank 1 deflation
+options. However, custom matrix products are powerful and you can
+easily craft such a function to perform arbitrary subspace deflation
+within the function itself.
 
 
 \section{A Quick Summary of the IRLBA Method}
