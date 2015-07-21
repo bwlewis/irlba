@@ -34,11 +34,11 @@ irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
 
 \item{center}{Optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes)}
 
-\item{du}{Optional deflation vector (see notes)}
+\item{du}{Optional general deflation vector (see notes)}
 
-\item{ds}{Optional deflation scalar (see notes)}
+\item{ds}{Optional general deflation scalar (see notes)}
 
-\item{dv}{Optional deflation vector (see notes)}
+\item{dv}{Optional general deflation vector (see notes)}
 
 \item{shift}{Optional shift value (square matrices only, see notes)}
 
@@ -81,12 +81,12 @@ truncated SVD of \code{sweep(A,2,center,FUN=`-`)},
 without explicitly forming the centered matrix. This option may not be
 used together with the general rank 1 deflation options. \code{center}
 must be a vector of length equal to the number of columns of \code{A}.
-
-Use the optional deflation parameters to compute the rank-one deflated truncated
-SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
 This option may be used to efficiently compute principal components without
 explicitly forming the centered matrix (which can, importantly, preserve
 sparsity in the matrix). See the examples.
+
+Use the optional deflation parameters to compute the rank-one deflated
+SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
 
 Specify an optional alternative matrix multiplication operator in the
 \code{mult} parameter. \code{mult} must be a function of two arguments,
