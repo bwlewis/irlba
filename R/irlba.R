@@ -153,7 +153,7 @@ function (A,                     # data matrix
   } else stop("all three du ds dv parameters must be specified for deflation")
   if(!missing(center))
   {
-    if(deflate) stop("the center parameter can't be specified together with deflation parameters.")
+    if(deflate) stop("the center parameter can't be specified together with deflation parameters")
     if(length(center)!=ncol(A)) stop("center must be a vector of length ncol(A)")
     du <- rep(1,nrow(A))
     ds <- 1
@@ -164,6 +164,7 @@ function (A,                     # data matrix
   m <- nrow(A)
   n <- ncol(A)
   if(missing(nu)) nu <- nv
+  if(!missing(mult) && deflate) stop("the mult parameter can't be specified together with deflation parameters")
   if(missing(mult)) mult <- `%*%`
   k <- max(nu,nv)
   k_org <- k;
