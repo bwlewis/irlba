@@ -1,10 +1,10 @@
 Package: irlba
 Type: Package
-Title: Implicitly restarted Lanczos methods for factorization and network analysis
+Title: Fast Truncated SVD, PCA and Symmetric Eigendecomposition for Large Dense and Sparse Matrices
 Version: 2.0.0
-Date: 16-May-2014
+Date: 22-July-2015
 Author: Jim Baglama and Lothar Reichel
 Maintainer: Bryan W. Lewis <blewis@illposed.net>
-Description: Fast and memory efficient methods for partial singular and eigenvalue decompositions of large sparse or dense matrices, and for network analysis problems.
+Description: Fast and memory efficient methods for truncated singular and eigenvalue decompositions and principal component analysis of large sparse or dense matrices
 Depends: Matrix
 License: GPL
