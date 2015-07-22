@@ -36,3 +36,9 @@ bounded memory using fast Leja-based accelerating polynomials.
 ## References
 
 * Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005. (http://www.math.uri.edu/~jbaglama/papers/paper14.pdf)
+
+
+## Status
+<a href="https://travis-ci.org/bwlewis/IRL">
+<img src="https://travis-ci.org/bwlewis/IRL.svg?branch=master" alt="Travis CI status"></img>
+</a>
