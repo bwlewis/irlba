@@ -5,7 +5,7 @@
 \title{Find a few approximate largest singular values and corresponding
 singular vectors of a matrix.}
 \usage{
-irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
+irlba(A, nv = 5, nu, maxit = 1000, work = nv + 5, reorth = TRUE,
   tol = 0.001, v = NULL, right_only = FALSE, verbose = FALSE, scale,
   center, du, ds, dv, shift, mult)
 }
@@ -18,7 +18,7 @@ irlba(A, nv = 5, nu, maxit = 1000, m_b = nv + 5, reorth = TRUE,
 
 \item{maxit}{maximum number of iterations.}
 
-\item{m_b}{working subspace dimension, larger values can speed convergence at the cost of more memory use.}
+\item{work}{working subspace dimension, larger values can speed convergence at the cost of more memory use.}
 
 \item{reorth}{logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization.}
 

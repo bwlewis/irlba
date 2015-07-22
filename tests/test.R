@@ -42,6 +42,14 @@ if(!isTRUE(all.equal(partial_eigen(x, 3)$values, c(10,8,6))))
   stop("Failed partial_eigen test")
 }
 
+# Test right-only option
+L <- irlba(A,2,tol=1e-9,right_only=TRUE)
+S <- svd(A,nu=2,nv=2)
+if(!isTRUE(all.equal(L$d, S$d[1:2])))
+{
+  stop("Failed right_only test")
+}
+
 # Dense complex-valued matrix
 A <- matrix(rnorm(400),20) + 1i * matrix(rnorm(400),20)
 L <- irlba(A,nu=2,nv=2,tol=1e-9)

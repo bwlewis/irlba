@@ -10,7 +10,7 @@
 #' @param nv number of right singular vectors to estimate.
 #' @param nu number of left singular vectors to estimate (defaults to \code{nv}).
 #' @param maxit maximum number of iterations.
-#' @param m_b working subspace dimension, larger values can speed convergence at the cost of more memory use.
+#' @param work working subspace dimension, larger values can speed convergence at the cost of more memory use.
 #' @param reorth logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization.
 #' @param tol convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively.
 #' @param v optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes).
@@ -122,7 +122,7 @@ irlba <-
 function (A,                     # data matrix
           nv=5, nu,              # number of singular vectors to estimate
           maxit=1000,            # maximum number of iterations
-          m_b=nv + 5,            # working subspace size
+          work=nv + 5,            # working subspace size
           reorth=TRUE,           # TRUE=full reorthogonalization
           tol=1e-3,              # stopping tolerance
           v=NULL,                # optional starting vector or restart
@@ -168,23 +168,27 @@ function (A,                     # data matrix
   if(missing(mult)) mult <- `%*%`
   k <- max(nu,nv)
   k_org <- k;
-  if (k<=0)  stop ("max(nu,nv)+adjust must be positive")
-  if (k > min(m-1,n-1)) stop ("max(nu,nv) must be strictly less than min(nrow(A),ncol(A))")
+  if(k<=0)  stop ("max(nu,nv) must be positive")
+  if(k > min(m-1,n-1)) stop ("max(nu,nv) must be strictly less than min(nrow(A),ncol(A))")
   if(k > 0.5*min(m,n)) warning("You're computing a large percentage of total singular values, standard svd will likely work better!")
-  if (m_b<=1) stop ("m_b must be greater than 1")
-  if (tol<0) stop ("tol must be non-negative")
-  if (maxit<=0) stop ("maxit must be positive")
-  if (m_b <= k) m_b <- k + 1
-  if (m_b>= min(n,m))
+  if(work<=1) stop ("work must be greater than 1")
+  if(tol<0) stop ("tol must be non-negative")
+  if(maxit<=0) stop ("maxit must be positive")
+  if(work <= k) work <- k + 1
+  if(work>= min(n,m))
   {
-    m_b <- min(n,m) - 1
-    if (m_b <= k) {
-      k <- m_b - 1
+    work <- min(n,m) - 1
+    if (work <= k) {
+      k <- work - 1
     }
   }
   if (tol<eps) tol <- eps
-  w_dim <- m_b
-  if(right_only) w_dim <- 1
+  w_dim <- work
+  if(right_only)
+  {
+    w_dim <- 1
+    work <- min( min(m,n), work + 10 ) # need this to help convergence
+  }
 
 # Allocate memory for W and F:
   W <- matrix(0.0,m,w_dim) 
@@ -206,10 +210,10 @@ function (A,                     # data matrix
 # problem size:
   if (is.null(V))
   {
-    V <- matrix(0.0,n,m_b)
+    V <- matrix(0.0,n,work)
     V[,1] <- rnorm(n)
   }
-  else V <- cbind(V, matrix(0.0,n,m_b-ncol(V)))
+  else V <- cbind(V, matrix(0.0,n,work-ncol(V)))
 
 
 # ---------------------------------------------------------------------
@@ -261,13 +265,13 @@ function (A,                     # data matrix
 #
 # Note on scale and center: These options are applied implicitly below
 # for maximum computational efficiency. This complicates their application
-# somewhat, but saves a bit of flops.
+# somewhat, but saves a few flops.
 # ---------------------------------------------------------------------
     j <- 1
 #   Normalize starting vector:
     if (iter==1 && !restart) V[,1] <- V[,1, drop=FALSE]/norm2(V[,1, drop=FALSE]) 
     else j <- k + 1
-
+#   j_w is used here to support the right_only=TRUE case.
     j_w = ifelse(w_dim > 1, j, 1)
 
 #   Compute W=AV (the use of as.matrix here converts Matrix class objects)
@@ -284,13 +288,13 @@ function (A,                     # data matrix
 #   Optionally apply shift
     if(!missing(shift))
     {
-      W[,j] <- W[,j] + shift*VJ
+      W[,j_w] <- W[,j_w] + shift*VJ
     }
 
 #   Optionally apply deflation
     if(deflate)
     {
-      W[,j] <- W[,j] - ds * cross(dv, VJ) * du
+      W[,j_w] <- W[,j_w] - ds * cross(dv, VJ) * du
     }
 
 #   Orthogonalize W
@@ -312,7 +316,7 @@ function (A,                     # data matrix
     else W[,j_w] <- W[,j_w]/S
 
 #   Lanczos process
-    while (j <= m_b)
+    while (j <= work)
     {
       j_w = ifelse(w_dim > 1, j, 1)
 #      F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))  # F = t(A) %*% W[,j_w]
@@ -326,7 +330,7 @@ function (A,                     # data matrix
       F <- F - S*V[,j, drop=FALSE]
 #     Orthogonalize
       F <- orthog(F,V[,1:j, drop=FALSE])
-      if (j+1 <= m_b)
+      if (j+1 <= work)
       {
         R <- norm2(F)
 #       Check for linear dependence
