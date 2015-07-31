@@ -34,11 +34,11 @@ irlba(A, nv = 5, nu, maxit = 1000, work = nv + 5, reorth = TRUE,
 
 \item{center}{optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes).}
 
-\item{du}{optional general deflation vector (see notes).}
+\item{du}{optional subspace deflation vector (see notes).}
 
-\item{ds}{optional general deflation scalar (see notes).}
+\item{ds}{optional subspace deflation scalar (see notes).}
 
-\item{dv}{optional general deflation vector (see notes).}
+\item{dv}{optional subspace deflation vector (see notes).}
 
 \item{shift}{optional shift value (square matrices only, see notes).}
 
@@ -86,7 +86,14 @@ explicitly forming the centered matrix (which can, importantly, preserve
 sparsity in the matrix). See the examples.
 
 Use the optional deflation parameters to compute the rank-one deflated
-SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}.
+SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}, where
+\eqn{du^T A - ds\cdot dv^T = 0}{t(du) \%*\% A - ds * t(dv) == 0}. For
+example, the triple \code{ds,du,dv} may be a known singular value
+and corresponding singular vectors. Or \code{ds=1} and \code{dv}
+and \code{du} represent a vector of column means of A and of ones,
+respectively. This is a rarely used option, but it is used internally
+by the \code{center} option and the two sets of parameters are
+prevented from being used in combination.
 
 Specify an optional alternative matrix multiplication operator in the
 \code{mult} parameter. \code{mult} must be a function of two arguments,
