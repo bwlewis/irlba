@@ -1,9 +1,11 @@
 # irlba
-Lanczos methods for fast truncated singular value and symmetric eigenvalue decompositions
 
-Augmented, implicitly restarted Lanczos methods for fast truncated singular
-value and symmetric eigenvalue decompositions of sparse and dense real-valued
-matrices.
+Lanczos methods for fast truncated singular value and symmetric eigenvalue
+decompositions of sparse and dense matrices. IRLBA stands for <b>I</b>mplicitly
+<b>R</b>estarted <b>L</b>anczos <b>B</b>idiagonalization <b>A</b>lgorithms.
+
+This is the new development repository (August, 2015) for the CRAN `irlba`
+package.
 
 Version 2.0.0 of the package is a major update that includes many changes, new
 features, and removal of some old features that did not work well. In
@@ -21,12 +23,12 @@ Replacements are under consideration but did not make it in to the update.
 - Harmonic Ritz vector augmentation
 
 ### New features
-- Support for fast symmetric partial eigenvalue decompositions
+- Support for fast symmetric partial eigenvalue decompositions of real-valued matrices
 - Efficient principal components decomposition
 - Restarting (picking up where you left off to add more vectors/values)
 - Nice syntax for centering and scaling
 - Efficient generic subspace deflation (used by PCA)
-- Fixed support for complex-valued dense matrices
+- Fixed support for complex-valued SVD of dense matrices
 
 ## What's still missing
 
