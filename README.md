@@ -15,6 +15,8 @@ didn't work very well, and sometimes not at all. It suffered from poor
 performance and rarely converged to a solution for ill-conditioned matrices.
 Replacements are under consideration but did not make it in to the update.
 
+I plan to submit the new package to CRAN in August or September, 2015.
+
 ### Package features that are mostly the same
 - Fast truncated singular value decomposition
 
