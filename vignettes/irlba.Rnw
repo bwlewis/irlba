@@ -1,0 +1,403 @@
+% \VignetteIndexEntry{irlba Manual}
+% \VignetteDepends{irlba}
+% \VignettePackage{irlba}
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage[pdftex]{graphicx}
+\usepackage{color}
+\usepackage{xspace}
+\usepackage{fancyvrb}
+\usepackage{fancyhdr}
+\usepackage[
+     colorlinks=true,
+     linkcolor=blue,
+     citecolor=blue,
+     urlcolor=blue]
+     {hyperref}
+\usepackage{lscape}
+\usepackage{Sweave}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{mdwlist}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% define new colors for use
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\definecolor{darkred}{rgb}{0.6,0.0,0}
+\definecolor{lightbrown}{rgb}{1,0.9,0.8}
+\definecolor{brown}{rgb}{0.6,0.3,0.3}
+\definecolor{darkblue}{rgb}{0,0,0.8}
+\definecolor{darkmagenta}{rgb}{0.5,0,0.5}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\newcommand{\bld}[1]{\mbox{\boldmath $#1$}}
+\newcommand{\shell}[1]{\mbox{$#1$}}
+\renewcommand{\vec}[1]{\mbox{\bf {#1}}}
+\newcommand{\ReallySmallSpacing}{\renewcommand{\baselinestretch}{.6}\Large\normalsize}
+\newcommand{\SmallSpacing}{\renewcommand{\baselinestretch}{1.1}\Large\normalsize}
+\def\tm{\leavevmode\hbox{$\rm {}^{TM}$}}
+
+\newcommand{\R}{{\mathbf R}}
+\newcommand{\brho}{{\color{blue}{\rho}}}
+\newcommand{\Ra}{{\mathcal R}}
+\newcommand{\PP}{{\mathbf P}}
+\newcommand{\N}{{\mathbf N}}
+\newcommand{\K}{{\mathcal K}}
+
+
+
+\setlength{\oddsidemargin}{-.25 truein}
+\setlength{\evensidemargin}{0truein}
+\setlength{\topmargin}{-0.2truein}
+\setlength{\textwidth}{7 truein}
+\setlength{\textheight}{8.5 truein}
+\setlength{\parindent}{0.20truein}
+\setlength{\parskip}{0.10truein}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy}
+\lhead{}
+\chead{The {\tt irlba} Package}
+\rhead{}
+\lfoot{}
+\cfoot{}
+\rfoot{\thepage}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{1pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{The {\tt irlba} Package}
+\author{Bryan W. Lewis \\ 
+blewis@illposed.net,
+\\[6pt]
+adapted from the work of:\\
+Jim Baglama (University of Rhode Island)\\
+and Lothar Reichel (Kent State University).
+}
+
+\begin{document}
+
+\maketitle
+
+\thispagestyle{empty}
+
+\section{Introduction}
+
+The {\tt irlba} package provides a fast way to compute partial singular value
+decompositions (SVD) of large matrices. It is an R implementation of the {\it
+augmented implicitly restarted Lanczos bidiagonalization algorithm} of Jim
+Baglama and Lothar Reichel\footnote{Augmented Implicitly Restarted Lanczos
+Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput.
+2005.}.  The {\tt irlba} package source code is maintained at
+\href{https://github.com/bwlewis/IRL}{https://github.com/bwlewis/IRL}.  An old
+introductory example using the Netflix prize data set can be found at
+\href{http://goo.gl/fRech}{http://goo.gl/fRech}.
+
+The {\tt irlba} package works with real- and complex-valued dense R
+matrices and real-valued sparse matrices from the {\tt Matrix} package. The
+package provides a simple way to define custom matrix arithmetic that works
+with other matrix classes including {\tt big.matrix} from the {\tt bigmemory}
+package and others.  The {\tt irlba} is both faster and more memory efficient
+than the usual R {\tt svd} function for computing a few of the largest singular
+vectors and corresponding singular values of a matrix.  The package takes
+advantage of available high-performance linear algebra libraries if R is
+compiled to use them.
+
+A whirlwind summary of the algorithm follows, along with a few basic examples.
+See the companion package vignette for more substantial applications. A much
+more detailed description and discussion of the algorithm may be found in the
+cited Baglama-Reichel reference.
+
+
+\section{Partial Singular Value Decomposition}
+
+Let $A\in\R^{\ell\times n}$ and assume $\ell\ge n$. These notes simplify the
+presentation by considering only real-valued matrices and assuming without
+losing generality that there are at least as many rows as columns. A singular
+value decomposition of $A$ can be expressed as:
+
+\[
+A = \sum_{j=1}^n \sigma_j u_j v_j^T,
+\phantom{xxxxxxxx}
+v_j^Tv_k = u_j^Tu_k = 
+\left\{
+\begin{array}{ll}
+1 & \mbox{if}\phantom{x}  j=k,\\
+0 & \mbox{o.w.,}\\
+\end{array}
+\right.
+\]
+where $u_j\in\R^\ell $, $v_j\in\R^n $,
+$j=1,2,\ldots, n$, and
+$ \sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_n \ge 0 $.
+
+Let $1 \le k<n$. A rank $k$ \emph{partial SVD} of $A$ is defined as:
+\begin{eqnarray*}
+A_k &:=& \sum_{j=1}^k \sigma_j u_j v_j^T.\\
+\end{eqnarray*}
+
+
+
+The following simple example shows how to use {\tt irlba} to compute the five
+largest singular values and corresponding singular vectors of a
+$5000\times5000$ matrix. We compare to the usual R {\tt svd} function and
+report timings for our test machine, an 8-CPU core, 2.0\, GHz AMD Opteron
+server with 16\,GB RAM, using R version 2.13.0 compiled with the high
+performance AMD ACML core math libraries.
+\lstset{columns=flexible, basicstyle={\ttfamily\slshape}}
+\begin{lstlisting}
+> library('irlba')
+> A <- matrix(rnorm(5000*5000), 5000)
+> t1 <- proc.time()
+> L <- irlba(A, nu=5, nv=5)
+> print(proc.time() - t1)
+   user  system elapsed
+ 41.640   0.470  36.985
+> gc()
+           used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells   137098   7.4     350000  18.7   350000  18.7
+Vcells 25180235 192.2   52881183 403.5 52881005 403.5
+
+\end{lstlisting}
+Now, compare with the standard {\tt svd} function:
+\begin{lstlisting}
+> t1 <- proc.time()
+> S <- svd(A, nu=5, nv=5)
+> print(proc.time() - t1)
+   user  system elapsed
+616.035   4.396 187.371
+> gc()
+           used  (Mb) gc trigger   (Mb)  max used   (Mb)
+Ncells   137109   7.4     350000   18.7    350000   18.7
+Vcells 25235234 192.6  168397903 1284.8 200272760 1528.0
+
+# Compare the singular values computed by each method:
+> sqrt (crossprod(S$d[1:5]-L$d)/crossprod(S$d[1:5]))
+            [,1]
+[1,] 1.56029e-12
+
+\end{lstlisting}
+The {\tt irlba} method uses less than one tenth total CPU time as the
+{\tt svd} method in this example, less than one fifth the total run time,
+and about one fourth the peak memory.
+
+\subsection{Differences with {\tt svd}}
+The {\tt irlba} function is designed to compute a {\it partial} singular
+value decomposition. It is largely compatible with the usual R {\tt svd}
+function but there are some differences. In particular:
+\begin{enumerate}
+\item The {\tt irlba} function only computes the number of singular values
+corresponding to the maximum of the desired singular vectors,
+{\tt max(nu, nv)}. For example, if 5
+singular vectors are desired ({\tt nu=nv=5}), then only the five corresponding
+singular values are computed. The standard R {\tt svd} function always
+returns the {\it total} set of singular values for the matrix, regardless of how
+many singular vectors are specified.
+\item The {\tt irlba} function is an iterative method that continues until
+either a tolerance or maximum number of iterations is reached. There exists
+pathological problems for which {\tt irlba} does not converge (see the
+references for more information). Such problems are not likely to be
+encountered, but the method will fail with an error after the iteration limit
+is reached in those cases.
+\end{enumerate}
+Watch out for the first difference noted above!
+
+
+\subsection{Principal Components}
+
+Version 2.0.0 of the package introduces simple syntax for efficiently computing
+partial SVDs of matrices after centering and scaling their columns and other
+adjustments. These options are useful, for example, to compute principal
+components analysis (PCA). Three categories of options are available:
+\begin{itemize}
+\item {\tt center}: if {\tt center} is a numeric vector with length equal to
+     the number of columns of the matrix, then each column of the matrix has the
+     corresponding value from {\tt center} subtracted from it.
+\item {\tt scale}: if 'scale' is a numeric vector with length
+     equal to the number of columns of the matrix, then each column is
+     divided by the corresponding value from {\tt scale}.
+\item {\tt dU, dS, dV}:  Optional real-valued deflation parameters to compute
+     the rank-one deflated partial SVD of {\tt A - ds*du \%*\% t(dv)}, where
+     {\tt A} is the data matrix, {\tt dS} a real-valued scalar,
+     and {\tt dU} and {\tt dV} real-valued numeric vectors defining the
+     subspace.
+\end{itemize}
+In particular, you can use the {\tt center} option for PCA. The following
+example compares the output of {\tt irlba} with the {\tt prcomp} function.
+Note that in general, singular vectors and principal component vectors
+are only unique up to sign!
+\begin{lstlisting}
+> set.seed(1)
+> A <- matrix(runif(200),nrow=20)
+> P <- irlba(A, nv=1, center=colMeans(A))
+> cbind(P$v, prcomp(A)$rotation[,1])
+             [,1]        [,2]
+ [1,] -0.46776256  0.46776158
+ [2,]  0.26335590 -0.26335688
+ [3,]  0.40484529 -0.40484233
+ [4,]  0.20867236 -0.20867277
+ [5,] -0.35983641  0.35983677
+ [6,]  0.47980186 -0.47980195
+ [7,] -0.04156462  0.04156139
+ [8,]  0.34337641 -0.34338070
+ [9,]  0.07680945 -0.07680577
+[10,] -0.13846032  0.13846091
+\end{lstlisting}
+The implementation of the {\tt center} and deflation options take advantage of
+computational efficiencies in the IRLB algorithm that result in a modest
+savings of a few vector inner products per iteration compared to a naive
+implementation that replaces the matrix product {\tt A \%*\% x} with
+{\tt A \%*\% x - ds*du \%*\% t(dv) \%*\% x}.
+
+\subsection{User-Defined Matrix Multiplication}
+
+The {\tt irlba} function includes an option for specifying a custom matrix
+multiplication function. Use this option, for example, the {\tt big.matrix}
+class from the {\tt bigmemory}/{\tt bigalgebra} packages, or to compute the
+partial SVD of matrix-free linear operators, for example.
+
+User-defined matrix operations are specified using the optional {\tt mult}
+parameter. If defined, it must be a function of two arguments that computes
+matrix vector products. Either argument can be a vector, and the {\tt mult}
+function must deal with that. The following example illustrates a simple
+custom matrix function that scales the columns of the matrix, and then
+compares it with other ways of doing the same thing.
+\begin{lstlisting}
+> set.seed(1)
+> A <- matrix(runif(200),nrow=20)
+> mult <- function(x,y)
++         {
++           # check if x is a plain, row or column vector
++           if(is.vector(x) || ncol(x)==1 || nrow(x)==1)
++           {
++             return((x %*% y)/col_scale)
++           }
++           # else x is the matrix
++           x %*% (y/col_scale)
++         }
+
+> irlba(A, 3, mult=mult)$d
+[1] 2.8383609 0.7442858 0.6470490
+
+> # Compare with:
+> irlba(A, 3, scale=col_scale)$d
+[1] 2.8383609 0.7442858 0.6470492
+
+> # Compare with:
+> svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3]
+[1] 2.8383609 0.7442858 0.6470492
+\end{lstlisting}
+Due to technical implementation details, you are prohibited from using
+custom matrix product functions together with the rank 1 deflation
+options. However, custom matrix products are powerful and you can
+easily craft such a function to perform arbitrary subspace deflation
+within the function itself.
+
+
+\section{A Quick Summary of the IRLBA Method}
+\subsection{Partial Lanczos Bidiagonalization}
+
+Start with a given vector $p_1$. Compute $m$ steps of the Lanczos process:
+
+\begin{eqnarray*}
+A P_m &=& Q_m B_m \\
+A^T Q_m &=& P_m B_m^T + r_m e_m^T,\\
+\end{eqnarray*}
+
+$B_m\in\R^{m\times m}, P_m \in \R^{n\times m}, $ 
+$Q_m \in \R^{\ell \times m},$ 
+
+$P_m^TP_m=Q_m^TQ_m=I_m, $ 
+
+$r_m\in\R^n,  P_m^Tr_m=0,$
+
+$P_m = [p_1, p_2, \ldots, p_m]$.
+
+\subsection{Approximating Partial SVD with A Partial Lanczos bidiagonalization}
+\begin{eqnarray*}
+A^TA P_m &=& A^TQ_m B_m \\
+         &=& P_m {\color{blue}{B_m^TB_m}} + r_m e_m^TB_m,\\
+\end{eqnarray*}
+\begin{eqnarray*}
+AA^T Q_m &=& AP_m B_m^T + Ar_m e_m^T,\\
+&=& Q_m{\color{blue}{B_mB_m^T}} + Ar_me_m^T.
+\end{eqnarray*}
+
+Compute the SVD of $B_m$:
+\[
+B_m = \sum_{j=1}^m\sigma^B_ju^B_j\left(v_j^B\right)^T.
+\] 
+\\[6pt]
+\[
+\left(\mbox{i.e., }  B_mv_j^B = \sigma_j^Bu_j^B,  \mbox{ and }  
+B_m^Tu_j^b = \sigma_j^Bv_j^B.\right)
+\]
+
+Define:
+$
+\tilde{\sigma_j} := \sigma_j^B, \phantom{xxx}
+\tilde{u}_j := Q_m u_j^B, \phantom{xxx}
+\tilde{v}_j := P_m v_j^B.
+$
+
+Then:
+\begin{eqnarray*}
+A\tilde{v}_j &=& AP_mv_j^B \\
+&=& Q_mB_mv_j^B \\
+&=& \sigma^B_jQ_mu_j^B \\
+&=& \tilde{\sigma}_j \tilde{u}_j,
+\end{eqnarray*}
+and
+\begin{eqnarray*}
+A^T\tilde{u}_j &=& A^TQ_mu_j^B \\
+&=& P_mB^T_mu_j^B + r_me_m^Tu_j^B \\
+&=& \sigma^B_jP_mv_j^B + r_me_m^Tu_j^B\\
+&=& \tilde{\sigma}_j \tilde{v}_j + {\color{red} {r_me_m^Tu_j^B}}.
+\end{eqnarray*}
+The part in red above represents the error with respect to the exact SVD.
+The IRLBA strategy is to iteratively reduce the norm of that error term
+by augmenting and restarting.
+
+Here is the overall method:
+\begin{enumerate}
+\item Compute the Lanczos process up to step $m$.
+\item Compute $k<m$ approximate singular vectors.
+\item Orthogonalize against the approximate singular vectors to get a new 
+      starting vector.
+\item Continue the Lanczos process with the new starting vector 
+      for $m$ more steps.
+\item Check for convergence tolerance and exit if met.
+\item GOTO 1.
+\end{enumerate}
+
+
+\subsection{Sketch of the augmented process...}
+\begin{eqnarray*}
+\bar{P}_{k+1} &:=& [\tilde{v}_1, \tilde{v}_2, \ldots, \tilde{v}_k, p_{m+1}],\\
+A\bar{P}_{k+1} &=& [\tilde{\sigma}_1\tilde{u}_1, \tilde{\sigma}_1\tilde{u}_2, \ldots, \tilde{\sigma}_k\tilde{u}_k, Ap_{m+1}]
+\end{eqnarray*}
+
+Orthogonalize $Ap_{m+1}$ against $\{\tilde{u}_j\}_{j=1}^k$:   
+$
+Ap_{m+1} = \sum_{j=1}^k {\color{blue}{\rho_j}}\tilde{u}_j + {\color{blue}{r_k}}.
+$
+\begin{eqnarray*}
+\bar{Q}_{k+1} &:=& [\tilde{u}_1, \tilde{u}_2, \ldots, \tilde{u}_k, 
+{\color{blue}{r_k}}/\|{\color{blue}{r_k}}\|],\\
+\bar{B}_{k+1} &:=&
+\left[
+\begin{array}{ccccc}
+\tilde{\sigma}_1 & & & \brho_1 \\
+& \tilde{\sigma}_2 & & \brho_2 \\
+& & \ddots & \brho_k \\
+& & & \|\color{blue}{r_k}\|
+\end{array}
+\right].
+\end{eqnarray*}
+\[
+A\bar{P}_{k+1} = \bar{Q}_{k+1}\bar{B}_{k+1}.
+\]
+
+\end{document}
