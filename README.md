@@ -44,6 +44,6 @@ bounded memory using fast Leja-based accelerating polynomials.
 
 
 ## Status
-<a href="https://travis-ci.org/bwlewis/IRL">
-<img src="https://travis-ci.org/bwlewis/IRL.svg?branch=master" alt="Travis CI status"></img>
+<a href="https://travis-ci.org/bwlewis/irlba">
+<img src="https://travis-ci.org/bwlewis/irlba.svg?branch=master" alt="Travis CI status"></img>
 </a>
