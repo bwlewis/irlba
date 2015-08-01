@@ -86,13 +86,15 @@ and Lothar Reichel (Kent State University).
 \section{Introduction}
 
 The {\tt irlba} package provides a fast way to compute partial singular value
-decompositions (SVD) of large matrices. It is an R implementation of the {\it
-augmented implicitly restarted Lanczos bidiagonalization algorithm} of Jim
-Baglama and Lothar Reichel\footnote{Augmented Implicitly Restarted Lanczos
-Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput.
-2005.}.  The {\tt irlba} package source code is maintained at
-\href{https://github.com/bwlewis/IRL}{https://github.com/bwlewis/IRL}.  An old
-introductory example using the Netflix prize data set can be found at
+decompositions (SVD) of large matrices. Recent additions to the package can
+also compute fast partial symmetric eigenvalue decompositions. The package is
+an R implementation of the {\it augmented implicitly restarted Lanczos
+bidiagonalization algorithm} of Jim Baglama and Lothar
+Reichel\footnote{Augmented Implicitly Restarted Lanczos Bidiagonalization
+Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput.  2005.}.  Source code
+is maintained at
+\href{https://github.com/bwlewis/irlba}{https://github.com/bwlewis/irlba}.  An
+old introductory example using the Netflix prize data set can be found at
 \href{http://goo.gl/fRech}{http://goo.gl/fRech}.
 
 The {\tt irlba} package works with real- and complex-valued dense R
@@ -115,7 +117,8 @@ cited Baglama-Reichel reference.
 
 Let $A\in\R^{\ell\times n}$ and assume $\ell\ge n$. These notes simplify the
 presentation by considering only real-valued matrices and assuming without
-losing generality that there are at least as many rows as columns. A singular
+losing generality that there are at least as many rows as columns (the
+method works more generally). A singular
 value decomposition of $A$ can be expressed as:
 
 \[
@@ -133,7 +136,7 @@ where $u_j\in\R^\ell $, $v_j\in\R^n $,
 $j=1,2,\ldots, n$, and
 $ \sigma_1 \ge \sigma_2 \ge \cdots \ge \sigma_n \ge 0 $.
 
-Let $1 \le k<n$. A rank $k$ \emph{partial SVD} of $A$ is defined as:
+Let $1 \le k<n$. A rank $k$ partial SVD of $A$ is defined as:
 \begin{eqnarray*}
 A_k &:=& \sum_{j=1}^k \sigma_j u_j v_j^T.\\
 \end{eqnarray*}
@@ -218,11 +221,12 @@ components analysis (PCA). Three categories of options are available:
 \item {\tt scale}: if 'scale' is a numeric vector with length
      equal to the number of columns of the matrix, then each column is
      divided by the corresponding value from {\tt scale}.
-\item {\tt dU, dS, dV}:  Optional real-valued deflation parameters to compute
+\item {\tt du, ds, dv}:  Optional real-valued deflation parameters to compute
      the rank-one deflated partial SVD of {\tt A - ds*du \%*\% t(dv)}, where
-     {\tt A} is the data matrix, {\tt dS} a real-valued scalar,
-     and {\tt dU} and {\tt dV} real-valued numeric vectors defining the
-     subspace.
+     {\tt A} is the data matrix, {\tt ds} a real-valued scalar,
+     and {\tt du} and {\tt dv} real-valued numeric vectors defining the
+     subspace such that {\tt t(du) \%*\% (A - ds * du \%*\% t(dv)) = 0}.
+     See the appendix for more information.
 \end{itemize}
 In particular, you can use the {\tt center} option for PCA. The following
 example compares the output of {\tt irlba} with the {\tt prcomp} function.
@@ -249,7 +253,8 @@ The implementation of the {\tt center} and deflation options take advantage of
 computational efficiencies in the IRLB algorithm that result in a modest
 savings of a few vector inner products per iteration compared to a naive
 implementation that replaces the matrix product {\tt A \%*\% x} with
-{\tt A \%*\% x - ds*du \%*\% t(dv) \%*\% x}.
+{\tt A \%*\% x - ds*du \%*\% t(dv) \%*\% x}--see the appendix for more
+information.
 
 \subsection{User-Defined Matrix Multiplication}
 
@@ -399,5 +404,12 @@ $
 \[
 A\bar{P}_{k+1} = \bar{Q}_{k+1}\bar{B}_{k+1}.
 \]
+
+
+\section{Truncated symmetric eigenvalue decomposition}
+
+\section{Appendix: deflation}
+
+
 
 \end{document}
