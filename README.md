@@ -49,3 +49,4 @@ bounded memory using fast Leja-based accelerating polynomials.
 </a>
 [![codecov.io](https://codecov.io/github/bwlewis/irlba/coverage.svg?branch=master)](https://codecov.io/github/bwlewis/irlba?branch=master)
 [![CRAN version](http://www.r-pkg.org/badges/version/irlba)](http://cran.rstudio.com/web/packages/irlba/index.html)
+![](http://cranlogs-dev.r-pkg.org/badges/irlba)
