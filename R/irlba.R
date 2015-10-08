@@ -41,7 +41,7 @@
 #' is set less than the maximum. The \code{irlba} function returns a number of
 #' estimated singular values equal to the maximum of the number of specified
 #' singular vectors \code{nu} and \code{nv}.
-#' 
+#'
 #' Use the optional \code{scale} parameter to implicitly scale each column of
 #' the matrix \code{A} by the values in the \code{scale} vector, computing the
 #' truncated SVD of the column-scaled \code{sweep(A,2,scale,FUN=`/`)}, or
@@ -51,7 +51,7 @@
 #'
 #' Use the optional \code{center} parameter to implicitly subtract the values
 #' in the \code{center} vector from each column of \code{A}, computing the
-#' truncated SVD of \code{sweep(A,2,center,FUN=`-`)}, 
+#' truncated SVD of \code{sweep(A,2,center,FUN=`-`)},
 #' without explicitly forming the centered matrix. This option may not be
 #' used together with the general rank 1 deflation options. \code{center}
 #' must be a vector of length equal to the number of columns of \code{A}.
@@ -81,10 +81,10 @@
 #' additional singular values/vectors without recomputing the already computed
 #' subspace.
 #'
-#' 
+#'
 #' @references
 #' Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
-#' 
+#'
 #' @examples
 #' set.seed(1)
 #'
@@ -120,8 +120,8 @@
 #' irlba(A, 3, scale=col_scale)$d
 #'
 #' # Compare with:
-#' svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3] 
-#' 
+#' svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3]
+#'
 #' @seealso \code{\link{svd}}, \code{\link{prcomp}}
 #' @import Matrix
 #' @export
@@ -198,7 +198,7 @@ function (A,                     # data matrix
   }
 
 # Allocate memory for W and F:
-  W <- matrix(0.0,m,w_dim) 
+  W <- matrix(0.0,m,w_dim)
   V <- v
   restart <- FALSE
   if(is.list(v))
@@ -206,7 +206,7 @@ function (A,                     # data matrix
     if(is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
     if(max(nu,nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
     right_only <- FALSE
-    W[,1:ncol(v$u)] <- v$u 
+    W[,1:ncol(v$u)] <- v$u
     d <- v$d
     V <- v$v
     restart <- TRUE
@@ -243,10 +243,10 @@ function (A,                     # data matrix
   S_B <- NULL                # Singular values of B
   U_B <- NULL                # Left singular vectors of B
   V_B <- NULL                # Right singular vectors of B
-  V_B_last <- NULL           # last row of modified V_B 
+  V_B_last <- NULL           # last row of modified V_B
   S_B2 <- NULL               # S.V. of [B ||F||]
-  U_B2 <- NULL               # 
-  V_B2 <- NULL               #  
+  U_B2 <- NULL               #
+  V_B2 <- NULL               #
 
 # Check for user-supplied restart condition
   if(restart)
@@ -276,7 +276,7 @@ function (A,                     # data matrix
 # ---------------------------------------------------------------------
     j <- 1
 #   Normalize starting vector:
-    if (iter==1 && !restart) V[,1] <- V[,1, drop=FALSE]/norm2(V[,1, drop=FALSE]) 
+    if (iter==1 && !restart) V[,1] <- V[,1, drop=FALSE]/norm2(V[,1, drop=FALSE])
     else j <- k + 1
 #   j_w is used here to support the right_only=TRUE case.
     j_w = ifelse(w_dim > 1, j, 1)
@@ -318,7 +318,7 @@ function (A,                     # data matrix
       W[,j_w] <- rnorm(nrow(W))
       if(w_dim>1) W[,j] <- orthog(W[,j],W[,1:(j-1)])
       W[,j_w] <- W[,j_w]/norm2(W[,j_w])
-      S <- 0 
+      S <- 0
     }
     else W[,j_w] <- W[,j_w]/S
 
@@ -346,11 +346,11 @@ function (A,                     # data matrix
           F <- matrix(rnorm(dim(V)[1]),dim(V)[1],1)
           F <- orthog(F, V[,1:j, drop=FALSE])
           V[,j+1] <- F/norm2(F)
-          R <- 0 
+          R <- 0
         }
         else V[,j+1] <- F/R
-        
-#       Compute block diagonal matrix 
+
+#       Compute block diagonal matrix
         if (is.null(B)) B <- cbind(S, R)
         else            B <- rbind(cbind(B,0),c(rep(0,ncol(B)-1),S,R))
 
@@ -418,7 +418,7 @@ function (A,                     # data matrix
     Bsvd <- svd(B)
 
 #   Estimate ||A|| using the largest singular value over all iterations
-#   and estimate the cond(A) using approximations to the largest and 
+#   and estimate the cond(A) using approximations to the largest and
 #   smallest singular values. If a small singular value is less than sqrteps
 #   require two-sided reorthogonalization.
     if (iter ==1)

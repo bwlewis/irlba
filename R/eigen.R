@@ -23,10 +23,10 @@
 #'
 #' This function uses the \code{irlba} function under the hood. See \code{?irlba}
 #' for description of additional options, especially the \code{tol} parameter.
-#' 
+#'
 #' @references
 #' Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
-#' 
+#'
 #' @examples
 #' set.seed(1)
 #' # Construct a symmetric matrix with some positive and negative eigenvalues:

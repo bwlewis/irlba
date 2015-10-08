@@ -40,7 +40,7 @@ orthog <- function (Y,X)
 # U_B            Left singular vectors of small matrix B
 # S_B            Singular values of B
 # V_B            Right singular vectors of B
-# residuals      
+# residuals
 # k
 # SVTol
 # Smax
@@ -50,16 +50,16 @@ orthog <- function (Y,X)
 # U_B            Left singular vectors of small matrix B
 # S_B            Singular values of B
 # V_B            Right singular vectors of B
-# k              Number of singular vectors returned 
-convtests <- function (Bsz, tol, k_org, U_B, S_B, V_B, 
+# k              Number of singular vectors returned
+convtests <- function (Bsz, tol, k_org, U_B, S_B, V_B,
                        residuals, k, SVTol, Smax)
  {
   Len_res <- sum(residuals[1:k_org] < tol*Smax)
   if(is.na(Len_res)) Len_res <- 0
   if (Len_res == k_org) {
-    return (list(converged=TRUE, U_B=U_B[,1:k_org, drop=FALSE], 
+    return (list(converged=TRUE, U_B=U_B[,1:k_org, drop=FALSE],
                   S_B=S_B[1:k_org, drop=FALSE], V_B=V_B[,1:k_org, drop=FALSE], k=k) )
-  } 
+  }
 # Not converged yet...
 # Adjust k to include more vectors as the number of vectors converge.
   Len_res <- sum(residuals[1:k_org] < SVTol*Smax)
