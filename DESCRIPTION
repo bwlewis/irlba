@@ -5,6 +5,6 @@ Version: 2.0.0
 Date: 22-July-2015
 Author: Jim Baglama and Lothar Reichel
 Maintainer: Bryan W. Lewis <blewis@illposed.net>
-Description: Fast and memory efficient methods for truncated singular and eigenvalue decompositions and principal component analysis of large sparse or dense matrices
+Description: Fast and memory efficient methods for truncated singular and eigenvalue decompositions and principal component analysis of large sparse or dense matrices.
 Depends: Matrix
 License: GPL
