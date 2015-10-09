@@ -6,7 +6,7 @@
 singular vectors of a matrix.}
 \usage{
 irlba(A, nv = 5, nu, maxit = 1000, work = nv + 5, reorth = TRUE,
-  tol = 0.001, v = NULL, right_only = FALSE, verbose = FALSE, scale,
+  tol = 1e-05, v = NULL, right_only = FALSE, verbose = FALSE, scale,
   center, du, ds, dv, shift, mult)
 }
 \arguments{
@@ -129,7 +129,7 @@ col_scale <- sqrt(apply(A,2,crossprod))
 mult <- function(x,y)
         {
           # check if x is a plain, row or column vector
-          if(is.vector(x) || ncol(x)==1 || nrow(x)==1)
+          if (is.vector(x) || ncol(x)==1 || nrow(x)==1)
           {
             return((x \%*\% y)/col_scale)
           }

@@ -23,8 +23,8 @@ if(!isTRUE(all.equal(L$d, S$d[1:3])))
 require("Matrix")
 K <- 400
 N <- 2000
-i <- sample(K, size=(N), replace=TRUE)
-j <- sample(K, size=(N), replace=TRUE)
+i <- sample(K, size=N, replace=TRUE)
+j <- sample(K, size=N, replace=TRUE)
 A <- sparseMatrix(i,j,x=rnorm(N))
 L <- irlba(A,nu=2,nv=2,tol=1e-9)
 S <- svd(A,nu=2,nv=2)

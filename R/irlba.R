@@ -107,7 +107,7 @@
 #' mult <- function(x,y)
 #'         {
 #'           # check if x is a plain, row or column vector
-#'           if(is.vector(x) || ncol(x)==1 || nrow(x)==1)
+#'           if (is.vector(x) || ncol(x)==1 || nrow(x)==1)
 #'           {
 #'             return((x %*% y)/col_scale)
 #'           }
@@ -129,9 +129,9 @@ irlba <-
 function (A,                     # data matrix
           nv=5, nu,              # number of singular vectors to estimate
           maxit=1000,            # maximum number of iterations
-          work=nv + 5,            # working subspace size
+          work=nv + 5,           # working subspace size
           reorth=TRUE,           # TRUE=full reorthogonalization
-          tol=1e-3,              # stopping tolerance
+          tol=1e-5,              # stopping tolerance
           v=NULL,                # optional starting vector or restart
           right_only=FALSE,      # TRUE=only return V
           verbose=FALSE,         # display status messages
@@ -139,7 +139,7 @@ function (A,                     # data matrix
           center,                # optional column centering
           du,ds,dv,              # optional general rank 1 deflation
           shift,                 # optional shift for square matrices
-          mult)                  # optional custom matrix multiplication function
+          mult)                  # optional custom matrix multiplication func.
 {
 # ---------------------------------------------------------------------
 # Check input parameters
@@ -148,20 +148,20 @@ function (A,                     # data matrix
   on.exit(options(ropts))  # reset on exit
   eps <- .Machine$double.eps
   deflate <- missing(du) + missing(ds) + missing(dv)
-  if(deflate==3)
+  if (deflate == 3)
   {
     deflate <- FALSE
-  } else if(deflate==0)
+  } else if (deflate == 0)
   {
     deflate <- TRUE
-    if(length(ds)>1) stop("deflation limited to one dimension")
-    if(!is.null(dim(du))) du <- du[,1]
-    if(!is.null(dim(dv))) dv <- dv[,1]
+    if (length(ds) > 1) stop("deflation limited to one dimension")
+    if (!is.null(dim(du))) du <- du[,1]
+    if (!is.null(dim(dv))) dv <- dv[,1]
   } else stop("all three du ds dv parameters must be specified for deflation")
-  if(!missing(center))
+  if (!missing(center))
   {
-    if(deflate) stop("the center parameter can't be specified together with deflation parameters")
-    if(length(center)!=ncol(A)) stop("center must be a vector of length ncol(A)")
+    if (deflate) stop("the center parameter can't be specified together with deflation parameters")
+    if (length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
     du <- rep(1,nrow(A))
     ds <- 1
     dv <- center
@@ -170,41 +170,45 @@ function (A,                     # data matrix
   iscomplex <- is.complex(A)
   m <- nrow(A)
   n <- ncol(A)
-  if(missing(nu)) nu <- nv
-  if(!missing(mult) && deflate) stop("the mult parameter can't be specified together with deflation parameters")
-  if(missing(mult)) mult <- `%*%`
+  if (missing(nu)) nu <- nv
+  if (!missing(mult) && deflate) stop("the mult parameter can't be specified together with deflation parameters")
+  if (missing(mult)) mult <- `%*%`
   k <- max(nu,nv)
   k_org <- k;
-  if(k<=0)  stop ("max(nu,nv) must be positive")
-  if(k > min(m-1,n-1)) stop ("max(nu,nv) must be strictly less than min(nrow(A),ncol(A))")
-  if(k > 0.5*min(m,n)) warning("You're computing a large percentage of total singular values, standard svd will likely work better!")
-  if(work<=1) stop ("work must be greater than 1")
-  if(tol<0) stop ("tol must be non-negative")
-  if(maxit<=0) stop ("maxit must be positive")
-  if(work <= k) work <- k + 1
-  if(work>= min(n,m))
+  if (k <= 0)  stop ("max(nu,nv) must be positive")
+  if (k > min(m - 1, n - 1)) stop ("max(nu,nv) must be strictly less than min(nrow(A),ncol(A))")
+  if (k > 0.5 * min(m, n))
   {
-    work <- min(n,m) - 1
-    if (work <= k) {
+    warning("You're computing a large percentage of total singular values, standard svd will likely work better!")
+  }
+  if (work <= 1) stop ("work must be greater than 1")
+  if (tol < 0) stop ("tol must be non-negative")
+  if (maxit <= 0) stop ("maxit must be positive")
+  if (work <= k) work <- k + 1
+  if (work >= min(n, m))
+  {
+    work <- min(n, m) - 1
+    if (work <= k)
+    {
       k <- work - 1
     }
   }
-  if (tol<eps) tol <- eps
+  if (tol < eps) tol <- eps
   w_dim <- work
-  if(right_only)
+  if (right_only)
   {
     w_dim <- 1
-    work <- min( min(m,n), work + 10 ) # need this to help convergence
+    work <- min(min(m,n), work + 10 ) # need this to help convergence
   }
 
 # Allocate memory for W and F:
   W <- matrix(0.0,m,w_dim)
   V <- v
   restart <- FALSE
-  if(is.list(v))
+  if (is.list(v))
   {
-    if(is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
-    if(max(nu,nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
+    if (is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
+    if (max(nu,nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
     right_only <- FALSE
     W[,1:ncol(v$u)] <- v$u
     d <- v$d
@@ -220,7 +224,7 @@ function (A,                     # data matrix
     V <- matrix(0.0,n,work)
     V[,1] <- rnorm(n)
   }
-  else V <- cbind(V, matrix(0.0,n,work-ncol(V)))
+  else V <- cbind(V, matrix(0.0, n, work - ncol(V)))
 
 
 # ---------------------------------------------------------------------
@@ -228,9 +232,7 @@ function (A,                     # data matrix
 # ---------------------------------------------------------------------
   B <- NULL                  # Bidiagonal matrix
   Bsz <- NULL                # Size of B
-  eps23 <- eps^(2/3)         # Used for Smax/avoids using zero
-  I <- NULL                  # Indexing
-  J <- NULL                  # Indexing
+  eps23 <- eps ^ (2 / 3)         # Used for Smax/avoids using zero
   iter <- 1                  # Man loop iteration count
   mprod <- 0                 # Number of matrix-vector products
   R_F <- NULL                # 2-norm of residual vector F
@@ -240,23 +242,16 @@ function (A,                     # data matrix
   Smin <- NULL               # Min value of all computed singular values of
                              # B est. cond(A)
   SVTol <- max(sqrteps,tol)  # Tolerance for singular vector convergence
-  S_B <- NULL                # Singular values of B
-  U_B <- NULL                # Left singular vectors of B
-  V_B <- NULL                # Right singular vectors of B
-  V_B_last <- NULL           # last row of modified V_B
-  S_B2 <- NULL               # S.V. of [B ||F||]
-  U_B2 <- NULL               #
-  V_B2 <- NULL               #
 
 # Check for user-supplied restart condition
-  if(restart)
+  if (restart)
   {
     B <- cbind(diag(d),0)
     k <- length(d)
 
     F <- rnorm(n)
     F <- orthog(F, V[,1:k])
-    V[,k+1] <- F/norm2(F)
+    V[,k + 1] <- F / norm2(F)
   }
 
 # ---------------------------------------------------------------------
@@ -266,8 +261,8 @@ function (A,                     # data matrix
   {
 # ---------------------------------------------------------------------
 # Compute the Lanczos bidiagonal decomposition:
-# AV  = WB
-# t(A)W = VB + Ft(E)
+# such that AV  = WB
+# and       t(A)W = VB + Ft(E)
 # This routine updates W,V,F,B,mprod
 #
 # Note on scale and center: These options are applied implicitly below
@@ -276,134 +271,138 @@ function (A,                     # data matrix
 # ---------------------------------------------------------------------
     j <- 1
 #   Normalize starting vector:
-    if (iter==1 && !restart) V[,1] <- V[,1, drop=FALSE]/norm2(V[,1, drop=FALSE])
+    if (iter == 1 && !restart)
+    {
+      V[,1] <- V[,1, drop=FALSE] / norm2(V[,1, drop=FALSE])
+    }
     else j <- k + 1
 #   j_w is used here to support the right_only=TRUE case.
-    j_w = ifelse(w_dim > 1, j, 1)
+    j_w <- ifelse(w_dim > 1, j, 1)
 
 #   Compute W=AV (the use of as.matrix here converts Matrix class objects)
 #   Optionally apply scale
     VJ <- V[,j]
-    if(!missing(scale))
+    if (!missing(scale))
     {
-      VJ <- VJ/scale
+      VJ <- VJ / scale
     }
     W[,j_w] <- as.matrix(mult(A,VJ))
 
     mprod <- mprod + 1
 
 #   Optionally apply shift
-    if(!missing(shift))
+    if (!missing(shift))
     {
-      W[,j_w] <- W[,j_w] + shift*VJ
+      W[,j_w] <- W[,j_w] + shift * VJ
     }
 
 #   Optionally apply deflation
-    if(deflate)
+    if (deflate)
     {
       W[,j_w] <- W[,j_w] - ds * cross(dv, VJ) * du
     }
 
 #   Orthogonalize W
-    if (iter != 1 && w_dim>1 && reorth)
+    if (iter != 1 && w_dim > 1 && reorth)
     {
-      W[,j] <- orthog (W[,j, drop=FALSE], W[,1:(j-1), drop=FALSE])
+      W[,j] <- orthog (W[,j, drop=FALSE], W[,1:(j - 1), drop=FALSE])
     }
 
     S <- norm2(W[,j_w, drop=FALSE])
 #   Check for linearly dependent vectors
-    if ((S < SVTol) && (j==1)) stop ("Starting vector near the null space")
+    if ( (S < SVTol) && (j == 1)) stop ("Starting vector near the null space")
     if (S < SVTol)
     {
       W[,j_w] <- rnorm(nrow(W))
-      if(w_dim>1) W[,j] <- orthog(W[,j],W[,1:(j-1)])
-      W[,j_w] <- W[,j_w]/norm2(W[,j_w])
+      if (w_dim > 1) W[,j] <- orthog(W[,j],W[,1:(j - 1)])
+      W[,j_w] <- W[,j_w] / norm2(W[,j_w])
       S <- 0
     }
-    else W[,j_w] <- W[,j_w]/S
+    else W[,j_w] <- W[,j_w] / S
 
 #   Lanczos process
     while (j <= work)
     {
-      j_w = ifelse(w_dim > 1, j, 1)
-#      F <- t(as.matrix(crossprod(W[,j_w,drop=FALSE],A)))  # F = t(A) %*% W[,j_w]
-#      F <- t(as.matrix(t(W[,j_w,drop=FALSE]) %*% A))
-      if(iscomplex) F <- Conj(t(as.matrix(mult(Conj(t(W[,j_w,drop=FALSE])),A))))
-      else F <- t(as.matrix(mult(t(W[,j_w,drop=FALSE]),A)))
+      j_w <- ifelse(w_dim > 1, j, 1)
+      if (iscomplex)
+      {
+        F <- Conj(t(as.matrix(mult(Conj(t(W[,j_w,drop=FALSE])), A))))
+      }
+      else F <- t(as.matrix(mult(t(W[,j_w,drop=FALSE]), A)))
 #     Optionally apply shift and scale
-      if(!missing(shift)) F <- F + shift * W[,j_w]
-      if(!missing(scale)) F <- F/scale
+      if (!missing(shift)) F <- F + shift * W[,j_w]
+      if (!missing(scale)) F <- F / scale
       mprod <- mprod + 1
-      F <- F - S*V[,j, drop=FALSE]
+      F <- F - S * V[,j, drop=FALSE]
 #     Orthogonalize
       F <- orthog(F,V[,1:j, drop=FALSE])
-      if (j+1 <= work)
+      if (j + 1 <= work)
       {
         R <- norm2(F)
 #       Check for linear dependence
-        if (R<=SVTol)
+        if (R <= SVTol)
         {
           F <- matrix(rnorm(dim(V)[1]),dim(V)[1],1)
           F <- orthog(F, V[,1:j, drop=FALSE])
-          V[,j+1] <- F/norm2(F)
+          V[,j + 1] <- F / norm2(F)
           R <- 0
         }
-        else V[,j+1] <- F/R
+        else V[,j + 1] <- F / R
 
 #       Compute block diagonal matrix
         if (is.null(B)) B <- cbind(S, R)
-        else            B <- rbind(cbind(B,0),c(rep(0,ncol(B)-1),S,R))
+        else            B <- rbind(cbind(B,0), c(rep(0,ncol(B) - 1), S, R))
 
-        jp1_w = ifelse(w_dim > 1, j+1, 1)
-        w_old = W[,j_w]
+        jp1_w <- ifelse(w_dim > 1, j + 1, 1)
+        w_old <- W[,j_w]
 
 #       Optionally apply scale
-        VJP1 <- V[,j+1]
-        if(!missing(scale))
+        VJP1 <- V[,j + 1]
+        if (!missing(scale))
         {
-          VJP1 <- VJP1/scale
+          VJP1 <- VJP1 / scale
         }
         W[,jp1_w] <- as.matrix(mult(A,VJP1))
         mprod <- mprod + 1
 
 #       Optionally apply shift
-        if(!missing(shift))
+        if (!missing(shift))
         {
-          W[,jp1_w] <- W[,jp1_w] + shift*VJP1
+          W[,jp1_w] <- W[,jp1_w] + shift * VJP1
         }
 
 #       Optionally apply deflation
-        if(deflate)
+        if (deflate)
         {
           W[,jp1_w] <- W[,jp1_w] - ds * cross(dv, VJP1) * du
         }
 
 #       One step of the classical Gram-Schmidt process
-        W[,jp1_w] <- W[,jp1_w] - R*w_old
+        W[,jp1_w] <- W[,jp1_w] - R * w_old
 
 #       Full reorthogonalization of W
-        if (reorth && w_dim>1) W[,j+1] <- orthog(W[,j+1],W[,1:j])
+        if (reorth && w_dim > 1) W[,j + 1] <- orthog(W[,j + 1],W[,1:j])
         S <- norm2(W[,jp1_w])
 #       Check for linear dependence
-        if (S<=SVTol)
+        if (S <= SVTol)
         {
           W[,jp1_w] <- rnorm(nrow(W))
-          if(w_dim>1) W[,j+1] <- orthog(W[,j+1],W[,1:j])
-          W[,jp1_w] <- W[,jp1_w]/norm2(W[,jp1_w])
+          if (w_dim > 1) W[,j + 1] <- orthog(W[,j + 1],W[,1:j])
+          W[,jp1_w] <- W[,jp1_w] / norm2(W[,jp1_w])
           S <- 0
         }
-        else W[,jp1_w] <- W[,jp1_w]/S
+        else W[,jp1_w] <- W[,jp1_w] / S
       }
       else
       {
 #       Add a last block to matrix B
-        B <- rbind(B,c(rep(0,j-1),S))
+        B <- rbind(B, c(rep(0,j - 1), S))
       }
       j <- j + 1
     }
-    if(verbose)
+    if (verbose)
     {
-      cat ("\niter = ",iter," j = ",j-1, "mprod = ",mprod,"\n")
+      cat ("\niter = ", iter, " j = ", j - 1, "mprod = ", mprod, "\n")
       flush.console()
     }
 # ---------------------------------------------------------------------
@@ -412,7 +411,7 @@ function (A,                     # data matrix
 
     Bsz <- nrow(B)
     R_F <- norm2(F)
-    F <- F/R_F
+    F <- F / R_F
 #   Compute singular triplets of B. Expect svd to return s.v.s in order
 #   from largest to smallest.
     Bsvd <- svd(B)
@@ -421,7 +420,7 @@ function (A,                     # data matrix
 #   and estimate the cond(A) using approximations to the largest and
 #   smallest singular values. If a small singular value is less than sqrteps
 #   require two-sided reorthogonalization.
-    if (iter ==1)
+    if (iter == 1)
     {
       Smax <- Bsvd$d[1]
       Smin <- Bsvd$d[Bsz]
@@ -432,7 +431,7 @@ function (A,                     # data matrix
       Smin <- min(Smin, Bsvd$d[Bsz])
     }
     Smax <- max(eps23,Smax)
-    if ((Smin/Smax < sqrteps) && !reorth)
+    if ( (Smin / Smax < sqrteps) && !reorth)
     {
       warning ("The matrix is ill-conditioned. Basis will be reorthogonalized.")
       reorth <- TRUE
@@ -441,39 +440,41 @@ function (A,                     # data matrix
 #   Compute the residuals
     R <- R_F * Bsvd$u[Bsz,, drop=FALSE]
 #   Check for convergence
-    ct <- convtests(Bsz, tol, k_org, Bsvd$u, Bsvd$d, Bsvd$v, abs(R), k, SVTol, Smax)
+    ct <- convtests(Bsz, tol, k_org, Bsvd$u,
+                    Bsvd$d, Bsvd$v, abs(R), k, SVTol, Smax)
     k <- ct$k
 
 #   If all desired singular values converged, then exit main loop
     if (ct$converged) break
-    if (iter>=maxit) break
+    if (iter >= maxit) break
 
 #   Compute the starting vectors and first block of B[1:k,1:(k+1), drop=FALSE]
 #   using the Ritz vectors
-      V[,1:(k + dim(F)[2])] <- cbind(V[,1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[,1:k], F)
+      V[,1:(k + dim(F)[2])] <- cbind(V[,1:(dim(Bsvd$v)[1]),
+                                     drop=FALSE] %*% Bsvd$v[,1:k], F)
       B <- cbind( diag(Bsvd$d[1:k],nrow=k), R[1:k])
 
 #   Update the left approximate singular vectors
-    if(w_dim>1)
+    if (w_dim > 1)
     {
       W[,1:k] <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[,1:k]
     }
 
     iter <- iter + 1
   }
-#browser()
 # ---------------------------------------------------------------------
 # End of the main iteration loop
 # Output results
 # ---------------------------------------------------------------------
-  if(iter>maxit) warning("did not converge")
+  if (iter > maxit) warning("did not converge")
   d <- Bsvd$d[1:k_org]
-  if(!right_only)
+  if (!right_only)
   {
     u <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[,1:k_org, drop=FALSE]
   }
   v <- V[,1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[,1:k_org, drop=FALSE]
-  if(right_only)
-    return (list(d=d, v=v[,1:nv,drop=FALSE], iter=iter,mprod=mprod))
-  return (list(d=d, u=u[,1:nu,drop=FALSE], v=v[,1:nv,drop=FALSE], iter=iter,mprod=mprod))
+  if (right_only)
+    return(list(d=d, v=v[,1:nv,drop=FALSE], iter=iter,mprod=mprod))
+  return(list(d=d, u=u[,1:nu,drop=FALSE],
+              v=v[,1:nv,drop=FALSE], iter=iter,mprod=mprod))
 }

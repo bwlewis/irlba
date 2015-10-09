@@ -41,20 +41,23 @@
 #' @export
 partial_eigen <- function(x, n=5, symmetric=TRUE, ...)
 {
-  if(n > 0.5*min(nrow(x),ncol(x))) warning("You're computing a large percentage of total eigenvalues, the standard eigen function will likely work better!")
-  if(!symmetric)
+  if (n > 0.5 * min(nrow(x),ncol(x)))
+  {
+    warning("You're computing a large percentage of total eigenvalues, the standard eigen function will likely work better!")
+  }
+  if (!symmetric)
   {
     L <- irlba(x, n, ...)
-    return(list(vectors=L$v, values=L$d^2))
+    return(list(vectors=L$v, values=L$d ^ 2))
   }
   L <- irlba(x, n, ...)
   s <- sign(L$u[1,] * L$v[1,])
-  if(all(s>0))
+  if (all(s > 0))
   {
     return(list(vectors=L$u, values=L$d))
   }
-  i <- min(which(s<0))
+  i <- min(which(s < 0))
   shift <- L$d[i]
   L <- irlba(x, n, shift=shift, ...)
-  return(list(vectors=L$u, values=L$d-shift))
+  return(list(vectors=L$u, values=L$d - shift))
 }

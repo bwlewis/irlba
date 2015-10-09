@@ -21,15 +21,15 @@ norm2 <- function (x)
 # Orthogonalize vectors Y against vectors X. Y and X must be R matrix
 # objects (they must have a dim attribute).
 # Note: this function unnecessarily copies the contents of Y
-orthog <- function (Y,X)
+orthog <- function (Y, X)
  {
-  dx2 = dim(X)[2]
-  if(is.null(dx2)) dx2=1
-  dy2 = dim(Y)[2]
-  if(is.null(dy2)) dy2=1
-  if (dx2 < dy2) dotY <- cross (X,Y)
-  else dotY <- Conj(t (cross(Y,X)))
-  return (Y - X %*% dotY)
+  dx2 <- dim(X)[2]
+  if(is.null(dx2)) dx2 <- 1
+  dy2 <- dim(Y)[2]
+  if(is.null(dy2)) dy2 <- 1
+  if (dx2 < dy2) doty <- cross(X, Y)
+  else doty <- Conj(t(cross(Y, X)))
+  return (Y - X %*% doty)
  }
 
 # Convergence tests
@@ -54,16 +54,17 @@ orthog <- function (Y,X)
 convtests <- function (Bsz, tol, k_org, U_B, S_B, V_B,
                        residuals, k, SVTol, Smax)
  {
-  Len_res <- sum(residuals[1:k_org] < tol*Smax)
-  if(is.na(Len_res)) Len_res <- 0
-  if (Len_res == k_org) {
+  len_res <- sum(residuals[1:k_org] < tol * Smax)
+  if(is.na(len_res)) len_res <- 0
+  if (len_res == k_org) {
     return (list(converged=TRUE, U_B=U_B[,1:k_org, drop=FALSE],
-                  S_B=S_B[1:k_org, drop=FALSE], V_B=V_B[,1:k_org, drop=FALSE], k=k) )
+                  S_B=S_B[1:k_org, drop=FALSE],
+                  V_B=V_B[,1:k_org, drop=FALSE], k=k))
   }
 # Not converged yet...
 # Adjust k to include more vectors as the number of vectors converge.
-  Len_res <- sum(residuals[1:k_org] < SVTol*Smax)
-  k <- max(k, k_org + Len_res)
+  len_res <- sum(residuals[1:k_org] < SVTol * Smax)
+  k <- max(k, k_org + len_res)
   if (k > Bsz - 3) k <- max(Bsz - 3,1)
   return (list(converged=FALSE, U_B=U_B, S_B=S_B, V_B=V_B, k=k) )
  }
