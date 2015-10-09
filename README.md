@@ -1,12 +1,12 @@
 # irlba
 
-Implicitly-restarted lanczos methods for fast truncated singular value and
+Implicitly-restarted Lanczos methods for fast truncated singular value and
 symmetric eigenvalue decompositions of sparse and dense matrices. IRLBA stands
 for <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos <b>B</b>idiagonalization
 <b>A</b>lgorithms.
 
-This is the new development repository (August, 2015) for the CRAN `irlba`
-package.
+This is the new development repository (as of August, 2015) for the CRAN
+`irlba` package.
 
 Version 2.0.0 of the package is a major update that includes many changes, new
 features, and removal of some old features that did not work well. In
@@ -16,7 +16,6 @@ didn't work very well, and sometimes not at all. It suffered from poor
 performance and rarely converged to a solution for ill-conditioned matrices.
 Replacements are under consideration but did not make it in to the update.
 
-I plan to submit the new package to CRAN in August or September, 2015.
 
 ### Package features that are mostly the same
 - Fast truncated singular value decomposition
