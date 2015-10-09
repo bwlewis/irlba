@@ -124,6 +124,7 @@
 #'
 #' @seealso \code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}
 #' @import Matrix
+#' @importFrom stats rnorm
 #' @export
 irlba <-
 function (A,                     # data matrix

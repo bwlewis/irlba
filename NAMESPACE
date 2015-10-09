@@ -3,3 +3,4 @@
 export(irlba)
 export(partial_eigen)
 import(Matrix)
+importFrom(stats,rnorm)
