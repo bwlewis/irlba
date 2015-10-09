@@ -49,6 +49,6 @@ eigen(x)$values[1:3]
 Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
 }
 \seealso{
-\code{\link{eigen}}
+\code{\link{eigen}}, \code{\link{irlba}}
 }
 

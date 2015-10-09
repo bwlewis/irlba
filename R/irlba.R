@@ -122,7 +122,7 @@
 #' # Compare with:
 #' svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3]
 #'
-#' @seealso \code{\link{svd}}, \code{\link{prcomp}}
+#' @seealso \code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}
 #' @import Matrix
 #' @export
 irlba <-

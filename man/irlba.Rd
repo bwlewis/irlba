@@ -148,6 +148,6 @@ svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3]
 Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
 }
 \seealso{
-\code{\link{svd}}, \code{\link{prcomp}}
+\code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}
 }
 

@@ -37,7 +37,7 @@
 #' # Compare with eigen
 #' eigen(x)$values[1:3]
 #'
-#' @seealso \code{\link{eigen}}
+#' @seealso \code{\link{eigen}}, \code{\link{irlba}}
 #' @export
 partial_eigen <- function(x, n=5, symmetric=TRUE, ...)
 {
