@@ -1,8 +1,9 @@
 # irlba
 
-Lanczos methods for fast truncated singular value and symmetric eigenvalue
-decompositions of sparse and dense matrices. IRLBA stands for <b>I</b>mplicitly
-<b>R</b>estarted <b>L</b>anczos <b>B</b>idiagonalization <b>A</b>lgorithms.
+Implicitly-restarted lanczos methods for fast truncated singular value and
+symmetric eigenvalue decompositions of sparse and dense matrices. IRLBA stands
+for <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos <b>B</b>idiagonalization
+<b>A</b>lgorithms.
 
 This is the new development repository (August, 2015) for the CRAN `irlba`
 package.
