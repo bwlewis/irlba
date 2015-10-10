@@ -176,15 +176,15 @@ function (A,                     # data matrix
   if (missing(mult)) mult <- `%*%`
   k <- max(nu,nv)
   k_org <- k;
-  if (k <= 0)  stop ("max(nu,nv) must be positive")
-  if (k > min(m - 1, n - 1)) stop ("max(nu,nv) must be strictly less than min(nrow(A),ncol(A))")
+  if (k <= 0)  stop("max(nu,nv) must be positive")
+  if (k > min(m - 1, n - 1)) stop("max(nu,nv) must be strictly less than min(nrow(A),ncol(A))")
   if (k > 0.5 * min(m, n))
   {
     warning("You're computing a large percentage of total singular values, standard svd will likely work better!")
   }
-  if (work <= 1) stop ("work must be greater than 1")
-  if (tol < 0) stop ("tol must be non-negative")
-  if (maxit <= 0) stop ("maxit must be positive")
+  if (work <= 1) stop("work must be greater than 1")
+  if (tol < 0) stop("tol must be non-negative")
+  if (maxit <= 0) stop("maxit must be positive")
   if (work <= k) work <- k + 1
   if (work >= min(n, m))
   {
@@ -311,7 +311,7 @@ function (A,                     # data matrix
 
     S <- norm2(W[,j_w, drop=FALSE])
 #   Check for linearly dependent vectors
-    if ( (S < SVTol) && (j == 1)) stop ("Starting vector near the null space")
+    if ( (S < SVTol) && (j == 1)) stop("Starting vector near the null space")
     if (S < SVTol)
     {
       W[,j_w] <- rnorm(nrow(W))
@@ -403,7 +403,7 @@ function (A,                     # data matrix
     }
     if (verbose)
     {
-      cat ("\nLanczos iter = ", iter, " j = ", j - 1, "mprod = ", mprod, "\n")
+      cat("\nLanczos iter = ", iter, " j = ", j - 1, "mprod = ", mprod, "\n")
     }
 # ---------------------------------------------------------------------
 # (End of the Lanczos bidiagonalization part)
@@ -433,7 +433,7 @@ function (A,                     # data matrix
     Smax <- max(eps23,Smax)
     if ( (Smin / Smax < sqrteps) && !reorth)
     {
-      warning ("The matrix is ill-conditioned. Basis will be reorthogonalized.")
+      warning("The matrix is ill-conditioned. Basis will be reorthogonalized.")
       reorth <- TRUE
     }
 
