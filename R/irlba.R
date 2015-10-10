@@ -403,8 +403,7 @@ function (A,                     # data matrix
     }
     if (verbose)
     {
-      cat ("\niter = ", iter, " j = ", j - 1, "mprod = ", mprod, "\n")
-      flush.console()
+      cat ("\nLanczos iter = ", iter, " j = ", j - 1, "mprod = ", mprod, "\n")
     }
 # ---------------------------------------------------------------------
 # (End of the Lanczos bidiagonalization part)
