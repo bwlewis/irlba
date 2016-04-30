@@ -63,9 +63,10 @@
 #' SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}, where
 #' \eqn{du^T A - ds\cdot dv^T = 0}{t(du) \%*\% A - ds * t(dv) == 0}. For
 #' example, the triple \code{ds,du,dv} may be a known singular value
-#' and corresponding singular vectors. Or \code{ds=1} and \code{dv}
-#' and \code{du} represent a vector of column means of A and of ones,
-#' respectively. This is a rarely used option, but it is used internally
+#' and corresponding singular vectors. Or \code{ds=1/m} and \code{dv}
+#' and \code{du} represent a vector of column means of \code{A} and of ones,
+#' respectively, where \code{m} is the number of rows of \code{A}.
+#' This is a rarely used option, but it is used internally
 #' by the \code{center} option and the two sets of parameters are
 #' prevented from being used in combination.
 #'
