@@ -11,7 +11,7 @@
 #' @param nu number of left singular vectors to estimate (defaults to \code{nv}).
 #' @param maxit maximum number of iterations.
 #' @param work working subspace dimension, larger values can speed convergence at the cost of more memory use.
-#' @param reorth logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization.
+#' @param reorth logical value indicating full \code{TRUE} or cheaper right-singular-vector-only \code{FALSE} reorthogonalization.
 #' @param tol convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively.
 #' @param v optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes).
 #' @param right_only logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE}).
@@ -22,7 +22,7 @@
 #' @param ds optional subspace deflation scalar (see notes).
 #' @param dv optional subspace deflation vector (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
-#' @param mult optional custom matrix multiplication function (default is `\%*\%`, see notes).
+#' @param mult optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
 #'
 #' @return
 #' Returns a list with entries:

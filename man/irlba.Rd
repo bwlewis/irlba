@@ -20,7 +20,7 @@ irlba(A, nv = 5, nu, maxit = 1000, work = nv + 5, reorth = TRUE,
 
 \item{work}{working subspace dimension, larger values can speed convergence at the cost of more memory use.}
 
-\item{reorth}{logical value indicating full \code{TRUE} or cheaper one-sided \code{FALSE} reorthogonalization.}
+\item{reorth}{logical value indicating full \code{TRUE} or cheaper right-singular-vector-only \code{FALSE} reorthogonalization.}
 
 \item{tol}{convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively.}
 
@@ -42,7 +42,7 @@ irlba(A, nv = 5, nu, maxit = 1000, work = nv + 5, reorth = TRUE,
 
 \item{shift}{optional shift value (square matrices only, see notes).}
 
-\item{mult}{optional custom matrix multiplication function (default is `\%*\%`, see notes).}
+\item{mult}{optional custom matrix multiplication function (default is \code{\%*\%}, see notes).}
 }
 \value{
 Returns a list with entries:
@@ -55,8 +55,8 @@ Returns a list with entries:
 }
 }
 \description{
-The augmented implicitly restarted Lanczos bi-diagonalization (IRLBA)
-algorithm finds a few approximate largest singular values and corresponding
+The augmented implicitly restarted Lanczos bi-diagonalization algorithm
+(IRLBA) finds a few approximate largest singular values and corresponding
 singular vectors of a sparse or dense matrix using a method of Baglama and
 Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
 }
@@ -70,14 +70,14 @@ singular vectors \code{nu} and \code{nv}.
 
 Use the optional \code{scale} parameter to implicitly scale each column of
 the matrix \code{A} by the values in the \code{scale} vector, computing the
-truncated SVD of the column-scaled \code{sweep(A,2,scale,FUN=`/`)}, or
+truncated SVD of the column-scaled \code{sweep(A, 2, scale, FUN=`/`)}, or
 equivalently, \code{A \%*\% diag(1/scale)}, without explicitly forming the
 scaled matrix. \code{scale} must be a non-zero vector of length equal
 to the number of columns of \code{A}.
 
 Use the optional \code{center} parameter to implicitly subtract the values
 in the \code{center} vector from each column of \code{A}, computing the
-truncated SVD of \code{sweep(A,2,center,FUN=`-`)},
+truncated SVD of \code{sweep(A, 2, center, FUN=`-`)},
 without explicitly forming the centered matrix. This option may not be
 used together with the general rank 1 deflation options. \code{center}
 must be a vector of length equal to the number of columns of \code{A}.
@@ -88,7 +88,7 @@ sparsity in the matrix). See the examples.
 Use the optional deflation parameters to compute the rank-one deflated
 SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}, where
 \eqn{du^T A - ds\cdot dv^T = 0}{t(du) \%*\% A - ds * t(dv) == 0}. For
-example, the triple \code{ds,du,dv} may be a known singular value
+example, the triple \code{ds, du, dv} may be a known singular value
 and corresponding singular vectors. Or \code{ds=1/m} and \code{dv}
 and \code{du} represent a vector of column means of \code{A} and of ones,
 respectively, where \code{m} is the number of rows of \code{A}.
@@ -111,7 +111,7 @@ subspace.
 \examples{
 set.seed(1)
 
-A <- matrix(runif(200),nrow=20)
+A <- matrix(runif(200), nrow=20)
 S <- irlba(A)
 S$d
 
@@ -122,12 +122,12 @@ svd(A)$d[1:5]
 P <- irlba(A, nv=1, center=colMeans(A))
 
 # Compare with prcomp (might vary up to sign)
-cbind(P$v, prcomp(A)$rotation[,1])
+cbind(P$v, prcomp(A)$rotation[, 1])
 
 # A custom matrix multiplication function that scales the columns of A
 # (cf the scale option). This function scales the columns of A to unit norm.
-col_scale <- sqrt(apply(A,2,crossprod))
-mult <- function(x,y)
+col_scale <- sqrt(apply(A, 2, crossprod))
+mult <- function(x, y)
         {
           # check if x is a plain, row or column vector
           if (is.vector(x) || ncol(x)==1 || nrow(x)==1)
@@ -143,7 +143,7 @@ irlba(A, 3, mult=mult)$d
 irlba(A, 3, scale=col_scale)$d
 
 # Compare with:
-svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3]
+svd(sweep(A, 2, col_scale, FUN=`/`))$d[1:3]
 
 }
 \references{
