@@ -1,8 +1,8 @@
 #' Find a few approximate largest singular values and corresponding
 #' singular vectors of a matrix.
 #'
-#' The augmented implicitly restarted Lanczos bi-diagonalization (IRLBA)
-#' algorithm finds a few approximate largest singular values and corresponding
+#' The augmented implicitly restarted Lanczos bi-diagonalization algorithm
+#' (IRLBA) finds a few approximate largest singular values and corresponding
 #' singular vectors of a sparse or dense matrix using a method of Baglama and
 #' Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
 #'
@@ -281,14 +281,14 @@ function (A,                     # data matrix
 #   j_w is used here to support the right_only=TRUE case.
     j_w <- ifelse(w_dim > 1, j, 1)
 
-#   Compute W=AV (the use of as.matrix here converts Matrix class objects)
+#   Compute W=AV
 #   Optionally apply scale
     VJ <- V[,j]
     if (!missing(scale))
     {
       VJ <- VJ / scale
     }
-    W[,j_w] <- as.matrix(mult(A,VJ))
+    W[, j_w] <- drop(mult(A, VJ))
 
     mprod <- mprod + 1
 
@@ -328,16 +328,16 @@ function (A,                     # data matrix
       j_w <- ifelse(w_dim > 1, j, 1)
       if (iscomplex)
       {
-        F <- Conj(t(as.matrix(mult(Conj(t(W[,j_w,drop=FALSE])), A))))
+        F <- Conj(t(drop(mult(Conj(t(W[,j_w,drop=FALSE])), A))))
       }
-      else F <- t(as.matrix(mult(t(W[,j_w,drop=FALSE]), A)))
+      else F <- t(drop(mult(t(W[,j_w,drop=FALSE]), A)))
 #     Optionally apply shift and scale
       if (!missing(shift)) F <- F + shift * W[,j_w]
       if (!missing(scale)) F <- F / scale
       mprod <- mprod + 1
-      F <- F - S * V[,j, drop=FALSE]
+      F <- drop(F - S * V[, j])
 #     Orthogonalize
-      F <- orthog(F,V[,1:j, drop=FALSE])
+      F <- orthog(F, V[,1:j, drop=FALSE])
       if (j + 1 <= work)
       {
         R <- norm2(F)
@@ -346,7 +346,7 @@ function (A,                     # data matrix
         {
           F <- matrix(rnorm(dim(V)[1]),dim(V)[1],1)
           F <- orthog(F, V[,1:j, drop=FALSE])
-          V[,j + 1] <- F / norm2(F)
+          V[, j + 1] <- F / norm2(F)
           R <- 0
         }
         else V[,j + 1] <- F / R
@@ -364,7 +364,7 @@ function (A,                     # data matrix
         {
           VJP1 <- VJP1 / scale
         }
-        W[,jp1_w] <- as.matrix(mult(A,VJP1))
+        W[, jp1_w] <- drop(mult(A, VJP1))
         mprod <- mprod + 1
 
 #       Optionally apply shift

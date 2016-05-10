@@ -16,11 +16,10 @@ cross <- function(x,y)
 # Euclidean norm
 norm2 <- function (x)
 {
-  as.numeric(sqrt(cross(x)))
+  drop(sqrt(cross(x)))
 }
-# Orthogonalize vectors Y against vectors X. Y and X must be R matrix
-# objects (they must have a dim attribute).
-# Note: this function unnecessarily copies the contents of Y
+
+# Orthogonalize vectors Y against vectors X.
 orthog <- function (Y, X)
  {
   dx2 <- dim(X)[2]
