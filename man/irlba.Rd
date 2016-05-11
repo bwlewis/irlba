@@ -71,7 +71,7 @@ singular vectors \code{nu} and \code{nv}.
 Use the optional \code{scale} parameter to implicitly scale each column of
 the matrix \code{A} by the values in the \code{scale} vector, computing the
 truncated SVD of the column-scaled \code{sweep(A, 2, scale, FUN=`/`)}, or
-equivalently, \code{A \%*\% diag(1/scale)}, without explicitly forming the
+equivalently, \code{A \%*\% diag(1 / scale)}, without explicitly forming the
 scaled matrix. \code{scale} must be a non-zero vector of length equal
 to the number of columns of \code{A}.
 
@@ -129,13 +129,13 @@ cbind(P$v, prcomp(A)$rotation[, 1])
 col_scale <- sqrt(apply(A, 2, crossprod))
 mult <- function(x, y)
         {
-          # check if x is a plain, row or column vector
-          if (is.vector(x) || ncol(x)==1 || nrow(x)==1)
+          # check if x is a  vector
+          if (is.vector(x))
           {
-            return((x \%*\% y)/col_scale)
+            return((x \%*\% y) / col_scale)
           }
           # else x is the matrix
-          x \%*\% (y/col_scale)
+          x \%*\% (y / col_scale)
         }
 irlba(A, 3, mult=mult)$d
 

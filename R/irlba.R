@@ -45,7 +45,7 @@
 #' Use the optional \code{scale} parameter to implicitly scale each column of
 #' the matrix \code{A} by the values in the \code{scale} vector, computing the
 #' truncated SVD of the column-scaled \code{sweep(A, 2, scale, FUN=`/`)}, or
-#' equivalently, \code{A \%*\% diag(1/scale)}, without explicitly forming the
+#' equivalently, \code{A \%*\% diag(1 / scale)}, without explicitly forming the
 #' scaled matrix. \code{scale} must be a non-zero vector of length equal
 #' to the number of columns of \code{A}.
 #'
@@ -107,13 +107,13 @@
 #' col_scale <- sqrt(apply(A, 2, crossprod))
 #' mult <- function(x, y)
 #'         {
-#'           # check if x is a plain, row or column vector
-#'           if (is.vector(x) || ncol(x)==1 || nrow(x)==1)
+#'           # check if x is a  vector
+#'           if (is.vector(x))
 #'           {
-#'             return((x %*% y)/col_scale)
+#'             return((x %*% y) / col_scale)
 #'           }
 #'           # else x is the matrix
-#'           x %*% (y/col_scale)
+#'           x %*% (y / col_scale)
 #'         }
 #' irlba(A, 3, mult=mult)$d
 #'
@@ -288,7 +288,7 @@ function (A,                     # data matrix
     {
       VJ <- VJ / scale
     }
-    W[, j_w] <- drop(mult(A, VJ))
+    W[, j_w] <- drop(mult(A, drop(VJ)))
 
     mprod <- mprod + 1
 
@@ -328,9 +328,9 @@ function (A,                     # data matrix
       j_w <- ifelse(w_dim > 1, j, 1)
       if (iscomplex)
       {
-        F <- Conj(t(drop(mult(Conj(t(W[, j_w, drop=FALSE])), A))))
+        F <- Conj(t(drop(mult(Conj(drop(W[, j_w])), A))))
       }
-      else F <- t(drop(mult(t(W[, j_w, drop=FALSE]), A)))
+      else F <- t(drop(mult(drop(W[, j_w]), A)))
 #     Optionally apply shift and scale
       if (!missing(shift)) F <- F + shift * W[, j_w]
       if (!missing(scale)) F <- F / scale
@@ -364,7 +364,7 @@ function (A,                     # data matrix
         {
           VJP1 <- VJP1 / scale
         }
-        W[, jp1_w] <- drop(mult(A, VJP1))
+        W[, jp1_w] <- drop(mult(A, drop(VJP1)))
         mprod <- mprod + 1
 
 #       Optionally apply shift
