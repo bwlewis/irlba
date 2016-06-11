@@ -20,19 +20,30 @@ irlba(A, nv = 5, nu, maxit = 1000, work = nv + 5, reorth = TRUE,
 
 \item{work}{working subspace dimension, larger values can speed convergence at the cost of more memory use.}
 
-\item{reorth}{logical value indicating full \code{TRUE} or cheaper right-singular-vector-only \code{FALSE} reorthogonalization.}
+\item{reorth}{if \code{TRUE}, apply full reorthogonalization to both SVD bases, otherwise
+only apply reorthogonalization to the right SVD basis vectors; the latter case is cheaper per
+iteration but, overall, may require more iterations for convergence.}
 
-\item{tol}{convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively.}
+\item{tol}{convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||},
+where the spectral norm ||A|| is approximated by the
+largest estimated singular value, and U, V, S are the matrices corresponding
+to the estimated left and right singular vectors, and diagonal matrix of
+estimated singular values, respectively.}
 
-\item{v}{optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes).}
+\item{v}{optional starting vector or output from a previous run of \code{irlba} used
+to restart the algorithm from where it left off (see the notes).}
 
-\item{right_only}{logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE}).}
+\item{right_only}{logical value indicating return only the right singular vectors
+(\code{TRUE}) or both sets of vectors (\code{FALSE}). The right_only option can be
+cheaper to compute and use much less memory when \code{nrow(A) >> ncol(A)}.}
 
 \item{verbose}{logical value that when \code{TRUE} prints status messages during the computation.}
 
-\item{scale}{optional column scaling vector whose values divide each column of \code{A}; must be as long as the number of columns of \code{A} (see notes).}
+\item{scale}{optional column scaling vector whose values divide each column of \code{A};
+must be as long as the number of columns of \code{A} (see notes).}
 
-\item{center}{optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes).}
+\item{center}{optional column centering vector whose values are subtracted from each
+column of \code{A}; must be as long as the number of columns of \code{A} and may}
 
 \item{du}{optional subspace deflation vector (see notes).}
 
@@ -89,7 +100,7 @@ Use the optional deflation parameters to compute the rank-one deflated
 SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}, where
 \eqn{du^T A - ds\cdot dv^T = 0}{t(du) \%*\% A - ds * t(dv) == 0}. For
 example, the triple \code{ds, du, dv} may be a known singular value
-and corresponding singular vectors. Or \code{ds=1/m} and \code{dv}
+and corresponding singular vectors. Or \code{ds=m} and \code{dv}
 and \code{du} represent a vector of column means of \code{A} and of ones,
 respectively, where \code{m} is the number of rows of \code{A}.
 This is a rarely used option, but it is used internally

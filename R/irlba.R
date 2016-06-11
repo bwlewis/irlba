@@ -11,13 +11,25 @@
 #' @param nu number of left singular vectors to estimate (defaults to \code{nv}).
 #' @param maxit maximum number of iterations.
 #' @param work working subspace dimension, larger values can speed convergence at the cost of more memory use.
-#' @param reorth logical value indicating full \code{TRUE} or cheaper right-singular-vector-only \code{FALSE} reorthogonalization.
-#' @param tol convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||}, where the spectral norm ||A|| is approximated by the largest estimated singular value, and U, V, S are the matrices corresponding to the estimated left and right singular vectors, and diagonal matrix of estimated singular values, respectively.
-#' @param v optional starting vector or output from a previous run of \code{irlba} used to restart the algorithm from where it left off (see the notes).
-#' @param right_only logical value indicating return only the right singular vectors (\code{TRUE}) or both sets of vectors (\code{FALSE}).
+#' @param reorth if \code{TRUE}, apply full reorthogonalization to both SVD bases, otherwise
+#'   only apply reorthogonalization to the right SVD basis vectors; the latter case is cheaper per
+#'   iteration but, overall, may require more iterations for convergence.
+#' @param tol convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||},
+#'   where the spectral norm ||A|| is approximated by the
+#'   largest estimated singular value, and U, V, S are the matrices corresponding
+#'   to the estimated left and right singular vectors, and diagonal matrix of
+#'   estimated singular values, respectively.
+#' @param v optional starting vector or output from a previous run of \code{irlba} used
+#'   to restart the algorithm from where it left off (see the notes).
+#' @param right_only logical value indicating return only the right singular vectors
+#'  (\code{TRUE}) or both sets of vectors (\code{FALSE}). The right_only option can be
+#'  cheaper to compute and use much less memory when \code{nrow(A) >> ncol(A)}.
 #' @param verbose logical value that when \code{TRUE} prints status messages during the computation.
-#' @param scale optional column scaling vector whose values divide each column of \code{A}; must be as long as the number of columns of \code{A} (see notes).
-#' @param center optional column centering vector whose values are subtracted from each column of \code{A}; must be as long as the number of columns of \code{A} and may not be used together with the deflation options below (see notes).
+#' @param scale optional column scaling vector whose values divide each column of \code{A};
+#'   must be as long as the number of columns of \code{A} (see notes).
+#' @param center optional column centering vector whose values are subtracted from each
+#'   column of \code{A}; must be as long as the number of columns of \code{A} and may
+#"   not be used together with the deflation options below (see notes).
 #' @param du optional subspace deflation vector (see notes).
 #' @param ds optional subspace deflation scalar (see notes).
 #' @param dv optional subspace deflation vector (see notes).
@@ -63,7 +75,7 @@
 #' SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}, where
 #' \eqn{du^T A - ds\cdot dv^T = 0}{t(du) \%*\% A - ds * t(dv) == 0}. For
 #' example, the triple \code{ds, du, dv} may be a known singular value
-#' and corresponding singular vectors. Or \code{ds=1/m} and \code{dv}
+#' and corresponding singular vectors. Or \code{ds=m} and \code{dv}
 #' and \code{du} represent a vector of column means of \code{A} and of ones,
 #' respectively, where \code{m} is the number of rows of \code{A}.
 #' This is a rarely used option, but it is used internally
@@ -126,6 +138,7 @@
 #' @seealso \code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}
 #' @import Matrix
 #' @importFrom stats rnorm
+#' @importFrom methods slotNames
 #' @export
 irlba <-
 function (A,                     # data matrix
@@ -139,7 +152,7 @@ function (A,                     # data matrix
           verbose=FALSE,         # display status messages
           scale,                 # optional column scaling
           center,                # optional column centering
-          du, ds, dv,              # optional general rank 1 deflation
+          du, ds, dv,            # optional general rank 1 deflation
           shift,                 # optional shift for square matrices
           mult)                  # optional custom matrix multiplication func.
 {
@@ -275,7 +288,7 @@ function (A,                     # data matrix
 #   Normalize starting vector:
     if (iter == 1 && !restart)
     {
-      V[, 1] <- V[, 1, drop=FALSE] / norm2(V[, 1, drop=FALSE])
+      V[, 1] <- V[, 1] / norm2(V[, 1])
     }
     else j <- k + 1
 #   j_w is used here to support the right_only=TRUE case.
@@ -288,7 +301,14 @@ function (A,                     # data matrix
     {
       VJ <- VJ / scale
     }
-    W[, j_w] <- drop(mult(A, drop(VJ)))
+#   Handle sparse products.
+    avj <- mult(A, VJ)
+    if("Matrix" %in% attributes(class(avj)) && "x" %in% slotNames(avj))
+    {
+      if(length(avj@x) == nrow(W)) avj <- slot(avj, "x")
+      else avj <- as.vector(avj)
+    }
+    W[, j_w] <- avj
 
     mprod <- mprod + 1
 
