@@ -5,3 +5,5 @@ export(partial_eigen)
 import(Matrix)
 importFrom(methods,slotNames)
 importFrom(stats,rnorm)
+
+useDynLib(irlba)

@@ -424,12 +424,11 @@ function (A,                     # data matrix
     }
     if (verbose)
     {
-      cat("\nLanczos iter = ", iter, " j = ", j - 1, "mprod = ", mprod, "\n")
+      message("\nLanczos iter = ", iter, " j = ", j - 1, "mprod = ", mprod)
     }
 # ---------------------------------------------------------------------
 # (End of the Lanczos bidiagonalization part)
 # ---------------------------------------------------------------------
-
     Bsz <- nrow(B)
     R_F <- norm2(F)
     F <- F / R_F
