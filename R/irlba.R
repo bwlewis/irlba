@@ -35,6 +35,7 @@
 #' @param dv optional subspace deflation vector (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
 #' @param mult optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
+#' @param fastpath try a fast C algorithm implementation if possible, set \code{fastpath=FALSE} to always use the reference implementation.
 #'
 #' @return
 #' Returns a list with entries:
@@ -139,6 +140,7 @@
 #' @import Matrix
 #' @importFrom stats rnorm
 #' @importFrom methods slotNames
+#' @useDynLib irlba
 #' @export
 irlba <-
 function (A,                     # data matrix
@@ -154,7 +156,8 @@ function (A,                     # data matrix
           center,                # optional column centering
           du, ds, dv,            # optional general rank 1 deflation
           shift,                 # optional shift for square matrices
-          mult)                  # optional custom matrix multiplication func.
+          mult,                  # optional custom matrix multiplication func.
+          fastpath=TRUE)         # use the faster C implementation if possible
 {
 # ---------------------------------------------------------------------
 # Check input parameters
@@ -187,14 +190,19 @@ function (A,                     # data matrix
   n <- ncol(A)
   if (missing(nu)) nu <- nv
   if (!missing(mult) && deflate) stop("the mult parameter can't be specified together with deflation parameters")
-  if (missing(mult)) mult <- `%*%`
+  missingmult <- FALSE
+  if (missing(mult))
+  {
+    missingmult <- TRUE
+    mult <- `%*%`
+  }
   k <- max(nu, nv)
   k_org <- k;
   if (k <= 0)  stop("max(nu, nv) must be positive")
   if (k > min(m - 1, n - 1)) stop("max(nu, nv) must be strictly less than min(nrow(A), ncol(A))")
   if (k > 0.5 * min(m, n))
   {
-    warning("You're computing a large percentage of total singular values, standard svd will likely work better!")
+    warning("You're computing a large percentage of total singular values, standard svd might work better!")
   }
   if (work <= 1) stop("work must be greater than 1")
   if (tol < 0) stop("tol must be non-negative")
@@ -214,6 +222,26 @@ function (A,                     # data matrix
   {
     w_dim <- 1
     work <- min(min(m, n), work + 10 ) # need this to help convergence
+  }
+
+# Try to use the fast C code path
+  if(fastpath && missingmult && is.matrix(A) & !iscomplex && !deflate && missing(scale) && !is.list(v))
+  {
+    if (is.null(v))
+      v <- rnorm(n)
+    ans <- .Call("IRLB", x, as.integer(k), as.double(v), as.integer(work), as.integer(maxit), as.double(tol), .Machine$double.eps, PACKAGE="irlba")
+    if(ans[[6]] == 0 || ans[[6]] == -2)
+    {
+      names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
+      if(ans[[6]] == -2) warning("did not converge; try increasing maxit or fastpath=FALSE")
+      return(ans[-6])
+    }
+    errors = c("invalid dimensions",
+               "didn't converge",
+               "out of memory",
+               "starting vector near the null space",
+               "linear dependency encountered")
+    warning("fast code path encountered error ", errors[abs(ans[6])], "; re-trying with fastpath=FALSE.")
   }
 
 # Allocate memory for W and F:
@@ -486,7 +514,7 @@ function (A,                     # data matrix
 # End of the main iteration loop
 # Output results
 # ---------------------------------------------------------------------
-  if (iter > maxit) warning("did not converge")
+  if (iter > maxit) warning("did not converge, try increasing maxit")
   d <- Bsvd$d[1:k_org]
   if (!right_only)
   {

@@ -7,7 +7,7 @@ singular vectors of a matrix.}
 \usage{
 irlba(A, nv = 5, nu, maxit = 1000, work = nv + 5, reorth = TRUE,
   tol = 1e-05, v = NULL, right_only = FALSE, verbose = FALSE, scale,
-  center, du, ds, dv, shift, mult)
+  center, du, ds, dv, shift, mult, fastpath = TRUE)
 }
 \arguments{
 \item{A}{numeric real- or complex-valued matrix or real-valued sparse matrix.}
@@ -54,6 +54,8 @@ column of \code{A}; must be as long as the number of columns of \code{A} and may
 \item{shift}{optional shift value (square matrices only, see notes).}
 
 \item{mult}{optional custom matrix multiplication function (default is \code{\%*\%}, see notes).}
+
+\item{fastpath}{try a fast C algorithm implementation if possible, set \code{fastpath=FALSE} to always use the reference implementation.}
 }
 \value{
 Returns a list with entries:
