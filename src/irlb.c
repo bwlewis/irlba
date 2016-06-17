@@ -27,7 +27,23 @@ void F77_NAME (dgesvd) (const char *jobu, const char *jobvt, const int *m,
                         const int *ldvt, double *work, const int *lwork,
                         int *info);
 
-
+/* irlb C implementation wrapper
+ * X double precision input matrix
+ * NU integer number of singular values/vectors to compute must be > 3
+ * INIT double precision starting vector length(INIT) must equal nrow(X)
+ * WORK integer working subspace dimension must be > NU
+ * MAXIT integer maximum number of iterations
+ * TOL double tolerance
+ * EPS double machine epsilon
+ *
+ * Returns a list with 6 elements:
+ * 1. vector of estimated singular values
+ * 2. matrix of estimated left singular vectors
+ * 3. matrix of estimated right singular vectors
+ * 4. number of algorithm iterations
+ * 5. number of matrix vector products
+ * 6. irlb C algorithm return error code (see irlb below)
+ */
 SEXP
 IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS)
 {
@@ -45,7 +61,6 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS)
   int lwork = 7 * work;
   double eps = REAL (EPS)[0];
 
-  /* ANS = {return code, num. iter, num. matrix vector prodcuts, s, u, v} */
   PROTECT (ANS = NEW_LIST (6));
   PROTECT (S = allocVector (REALSXP, nu));
   PROTECT (U = allocVector (REALSXP, m * work));
@@ -69,40 +84,26 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS)
   ret =
     irlb (A, m, n, nu, work, maxit, tol, REAL (S), REAL (U), REAL (V), &iter,
           &mprod, eps, lwork, V1, U1, W, F, B, BU, BV, BS, BW, res, T);
-  SET_VECTOR_ELT (ANS, 0, ScalarInteger (ret));
-  SET_VECTOR_ELT (ANS, 1, ScalarInteger (iter));
-  SET_VECTOR_ELT (ANS, 2, ScalarInteger (mprod));
-  SET_VECTOR_ELT (ANS, 3, S);
-  SET_VECTOR_ELT (ANS, 4, U);
-  SET_VECTOR_ELT (ANS, 5, V);
+  SET_VECTOR_ELT (ANS, 0, S);
+  SET_VECTOR_ELT (ANS, 1, U);
+  SET_VECTOR_ELT (ANS, 2, V);
+  SET_VECTOR_ELT (ANS, 3, ScalarInteger (iter));
+  SET_VECTOR_ELT (ANS, 4, ScalarInteger (mprod));
+  SET_VECTOR_ELT (ANS, 5, ScalarInteger (ret));
   UNPROTECT (4);
   return ANS;
 }
 
 /* irlb: main computation function.
  * returns:
- * 0 on success,
+ *  0 on success,
  * -1 on misc error
  * -2 not converged
  * -3 out of memory
  * -4 starting vector near the null space of A
  * -5 other linear dependence error
  *
- * all data must be allocated by caller, in particular
- * s must be at least nu * sizeof(double)
- * U must be at least m * work * sizeof(double)
- * V must be at least n * work * sizeof(double)
- * V1  (n * work, sizeof (double))
- * U1  (m * work, sizeof (double))
- * W  (m * work, sizeof (double))
- * F  (n, sizeof (double))
- * B  (work * work, sizeof (double))
- * BU  (work * work, sizeof (double))
- * BV  (work * work, sizeof (double))
- * BS  (work, sizeof (double))
- * BW  (lwork * lwork, sizeof (double))
- * res  (work, sizeof (double))
- * T (lwork, sizeof(double))
+ * all data must be allocated by caller, required sizes listed below
  */
 int
 irlb (double *A,                // Input data matrix
@@ -120,12 +121,17 @@ irlb (double *A,                // Input data matrix
       double eps,               // machine epsilon
       // working intermediate storage
       int lwork,
-      double *V1,
-      double *U1,
-      double *W,
-      double *F,
-      double *B,
-      double *BU, double *BV, double *BS, double *BW, double *res, double *T)
+      double *V1,               // n x work
+      double *U1,               // m x work
+      double *W,                // m x work
+      double *F,                // n
+      double *B,                // work x work
+      double *BU,               // work x work
+      double *BV,               // work x work
+      double *BS,               // work
+      double *BW,               // lwork x lwork
+      double *res,              // work
+      double *T)                // lwork
 {
   double d, S, R, alpha, beta, R_F, SS;
   int jj, kk;
@@ -158,7 +164,6 @@ irlb (double *A,                // Input data matrix
       else
         j = k;
 /*
- * Lanczos bidiagonalization iteration
  * Compute the Lanczos bidiagonal decomposition:
  * AV  = WB
  * t(A)W = VB + Ft(E)
