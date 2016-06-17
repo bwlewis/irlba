@@ -1,7 +1,6 @@
 /*
  * irlb: A prototype C implementation of the implicitly restarted Lanczos
- * bidiagonalization method, limited to Ritz vectors and subspaces containing
- * largest singular values.
+ * bidiagonalization method.
  */
 
 #include <stdio.h>
@@ -32,7 +31,6 @@ orthog (double *X, double *Y, double *T, int xm, int xn, int yn)
 {
   double a = 1, b = 0;
   memset(T, 0, xn * yn * sizeof(double));
-  assert (T != 0);              // Replace assertion with graceful error check
   // T = t(X) * Y
   F77_NAME(dgemm) ("t", "n", &xn, &yn, &xm, &a, X, &xm, Y, &xm, &b, T, &xm);
   // Y = Y - X * T
