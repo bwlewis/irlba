@@ -229,14 +229,15 @@ function (A,                     # data matrix
   {
     if (is.null(v))
       v <- rnorm(n)
-    ans <- .Call("IRLB", x, as.integer(k), as.double(v), as.integer(work), as.integer(maxit), as.double(tol), .Machine$double.eps, PACKAGE="irlba")
+    ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
+                 as.integer(maxit), as.double(tol), .Machine$double.eps, PACKAGE="irlba")
     if(ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
       if(ans[[6]] == -2) warning("did not converge; try increasing maxit or fastpath=FALSE")
       return(ans[-6])
     }
-    errors = c("invalid dimensions",
+    errors <- c("invalid dimensions",
                "didn't converge",
                "out of memory",
                "starting vector near the null space",
