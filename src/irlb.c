@@ -18,6 +18,10 @@
 
 #include "R_ext/BLAS.h"
 #include "R_ext/Lapack.h"
+#include "R_ext/Rdynload.h"
+
+#include "Matrix.h"
+#include "Matrix_stubs.c"
 
 #include "irlb.h"
 
@@ -35,6 +39,7 @@ void F77_NAME (dgesvd) (const char *jobu, const char *jobvt, const int *m,
  * MAXIT integer maximum number of iterations
  * TOL double tolerance
  * EPS double machine epsilon
+ * SPARSE integer 0 X is a dense matrix, 1 sparse
  *
  * Returns a list with 6 elements:
  * 1. vector of estimated singular values
@@ -45,13 +50,18 @@ void F77_NAME (dgesvd) (const char *jobu, const char *jobvt, const int *m,
  * 6. irlb C algorithm return error code (see irlb below)
  */
 SEXP
-IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS)
+IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS, SEXP SPARSE)
 {
   SEXP ANS, S, U, V;
   double *V1, *U1, *W, *F, *B, *BU, *BV, *BS, *BW, *res, *T;
   int i, iter, mprod, ret;
 
-  double *A = REAL (X);
+  int sparse = INTEGER(SPARSE)[0];
+  void *A;
+  if(sparse)
+    A = (void *) NULL;
+  else
+    A = (void *) REAL (X);
   int m = nrows (X);
   int n = ncols (X);
   int nu = INTEGER (NU)[0];
@@ -82,7 +92,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS)
   T = (double *) R_alloc (lwork, sizeof (double));
 
   ret =
-    irlb (A, m, n, nu, work, maxit, tol, REAL (S), REAL (U), REAL (V), &iter,
+    irlb (A, 0, m, n, nu, work, maxit, tol, REAL (S), REAL (U), REAL (V), &iter,
           &mprod, eps, lwork, V1, U1, W, F, B, BU, BV, BS, BW, res, T);
   SET_VECTOR_ELT (ANS, 0, S);
   SET_VECTOR_ELT (ANS, 1, U);
@@ -106,7 +116,8 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS)
  * all data must be allocated by caller, required sizes listed below
  */
 int
-irlb (double *A,                // Input data matrix
+irlb (void *A,                // Input data matrix
+      int sparse,          // 0 -> A is double *, 1 -> A is cholmod
       int m,                    // data matrix number of rows, must be > 3.
       int n,                    // data matrix number of columns, must be > 3.
       int nu,                   // dimension of solution
@@ -171,7 +182,7 @@ irlb (double *A,                // Input data matrix
  */
       alpha = 1;
       beta = 0;
-      F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, A, &m, V + j * n, &n,
+      F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, (double *)A, &m, V + j * n, &n,
                         &beta, W + j * m, &m);
       mprod++;
 
@@ -194,7 +205,7 @@ irlb (double *A,                // Input data matrix
         {
           alpha = 1.0;
           beta = 0.0;
-          F77_NAME (dgemm) ("t", "n", &n, &inc, &m, &alpha, A, &m, W + j * m,
+          F77_NAME (dgemm) ("t", "n", &n, &inc, &m, &alpha, (double *)A, &m, W + j * m,
                             &m, &beta, F, &n);
           mprod++;
           SS = -S;
@@ -212,7 +223,7 @@ irlb (double *A,                // Input data matrix
               B[(j + 1) * work + j] = R_F;
               alpha = 1.0;
               beta = 0.0;
-              F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, A, &m,
+              F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, (double *)A, &m,
                                 V + (j + 1) * n, &n, &beta, W + (j + 1) * m,
                                 &m);
               mprod++;
@@ -293,4 +304,73 @@ irlb (double *A,                // Input data matrix
   *MPROD = mprod;
   retval = (converged == 1) ? 0 : -2;   // 0 = Success, -2 = not converged.
   return (retval);
+}
+
+
+cholmod_common c;
+/* Need our own CHOLMOD error handler */
+void attribute_hidden
+irlba_R_cholmod_error(int status, const char *file, int line, const char *message)
+{
+  if(status < 0)
+    error("Cholmod error '%s' at file:%s, line %d", message, file, line);
+  else
+    warning("Cholmod warning '%s' at file:%s, line %d",
+            message, file, line);
+}
+
+#ifdef HAVE_VISIBILITY_ATTRIBUTE
+__attribute__ ((visibility ("default")))
+#endif
+void R_init_irlba(DllInfo *dll)
+{
+  M_R_cholmod_start(&c);
+  c.final_ll = 1;         /* LL' form of simplicial factorization */
+
+  /* need own error handler, that resets  final_ll (after *_defaults()) : */
+  c.error_handler = irlba_R_cholmod_error;
+}
+
+void R_unload_irlba(DllInfo *dll){
+    M_cholmod_finish(&c);
+}
+
+
+SEXP
+TEST (SEXP a, SEXP b)
+{
+  int i;
+  SEXP ANS;
+  DL_FUNC sdmult = R_GetCCallable("Matrix", "cholmod_sdmult");
+  DL_FUNC allocate_dense = R_GetCCallable("Matrix", "cholmod_allocate_dense");
+  CHM_SP cha = AS_CHM_SP(a);
+  PROTECT (ANS = allocVector (REALSXP, cha->nrow));
+  double *d = REAL(b);
+  double *ans = REAL(ANS);
+
+  cholmod_dense chb;
+  chb.nrow = LENGTH(b);
+  chb.d    = LENGTH(b);
+  chb.ncol = 1;
+  chb.nzmax = LENGTH(b);
+  chb.xtype = cha->xtype;
+  chb.dtype = 0;
+  chb.x = (void *) d;
+  chb.z = (void *) NULL;
+
+  cholmod_dense chc;
+  memset(&chc, 0, sizeof(cholmod_dense));
+  chc.nrow = cha->nrow;
+  chc.d    = cha->nrow;
+  chc.ncol = 1;
+  chc.nzmax = cha->nrow;
+  chc.xtype = cha->xtype;
+  chc.dtype = 0;
+  chc.x = (void *) ans;
+  chc.z = (void *) NULL;
+
+  double one[] = {1,0}, zero[] = {0,0};
+  sdmult(cha, 0, one, zero, &chb, &chc, &c);
+  unprotect(1);
+  return ANS;
 }

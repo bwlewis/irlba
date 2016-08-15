@@ -11,6 +11,8 @@ Description: Fast and memory efficient methods for truncated singular and
     dense matrices.
 Depends:
     Matrix
+LinkingTo:
+    Matrix
 Imports:
     stats,
     methods

@@ -19,7 +19,8 @@ convtests (int Bsz,           // Number of rows of bidiagonal matrix B
 
 /* IRLB method for dense matrices */
 int
-irlb(double *A,     // Input data matrix
+irlb(void *A,     // Input data matrix
+     int sparse,    // 0 -> A is double *
      int m,         // data matrix number of rows
      int n,         // data matrix number of columns
      int nu,        // dimension of solution

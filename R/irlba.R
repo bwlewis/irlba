@@ -216,12 +216,12 @@ function (A,                     # data matrix
       k <- work - 1
     }
   }
-  if (tol < eps) tol <- eps
+#  if (tol < eps) tol <- eps
   w_dim <- work
   if (right_only)
   {
     w_dim <- 1
-    work <- min(min(m, n), work + 10 ) # need this to help convergence
+    work <- min(min(m, n), work + 10 ) # typically need this to help convergence
   }
 
 # Try to use the fast C code path
@@ -230,10 +230,12 @@ function (A,                     # data matrix
     if (is.null(v))
       v <- rnorm(n)
     ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
-                 as.integer(maxit), as.double(tol), .Machine$double.eps, PACKAGE="irlba")
+                 as.integer(maxit), as.double(tol), .Machine$double.eps, 0L, PACKAGE="irlba")
     if(ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
+      ans$u <- matrix(head(ans$u, m * nu), nrow=m, ncol=nu)
+      ans$v <- matrix(head(ans$v, m * nv), nrow=m, ncol=nv)
       if(ans[[6]] == -2) warning("did not converge; try increasing maxit or fastpath=FALSE")
       return(ans[-6])
     }
@@ -242,12 +244,13 @@ function (A,                     # data matrix
                "out of memory",
                "starting vector near the null space",
                "linear dependency encountered")
-    warning("fast code path encountered error ", errors[abs(ans[6])], "; re-trying with fastpath=FALSE.")
+    erridx <- abs(ans[[6]])
+    if(erridx > 1)
+      warning("fast code path encountered error ", errors[erridx], "; re-trying with fastpath=FALSE.")
   }
 
 # Allocate memory for W and F:
   W <- matrix(0.0, m, w_dim)
-  V <- v
   restart <- FALSE
   if (is.list(v))
   {
@@ -260,16 +263,19 @@ function (A,                     # data matrix
     restart <- TRUE
   }
   F <- matrix(0.0, n, 1)
-# If starting matrix V is not given then set V to be an (n x 1) matrix of
+# If starting matrix v is not given then set V to be an (n x 1) matrix of
 # normally distributed random numbers.  In any case, allocate V appropriate to
 # problem size:
-  if (is.null(V))
+  if (is.null(v))
   {
     V <- matrix(0.0, n, work)
     V[, 1] <- rnorm(n)
   }
-  else V <- cbind(V, matrix(0.0, n, work - ncol(V)))
-
+  else
+  {
+    V <- matrix(0.0, n, work)
+    V[1:length(v)] <- v
+  }
 
 # ---------------------------------------------------------------------
 # Initialize local variables
@@ -285,7 +291,8 @@ function (A,                     # data matrix
                              # B est. ||A||_2
   Smin <- NULL               # Min value of all computed singular values of
                              # B est. cond(A)
-  SVTol <- max(sqrteps, tol)  # Tolerance for singular vector convergence
+#  SVTol <- max(sqrteps, tol)  # Tolerance for singular vector convergence
+  SVTol <- tol  # Tolerance for singular vector convergence
 
 # Check for user-supplied restart condition
   if (restart)
