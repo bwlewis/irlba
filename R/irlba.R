@@ -30,12 +30,12 @@
 #' @param center optional column centering vector whose values are subtracted from each
 #'   column of \code{A}; must be as long as the number of columns of \code{A} and may
 #"   not be used together with the deflation options below (see notes).
-#' @param du optional subspace deflation vector (see notes).
-#' @param ds optional subspace deflation scalar (see notes).
-#' @param dv optional subspace deflation vector (see notes).
+#' @param du DEPRECATED optional subspace deflation vector (see notes).
+#' @param ds DEPRECATED optional subspace deflation scalar (see notes).
+#' @param dv DEPRECATED optional subspace deflation vector (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
 #' @param mult optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
-#' @param fastpath try a fast C algorithm implementation if possible, set \code{fastpath=FALSE} to always use the reference implementation.
+#' @param fastpath try a fast C algorithm implementation if possible, set \code{fastpath=FALSE} to use the reference R implementation.
 #'
 #' @return
 #' Returns a list with entries:
@@ -72,28 +72,27 @@
 #' explicitly forming the centered matrix (which can, importantly, preserve
 #' sparsity in the matrix). See the examples.
 #'
-#' Use the optional deflation parameters to compute the rank-one deflated
+#' The optional deflation parameters are deprecated and will be removed in
+#' a future version. They could be used to compute the rank-one deflated
 #' SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}, where
 #' \eqn{du^T A - ds\cdot dv^T = 0}{t(du) \%*\% A - ds * t(dv) == 0}. For
 #' example, the triple \code{ds, du, dv} may be a known singular value
 #' and corresponding singular vectors. Or \code{ds=m} and \code{dv}
 #' and \code{du} represent a vector of column means of \code{A} and of ones,
 #' respectively, where \code{m} is the number of rows of \code{A}.
-#' This is a rarely used option, but it is used internally
-#' by the \code{center} option and the two sets of parameters are
-#' prevented from being used in combination.
+#' This functionality can be effectively replaced with custom matrix
+#' product functions.
 #'
 #' Specify an optional alternative matrix multiplication operator in the
 #' \code{mult} parameter. \code{mult} must be a function of two arguments,
 #' and must handle both cases where one argument is a vector and the other
-#' a matrix. See the examples. Special care must be taken when deflation
-#' is also desired; see the package vignette for details.
+#' a matrix. See the examples.
 #'
 #' Use the \code{v} option to supply a starting vector for the iterative
 #' method. A random vector is used by default. Optionally set \code{v} to
 #' the ouput of a previous run of \code{irlba} to restart the method, adding
-#' additional singular values/vectors without recomputing the already computed
-#' subspace.
+#' additional singular values/vectors without recomputing the solution
+#' subspace. See the examples.
 #'
 #'
 #' @references
@@ -225,17 +224,18 @@ function (A,                     # data matrix
   }
 
 # Try to use the fast C code path
-  if(fastpath && missingmult && is.matrix(A) & !iscomplex && !deflate && missing(scale) && !is.list(v))
+  if(fastpath && missingmult && !iscomplex && !deflate && missing(scale) && !is.list(v))
   {
     if (is.null(v))
       v <- rnorm(n)
+    SP <- ifelse(is.matrix(A), 0L, 1L)
     ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
-                 as.integer(maxit), as.double(tol), .Machine$double.eps, 0L, PACKAGE="irlba")
+                 as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP), PACKAGE="irlba")
     if(ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
       ans$u <- matrix(head(ans$u, m * nu), nrow=m, ncol=nu)
-      ans$v <- matrix(head(ans$v, m * nv), nrow=m, ncol=nv)
+      ans$v <- matrix(head(ans$v, n * nv), nrow=n, ncol=nv)
       if(ans[[6]] == -2) warning("did not converge; try increasing maxit or fastpath=FALSE")
       return(ans[-6])
     }
@@ -251,6 +251,7 @@ function (A,                     # data matrix
 
 # Allocate memory for W and F:
   W <- matrix(0.0, m, w_dim)
+  F <- matrix(0.0, n, 1)
   restart <- FALSE
   if (is.list(v))
   {
@@ -261,18 +262,16 @@ function (A,                     # data matrix
     d <- v$d
     V <- v$v
     restart <- TRUE
-  }
-  F <- matrix(0.0, n, 1)
+  } else if (is.null(v))
+  {
 # If starting matrix v is not given then set V to be an (n x 1) matrix of
 # normally distributed random numbers.  In any case, allocate V appropriate to
 # problem size:
-  if (is.null(v))
-  {
     V <- matrix(0.0, n, work)
     V[, 1] <- rnorm(n)
-  }
-  else
+  } else
   {
+# user-supplied starting subspace
     V <- matrix(0.0, n, work)
     V[1:length(v)] <- v
   }

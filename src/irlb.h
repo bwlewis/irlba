@@ -17,7 +17,21 @@ convtests (int Bsz,           // Number of rows of bidiagonal matrix B
                               // adjusted subspace size (OUTPUT)
            int *converged);   // 0 = FALSE, 1 = TRUE
 
-/* IRLB method for dense matrices */
+/*
+ * Simple cholmod double-precision sparse matrix times dense vector multiplication interface
+ * Compute c = op(a) %*% b, c changed on output a and b unchanged.
+ * where, if transpose = 't' then op(a) = t(a) and length(b) = m, length(c) = n
+ *        else,  then op(a) = a and length(b) = n, length(c) = m
+ */
+void
+dsdmult(char transpose, // 't' -> op(a) = t(a), non-transposed a otherwise 
+        int m,          // number of rows of a
+        int n,          // number of columns of a
+        void *a,        // double precision valued sparse matrix
+        double *b,      // double precision dense vector
+        double *c);     // output
+
+/* IRLB method for sparse or dense double-precision valued matrices */
 int
 irlb(void *A,     // Input data matrix
      int sparse,    // 0 -> A is double *

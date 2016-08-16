@@ -1,6 +1,5 @@
 /*
- * irlb: A basic C implementation of the implicitly restarted Lanczos
- * bidiagonalization method.
+ * irlb: Implicitly restarted Lanczos bidiagonalization partial SVD.
  */
 
 #include <stdio.h>
@@ -54,16 +53,23 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS, SEX
 {
   SEXP ANS, S, U, V;
   double *V1, *U1, *W, *F, *B, *BU, *BV, *BS, *BW, *res, *T;
-  int i, iter, mprod, ret;
+  int i, iter, mprod, ret, m, n;
 
   int sparse = INTEGER(SPARSE)[0];
   void *A;
   if(sparse)
-    A = (void *) NULL;
+  {
+    A = (void *) AS_CHM_SP (X);
+    int *dims = INTEGER(GET_SLOT(X, install("Dim")));
+    m = dims[0];
+    n = dims[1];
+  }
   else
+  {
     A = (void *) REAL (X);
-  int m = nrows (X);
-  int n = ncols (X);
+    m = nrows (X);
+    n = ncols (X);
+  }
   int nu = INTEGER (NU)[0];
   int work = INTEGER (WORK)[0];
   int maxit = INTEGER (MAXIT)[0];
@@ -92,7 +98,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS, SEX
   T = (double *) R_alloc (lwork, sizeof (double));
 
   ret =
-    irlb (A, 0, m, n, nu, work, maxit, tol, REAL (S), REAL (U), REAL (V), &iter,
+    irlb (A, sparse, m, n, nu, work, maxit, tol, REAL (S), REAL (U), REAL (V), &iter,
           &mprod, eps, lwork, V1, U1, W, F, B, BU, BV, BS, BW, res, T);
   SET_VECTOR_ELT (ANS, 0, S);
   SET_VECTOR_ELT (ANS, 1, U);
@@ -117,32 +123,32 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS, SEX
  */
 int
 irlb (void *A,                // Input data matrix
-      int sparse,          // 0 -> A is double *, 1 -> A is cholmod
-      int m,                    // data matrix number of rows, must be > 3.
-      int n,                    // data matrix number of columns, must be > 3.
-      int nu,                   // dimension of solution
-      int work,                 // working dimension, must be > 3.
-      int maxit,                // maximum number of main iterations
-      double tol,               // convergence tolerance
-      double *s,                // output singular vectors at least length nu
-      double *U,                // output left singular vectors  m x work
-      double *V,                // output right singular vectors n x work
-      int *ITER,                // ouput number of Lanczos iterations
-      int *MPROD,               // output number of matrix vector products
-      double eps,               // machine epsilon
-      // working intermediate storage
+      int sparse,             // 0 -> A is double *, 1 -> A is cholmod
+      int m,                  // data matrix number of rows, must be > 3.
+      int n,                  // data matrix number of columns, must be > 3.
+      int nu,                 // dimension of solution
+      int work,               // working dimension, must be > 3.
+      int maxit,              // maximum number of main iterations
+      double tol,             // convergence tolerance
+      double *s,              // output singular vectors at least length nu
+      double *U,              // output left singular vectors  m x work
+      double *V,              // output right singular vectors n x work
+      int *ITER,              // ouput number of Lanczos iterations
+      int *MPROD,             // output number of matrix vector products
+      double eps,             // machine epsilon
+      // working intermediate storage, sizes shown (all double)
       int lwork,
-      double *V1,               // n x work
-      double *U1,               // m x work
-      double *W,                // m x work
-      double *F,                // n
-      double *B,                // work x work
-      double *BU,               // work x work
-      double *BV,               // work x work
-      double *BS,               // work
-      double *BW,               // lwork x lwork
-      double *res,              // work
-      double *T)                // lwork
+      double *V1,             // n x work
+      double *U1,             // m x work
+      double *W,              // m x work
+      double *F,              // n
+      double *B,              // work x work
+      double *BU,             // work x work
+      double *BV,             // work x work
+      double *BS,             // work
+      double *BW,             // lwork x lwork
+      double *res,            // work
+      double *T)              // lwork
 {
   double d, S, R, alpha, beta, R_F, SS;
   int jj, kk;
@@ -180,10 +186,16 @@ irlb (void *A,                // Input data matrix
  * t(A)W = VB + Ft(E)
  * with full reorthogonalization.
  */
-      alpha = 1;
-      beta = 0;
-      F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, (double *)A, &m, V + j * n, &n,
+      if(sparse)
+      {
+        dsdmult('n', m, n, (CHM_SP)A, V + j * n, W + j * m);
+      } else
+      {
+        alpha = 1;
+        beta = 0;
+        F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, (double *)A, &m, V + j * n, &n,
                         &beta, W + j * m, &m);
+      }
       mprod++;
 
       if (iter > 0)
@@ -203,10 +215,15 @@ irlb (void *A,                // Input data matrix
 /* The Lanczos process */
       while (j < work)
         {
-          alpha = 1.0;
-          beta = 0.0;
-          F77_NAME (dgemm) ("t", "n", &n, &inc, &m, &alpha, (double *)A, &m, W + j * m,
+          if(sparse)
+          {
+            dsdmult('t', m, n, (CHM_SP)A, W + j * m, F);
+          } else {
+            alpha = 1.0;
+            beta = 0.0;
+            F77_NAME (dgemm) ("t", "n", &n, &inc, &m, &alpha, (double *)A, &m, W + j * m,
                             &m, &beta, F, &n);
+          }
           mprod++;
           SS = -S;
           F77_NAME (daxpy) (&n, &SS, V + j * n, &inc, F, &inc);
@@ -221,11 +238,16 @@ irlb (void *A,                // Input data matrix
               F77_NAME (dscal) (&n, &R, V + (j + 1) * n, &inc);
               B[j * work + j] = S;
               B[(j + 1) * work + j] = R_F;
-              alpha = 1.0;
-              beta = 0.0;
-              F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, (double *)A, &m,
+              if(sparse)
+              {
+                dsdmult('n', m, n, (CHM_SP)A, V + (j + 1) * n, W + (j + 1) * m);
+              } else {
+                alpha = 1.0;
+                beta = 0.0;
+                F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, (double *)A, &m,
                                 V + (j + 1) * n, &n, &beta, W + (j + 1) * m,
                                 &m);
+              }
               mprod++;
 /* One step of classical Gram-Schmidt */
               R = -R_F;
@@ -307,7 +329,7 @@ irlb (void *A,                // Input data matrix
 }
 
 
-cholmod_common c;
+cholmod_common chol_c;
 /* Need our own CHOLMOD error handler */
 void attribute_hidden
 irlba_R_cholmod_error(int status, const char *file, int line, const char *message)
@@ -324,53 +346,45 @@ __attribute__ ((visibility ("default")))
 #endif
 void R_init_irlba(DllInfo *dll)
 {
-  M_R_cholmod_start(&c);
-  c.final_ll = 1;         /* LL' form of simplicial factorization */
+  M_R_cholmod_start(&chol_c);
+  chol_c.final_ll = 1;         /* LL' form of simplicial factorization */
 
   /* need own error handler, that resets  final_ll (after *_defaults()) : */
-  c.error_handler = irlba_R_cholmod_error;
+  chol_c.error_handler = irlba_R_cholmod_error;
 }
 
 void R_unload_irlba(DllInfo *dll){
-    M_cholmod_finish(&c);
+    M_cholmod_finish(&chol_c);
 }
 
 
-SEXP
-TEST (SEXP a, SEXP b)
+void
+dsdmult(char transpose, int m, int n, void *a, double *b, double *c)
 {
-  int i;
-  SEXP ANS;
   DL_FUNC sdmult = R_GetCCallable("Matrix", "cholmod_sdmult");
-  DL_FUNC allocate_dense = R_GetCCallable("Matrix", "cholmod_allocate_dense");
-  CHM_SP cha = AS_CHM_SP(a);
-  PROTECT (ANS = allocVector (REALSXP, cha->nrow));
-  double *d = REAL(b);
-  double *ans = REAL(ANS);
+  int t = transpose == 't' ? 1 : 0;
+  CHM_SP cha = (CHM_SP)a;
 
   cholmod_dense chb;
-  chb.nrow = LENGTH(b);
-  chb.d    = LENGTH(b);
+  chb.nrow = transpose == 't' ? m : n;
+  chb.d    = chb.nrow;
   chb.ncol = 1;
-  chb.nzmax = LENGTH(b);
+  chb.nzmax = chb.nrow;
   chb.xtype = cha->xtype;
   chb.dtype = 0;
-  chb.x = (void *) d;
+  chb.x = (void *) b;
   chb.z = (void *) NULL;
 
   cholmod_dense chc;
-  memset(&chc, 0, sizeof(cholmod_dense));
-  chc.nrow = cha->nrow;
-  chc.d    = cha->nrow;
+  chc.nrow = transpose == 't' ? n : m;
+  chc.d    = chc.nrow;
   chc.ncol = 1;
-  chc.nzmax = cha->nrow;
+  chc.nzmax = chc.nrow;
   chc.xtype = cha->xtype;
   chc.dtype = 0;
-  chc.x = (void *) ans;
+  chc.x = (void *) c;
   chc.z = (void *) NULL;
 
   double one[] = {1,0}, zero[] = {0,0};
-  sdmult(cha, 0, one, zero, &chb, &chc, &c);
-  unprotect(1);
-  return ANS;
+  sdmult(cha, t, one, zero, &chb, &chc, &chol_c);
 }
