@@ -411,5 +411,4 @@ A\bar{P}_{k+1} = \bar{Q}_{k+1}\bar{B}_{k+1}.
 \section{Appendix: deflation}
 
 
-
 \end{document}
