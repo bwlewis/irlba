@@ -260,7 +260,8 @@ function (A,                     # data matrix
     right_only <- FALSE
     W[, 1:ncol(v$u)] <- v$u
     d <- v$d
-    V <- v$v
+    V <- matrix(0.0, n, work)
+    V[, 1:ncol(v$v)] <- v$v
     restart <- TRUE
   } else if (is.null(v))
   {

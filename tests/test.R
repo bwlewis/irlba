@@ -9,6 +9,13 @@ if(!isTRUE(all.equal(L$d, S$d[1:2])))
   stop("Failed simple dense signular value test")
 }
 
+# restart
+L1 <- irlba(A, nv=3, v=L)
+if(!isTRUE(all.equal(L$d, S$d[1:3])))
+{
+  stop("Failed restart")
+}
+
 # Scaling and centering
 s <- sqrt(apply(A, 2, crossprod))
 m <- colMeans(A)
