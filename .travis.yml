@@ -23,7 +23,6 @@ addons:
 
 env:
   global:
-    - RunRRedisTests=yes
     - R_LIBS_USER=~/R/library
 
 cache:
