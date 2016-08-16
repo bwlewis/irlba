@@ -224,7 +224,7 @@ function (A,                     # data matrix
   }
 
 # Try to use the fast C code path
-  if(fastpath && missingmult && !iscomplex && !deflate && missing(scale) && !is.list(v))
+  if(fastpath && missingmult && !iscomplex && !deflate && missing(scale) && !is.list(v) && missing(shift))
   {
     if (is.null(v))
       v <- rnorm(n)

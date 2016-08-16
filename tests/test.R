@@ -11,7 +11,7 @@ if(!isTRUE(all.equal(L$d, S$d[1:2])))
 
 # restart
 L1 <- irlba(A, nv=3, v=L)
-if(!isTRUE(all.equal(L$d, S$d[1:3])))
+if(!isTRUE(all.equal(L1$d, S$d[1:3])))
 {
   stop("Failed restart")
 }
