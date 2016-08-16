@@ -1,0 +1,4 @@
+- add arguments to fast path: shift center/scale
+- add prcomp-like interface
+- finish vignettes
+- (someday) add complex to fast path
