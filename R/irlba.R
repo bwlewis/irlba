@@ -171,6 +171,7 @@ function (A,                     # data matrix
   } else if (deflate == 0)
   {
     deflate <- TRUE
+    warning("The deflation options are deprecated and will be removed in a future version.")
     if (length(ds) > 1) stop("deflation limited to one dimension")
     if (!is.null(dim(du))) du <- du[, 1]
     if (!is.null(dim(dv))) dv <- dv[, 1]
