@@ -193,7 +193,6 @@ irlb (void *A,                // Input data matrix
       {
         alpha = 1;
         beta = 0;
-//        F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, (double *)A, &m, V + j * n, &n, &beta, W + j * m, &m);
         F77_NAME (dgemv) ("n", &m, &n, &alpha, (double *)A, &m, V + j * n, &inc, &beta, W + j * m, &inc);
       }
       mprod++;
@@ -221,7 +220,6 @@ irlb (void *A,                // Input data matrix
           } else {
             alpha = 1.0;
             beta = 0.0;
-//            F77_NAME (dgemm) ("t", "n", &n, &inc, &m, &alpha, (double *)A, &m, W + j * m, &m, &beta, F, &n);
             F77_NAME (dgemv) ("t", &m, &n, &alpha, (double *)A, &m, W + j * m, &inc, &beta, F, &inc);
           }
           mprod++;
@@ -244,7 +242,6 @@ irlb (void *A,                // Input data matrix
               } else {
                 alpha = 1.0;
                 beta = 0.0;
-//                F77_NAME (dgemm) ("n", "n", &m, &inc, &n, &alpha, (double *)A, &m, V + (j + 1) * n, &n, &beta, W + (j + 1) * m, &m);
                 F77_NAME (dgemv) ("n", &m, &n, &alpha, (double *)A, &m, V + (j + 1) * n, &inc, &beta, W + (j + 1) * m, &inc);
               }
               mprod++;
