@@ -27,7 +27,7 @@ Alternatively, a vector of length equal the number of columns of ‘x’ can be 
 \item{...}{additional arguments passed to \code{\link{irlba}}.}
 }
 \value{
-A list with class ‘"prcomp"’ containing the following components:
+A list with class "prcomp" containing the following components:
 \itemize{
    \item{sdev} {the standard deviations of the principal components (i.e.,
          the square roots of the eigenvalues of the

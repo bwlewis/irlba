@@ -18,7 +18,7 @@
 #' @param ... additional arguments passed to \code{\link{irlba}}.
 #'
 #' @return
-#' A list with class ‘"prcomp"’ containing the following components:
+#' A list with class "prcomp" containing the following components:
 #' \itemize{
 #'    \item{sdev} {the standard deviations of the principal components (i.e.,
 #'          the square roots of the eigenvalues of the
