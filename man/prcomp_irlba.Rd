@@ -47,19 +47,17 @@ Efficient computation of a truncated principal components analysis of a given da
 using an implicitly restarted Lanczos method from the \code{\link{irlba}} package.
 }
 \note{
-NOTE DIFFERENCES WITH THE DEFAULT \code{\link{prcomp}} FUNCTION!
-\itemize{
-  \item{tol}{The \code{tol} truncation argument found in \code{prcomp} is not supported.
-    In place of the truncation tolerance in the original function, the
-    \code{prcomp_irlba}  function has the argument \code{n} explicitly giving the
-    number of principal components to return. A warning is generated if the
-    argument \code{tol} is used, which is interpreted differently between
-    the two functions.} 
-}
-
 The signs of the columns of the rotation matrix are arbitrary, and
 so may differ between different programs for PCA, and even between
 different builds of R.
+
+NOTE DIFFERENCES WITH THE DEFAULT \code{\link{prcomp}} FUNCTION!
+The \code{tol} truncation argument found in \code{prcomp} is not supported.
+In place of the truncation tolerance in the original function, the
+\code{prcomp_irlba}  function has the argument \code{n} explicitly giving the
+number of principal components to return. A warning is generated if the
+argument \code{tol} is used, which is interpreted differently between
+the two functions.
 }
 \examples{
 set.seed(1)
