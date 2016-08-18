@@ -2,7 +2,9 @@
 
 export(irlba)
 export(partial_eigen)
+export(prcomp_irlba)
 import(Matrix)
 importFrom(methods,slotNames)
+importFrom(stats,prcomp)
 importFrom(stats,rnorm)
 useDynLib(irlba)

@@ -1,7 +1,7 @@
 # irlba
 
 Implicitly-restarted Lanczos methods for fast truncated singular value and
-symmetric eigenvalue decompositions of sparse and dense matrices. IRLBA stands
+symmetric eigenvalue decompositions of sparse and dense matrices.  IRLBA stands
 for <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos <b>B</b>idiagonalization
 <b>A</b>lgorithms.
 
@@ -11,7 +11,8 @@ particular, use of harmonic Ritz vector augmentation and the ability to
 estimate the smallest singular values of a matrix WAS REMOVED. That method
 didn't work very well, and sometimes not at all. It suffered from poor
 performance and rarely converged to a solution for ill-conditioned matrices.
-Replacements are under consideration but did not make it in to the update.
+Replacements are under consideration, and some version of that may reappear in
+a future package version.
 
 
 ### Package features that are mostly the same
