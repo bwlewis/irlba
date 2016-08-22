@@ -76,6 +76,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   int maxit = INTEGER (MAXIT)[0];
   double tol = REAL (TOL)[0];
   int lwork = 7 * work;
+  int restart = 0;
   double eps = REAL (EPS)[0];
 
   PROTECT (ANS = NEW_LIST (6));
@@ -99,7 +100,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   T = (double *) R_alloc (lwork, sizeof (double));
 
   ret =
-    irlb (A, mult, m, n, nu, work, maxit, tol, REAL (S), REAL (U), REAL (V),
+    irlb (A, mult, m, n, nu, work, maxit, restart, tol, REAL (S), REAL (U), REAL (V),
           &iter, &mprod, eps, lwork, V1, U1, W, F, B, BU, BV, BS, BW, res, T);
   SET_VECTOR_ELT (ANS, 0, S);
   SET_VECTOR_ELT (ANS, 1, U);
@@ -130,6 +131,7 @@ irlb (void *A,                  // Input data matrix
       int nu,                   // dimension of solution
       int work,                 // working dimension, must be > 3.
       int maxit,                // maximum number of main iterations
+      int restart,              // 0->no, 1->restarted algorithm
       double tol,               // convergence tolerance
       double *s,                // output singular vectors at least length nu
       double *U,                // output left singular vectors  m x work
@@ -170,7 +172,7 @@ irlb (void *A,                  // Input data matrix
     {
       j = 0;
 /*  Normalize starting vector */
-      if (iter == 0)
+      if (iter == 0 && ! restart)
         {
           d = F77_NAME (dnrm2) (&n, V, &inc);
           if (d < 2 * eps)

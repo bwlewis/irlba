@@ -40,6 +40,7 @@ irlb(void *A,       // Input data matrix
      int nu,        // dimension of solution
      int m_b,       // working dimension
      int maxit,     // maximum number of Lanzcos iterations
+     int restart,   // 0 -> no restart, 1 -> restarted form
      double tol,    // convergence tolerance
      double *s,     // output singular vectors at least length nu
      double *U,     // output left singular vectors size >= m x m_b
