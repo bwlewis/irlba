@@ -11,8 +11,8 @@
 #'          equal the number of columns of \code{x} can be supplied.
 #' @param scale. a logical value indicating whether the variables should be
 #'          scaled to have unit variance before the analysis takes place.
-#'          The default is ‘FALSE’ for consistency with S, but scaling is often advisable.
-#'          Alternatively, a vector of length equal the number of columns of ‘x’ can be supplied.
+#'          The default is \code{FALSE} for consistency with S, but scaling is often advisable.
+#'          Alternatively, a vector of length equal the number of columns of \code{x} can be supplied.
 #' @param n integer number of principal component vectors to return, must be less than
 #' \code{min(dim(x))}.
 #' @param ... additional arguments passed to \code{\link{irlba}}.
