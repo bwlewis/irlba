@@ -318,7 +318,6 @@ function (A,                     # data matrix
                              # B est. ||A||_2
   Smin <- NULL               # Min value of all computed singular values of
                              # B est. cond(A)
-#  SVTol <- max(sqrteps, tol)  # Tolerance for singular vector convergence
   SVTol <- tol  # Tolerance for singular vector convergence
 
 # Check for user-supplied restart condition
