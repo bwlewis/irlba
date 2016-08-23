@@ -17,7 +17,7 @@ the data for the principal components analysis.}
 
 \item{center}{a logical value indicating whether the variables should be
 shifted to be zero centered. Alternately, a centering vector of length
-equal the number of columns of ‘x’ can be supplied.}
+equal the number of columns of \code{x} can be supplied.}
 
 \item{scale.}{a logical value indicating whether the variables should be
 scaled to have unit variance before the analysis takes place.
