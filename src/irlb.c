@@ -33,12 +33,15 @@ void F77_NAME (dgesvd) (const char *jobu, const char *jobvt, const int *m,
 /* irlb C implementation wrapper
  * X double precision input matrix
  * NU integer number of singular values/vectors to compute must be > 3
- * INIT double precision starting vector length(INIT) must equal nrow(X)
+ * INIT double precision starting vector length(INIT) must equal ncol(X)
  * WORK integer working subspace dimension must be > NU
  * MAXIT integer maximum number of iterations
  * TOL double tolerance
  * EPS double machine epsilon
  * MULT integer 0 X is a dense matrix (dgemm), 1 sparse (cholmod)
+ * RESTART integer 0 no or > 0 indicates restart of dimension n
+ * RV, RW, RS optional restart V W and S values of dimension RESTART
+ *    (only used when RESTART > 0)
  *
  * Returns a list with 6 elements:
  * 1. vector of estimated singular values
@@ -50,7 +53,7 @@ void F77_NAME (dgesvd) (const char *jobu, const char *jobvt, const int *m,
  */
 SEXP
 IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
-      SEXP MULT)
+      SEXP MULT, SEXP RESTART, SEXP RV, SEXP RW, SEXP RS)
 {
   SEXP ANS, S, U, V;
   double *V1, *U1, *W, *F, *B, *BU, *BV, *BS, *BW, *res, *T;
@@ -76,15 +79,16 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   int maxit = INTEGER (MAXIT)[0];
   double tol = REAL (TOL)[0];
   int lwork = 7 * work;
-  int restart = 0;
+  int restart = INTEGER (RESTART)[0];
   double eps = REAL (EPS)[0];
 
   PROTECT (ANS = NEW_LIST (6));
   PROTECT (S = allocVector (REALSXP, nu));
   PROTECT (U = allocVector (REALSXP, m * work));
   PROTECT (V = allocVector (REALSXP, n * work));
-  for (i = 0; i < m; ++i)
-    (REAL (V))[i] = (REAL (INIT))[i];
+  if (restart == 0)
+    for (i = 0; i < n; ++i)
+      (REAL (V))[i] = (REAL (INIT))[i];
 
   /* set up intermediate working storage */
   V1 = (double *) R_alloc (n * work, sizeof (double));
@@ -98,10 +102,19 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   BW = (double *) R_alloc (lwork * lwork, sizeof (double));
   res = (double *) R_alloc (work, sizeof (double));
   T = (double *) R_alloc (lwork, sizeof (double));
+  if (restart > 0)
+    {
+      memcpy (REAL (V), REAL (RV), n * (restart + 1) * sizeof (double));
+      memcpy (W, REAL (RW), m * restart * sizeof (double));
+      memset (B, 0, work * work * sizeof (double));
+      for (i = 0; i < restart; ++i)
+        B[i + work * i] = REAL (RS)[i];
+    }
 
   ret =
-    irlb (A, mult, m, n, nu, work, maxit, restart, tol, REAL (S), REAL (U), REAL (V),
-          &iter, &mprod, eps, lwork, V1, U1, W, F, B, BU, BV, BS, BW, res, T);
+    irlb (A, mult, m, n, nu, work, maxit, restart, tol, REAL (S), REAL (U),
+          REAL (V), &iter, &mprod, eps, lwork, V1, U1, W, F, B, BU, BV, BS,
+          BW, res, T);
   SET_VECTOR_ELT (ANS, 0, S);
   SET_VECTOR_ELT (ANS, 1, U);
   SET_VECTOR_ELT (ANS, 2, V);
@@ -131,7 +144,7 @@ irlb (void *A,                  // Input data matrix
       int nu,                   // dimension of solution
       int work,                 // working dimension, must be > 3.
       int maxit,                // maximum number of main iterations
-      int restart,              // 0->no, 1->restarted algorithm
+      int restart,              // 0->no, n>0 -> restarted algorithm of dimension n
       double tol,               // convergence tolerance
       double *s,                // output singular vectors at least length nu
       double *U,                // output left singular vectors  m x work
@@ -142,9 +155,9 @@ irlb (void *A,                  // Input data matrix
       // working intermediate storage, sizes shown (all double)
       int lwork, double *V1,    // n x work
       double *U1,               // m x work
-      double *W,                // m x work
+      double *W,                // m x work  input when restart > 0
       double *F,                // n
-      double *B,                // work x work
+      double *B,                // work x work  input when restart > 0
       double *BU,               // work x work
       double *BV,               // work x work
       double *BS,               // work
@@ -155,7 +168,7 @@ irlb (void *A,                  // Input data matrix
   double d, S, R, alpha, beta, R_F, SS;
   int jj, kk;
   int converged;
-  int info, j, k = 0;
+  int info, j, k = restart;
   int inc = 1;
   int retval = -3;
   int mprod = 0;
@@ -166,13 +179,14 @@ irlb (void *A,                  // Input data matrix
   if (work < 4 || n < 4 || m < 4)
     return -1;
 
-  memset (B, 0, work * work * sizeof (double));
+  if (restart == 0)
+    memset (B, 0, work * work * sizeof (double));
 /* Main iteration */
   while (iter < maxit)
     {
       j = 0;
 /*  Normalize starting vector */
-      if (iter == 0 && ! restart)
+      if (iter == 0 && restart == 0)
         {
           d = F77_NAME (dnrm2) (&n, V, &inc);
           if (d < 2 * eps)

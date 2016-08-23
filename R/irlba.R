@@ -216,7 +216,6 @@ function (A,                     # data matrix
       k <- work - 1
     }
   }
-#  if (tol < eps) tol <- eps
   w_dim <- work
   if (right_only)
   {
@@ -224,14 +223,41 @@ function (A,                     # data matrix
     work <- min(min(m, n), work + 10 ) # typically need this to help convergence
   }
 
-# Try to use the fast C code path
-  if(fastpath && missingmult && !iscomplex && !deflate && missing(scale) && !is.list(v) && missing(shift))
+# Check for tiny problem, use standard SVD in that case.
+  if (min(m, n) < 6)
   {
+    if(deflate) A <- A - (ds * du) %*% t(dv)
+    if(!missing(scale)) A <- A / scale
+    if(!missing(shift)) A <- A + diag(shift)
+    s <- svd(A)
+    return(list(d=s$d[1:k], u=s$u[, 1:nu, drop=FALSE],
+              v=s$v[, 1:nv, drop=FALSE], iter=0, mprod=0))
+  }
+
+# Try to use the fast C code path
+  if(fastpath && missingmult && !iscomplex && !deflate && missing(scale) && missing(shift))
+  {
+    RESTART <- 0
+    RV <- RW <- RS <- NULL
     if (is.null(v))
       v <- rnorm(n)
+    else if(is.list(v))  # restarted case
+    {
+      if (is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
+      if (max(nu, nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
+      RESTART <- as.integer(length(v$d))
+      RND <- rnorm(n)
+      RND <- orthog(RND, v$v)
+      RV <- cbind(v$v, RND / norm2(RND))
+      RW <- v$u
+      RS <- v$d
+      v <- NULL
+    }
+
     SP <- ifelse(is.matrix(A), 0L, 1L)
     ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
-                 as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP), PACKAGE="irlba")
+                 as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP),
+                 RESTART, RV, RW, RS, PACKAGE="irlba")
     if(ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
