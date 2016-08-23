@@ -99,7 +99,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   BU = (double *) R_alloc (work * work, sizeof (double));
   BV = (double *) R_alloc (work * work, sizeof (double));
   BS = (double *) R_alloc (work, sizeof (double));
-  BW = (double *) R_alloc (lwork * lwork, sizeof (double));
+  BW = (double *) R_alloc (lwork, sizeof (double));
   res = (double *) R_alloc (work, sizeof (double));
   T = (double *) R_alloc (lwork, sizeof (double));
   if (restart > 0)
@@ -161,7 +161,7 @@ irlb (void *A,                  // Input data matrix
       double *BU,               // work x work
       double *BV,               // work x work
       double *BS,               // work
-      double *BW,               // lwork x lwork
+      double *BW,               // lwork
       double *res,              // work
       double *T)                // lwork
 {
@@ -292,8 +292,8 @@ irlb (void *A,                  // Input data matrix
         }
 
       memmove (BU, B, work * work * sizeof (double));   // Make a working copy of B
-      F77_NAME (dgesvd) ("O", "A", &work, &work, BU, &work, BS, BU, &work, BV,
-                         &work, BW, &lwork, &info);
+      F77_NAME (dgesvd) ("O", "A", &work, &work, BU, &work, BS, BU, &work, BV, &work, BW, &lwork, &info);
+
       R = 1.0 / R_F;
       F77_NAME (dscal) (&n, &R, F, &inc);
       for (kk = 0; kk < j; ++kk)
