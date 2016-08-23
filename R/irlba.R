@@ -255,6 +255,7 @@ function (A,                     # data matrix
     }
 
     SP <- ifelse(is.matrix(A), 0L, 1L)
+    if(verbose) message("irlba: using fast C implementation")
     ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
                  as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP),
                  RESTART, RV, RW, RS, PACKAGE="irlba")
@@ -267,10 +268,10 @@ function (A,                     # data matrix
       return(ans[-6])
     }
     errors <- c("invalid dimensions",
-               "didn't converge",
-               "out of memory",
-               "starting vector near the null space",
-               "linear dependency encountered")
+                "didn't converge",
+                "out of memory",
+                "starting vector near the null space",
+                "linear dependency encountered")
     erridx <- abs(ans[[6]])
     if(erridx > 1)
       warning("fast code path encountered error ", errors[erridx], "; re-trying with fastpath=FALSE.")
