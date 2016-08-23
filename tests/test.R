@@ -86,3 +86,13 @@ if(!isTRUE(all.equal(p1$sdev[1:2], p2$sdev[1:2])))
 {
   stop("Failed prcomp test")
 }
+
+# non-square dense matrices
+set.seed(1)
+A <- matrix(rnorm(2000), 20)
+L1 <- irlba(A, nu=2, nv=2, tol=1e-9)
+L2 <- irlba(t(A), nu=2, nv=2, tol=1e-9)
+if(!isTRUE(all.equal(L1$d, L2$d)))
+{
+  stop("Failed nonsquare test")
+}
