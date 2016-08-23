@@ -24,12 +24,6 @@
 
 #include "irlb.h"
 
-void F77_NAME (dgesvd) (const char *jobu, const char *jobvt, const int *m,
-                        const int *n, double *a, const int *lda, double *s,
-                        double *u, const int *ldu, double *vt,
-                        const int *ldvt, double *work, const int *lwork,
-                        int *info);
-
 /* irlb C implementation wrapper
  * X double precision input matrix
  * NU integer number of singular values/vectors to compute must be > 3
@@ -78,7 +72,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   int work = INTEGER (WORK)[0];
   int maxit = INTEGER (MAXIT)[0];
   double tol = REAL (TOL)[0];
-  int lwork = 7 * work;
+  int lwork = 7 * work * (1 + work);
   int restart = INTEGER (RESTART)[0];
   double eps = REAL (EPS)[0];
 
@@ -152,7 +146,7 @@ irlb (void *A,                  // Input data matrix
       int *ITER,                // ouput number of Lanczos iterations
       int *MPROD,               // output number of matrix vector products
       double eps,               // machine epsilon
-      // working intermediate storage, sizes shown (all double)
+      // working intermediate storage, sizes shown
       int lwork, double *V1,    // n x work
       double *U1,               // m x work
       double *W,                // m x work  input when restart > 0
@@ -292,8 +286,9 @@ irlb (void *A,                  // Input data matrix
         }
 
       memmove (BU, B, work * work * sizeof (double));   // Make a working copy of B
-      F77_NAME (dgesvd) ("O", "A", &work, &work, BU, &work, BS, BU, &work, BV, &work, BW, &lwork, &info);
-
+      int *BI = (int *) T;
+      F77_NAME (dgesdd) ("O", &work, &work, BU, &work, BS, BU, &work, BV,
+                         &work, BW, &lwork, BI, &info);
       R = 1.0 / R_F;
       F77_NAME (dscal) (&n, &R, F, &inc);
       for (kk = 0; kk < j; ++kk)
