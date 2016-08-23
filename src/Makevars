@@ -1,2 +1,1 @@
-PKG_LIBS =  $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -fprofile-arcs
-PKG_FCFLAGS = -fprofile-arcs -ftest-coverage
+PKG_LIBS =  $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
