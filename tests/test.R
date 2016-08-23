@@ -8,6 +8,11 @@ if(!isTRUE(all.equal(L$d, S$d[1:2])))
 {
   stop("Failed simple dense signular value test")
 }
+L_slow <- irlba(A, nu=2, nv=2, tol=1e-9, fastpath=FALSE)
+if(!isTRUE(all.equal(L_slow$d, S$d[1:2])))
+{
+  stop("Failed simple dense signular value test (fastpath=FALSE reference implementation)")
+}
 
 # restart
 L1 <- irlba(A, nv=3, v=L)
