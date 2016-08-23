@@ -35,7 +35,7 @@
 #' @param dv DEPRECATED optional subspace deflation vector (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
 #' @param mult optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
-#' @param fastpath try a fast C algorithm implementation if possible, set \code{fastpath=FALSE} to use the reference R implementation.
+#' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation.
 #'
 #' @return
 #' Returns a list with entries:
@@ -226,6 +226,7 @@ function (A,                     # data matrix
 # Check for tiny problem, use standard SVD in that case.
   if (min(m, n) < 6)
   {
+    if(verbose) message("Tiny problem detected, using standard `svd` function.")
     if(deflate) A <- A - (ds * du) %*% t(dv)
     if(!missing(scale)) A <- A / scale
     if(!missing(shift)) A <- A + diag(shift)
@@ -235,7 +236,7 @@ function (A,                     # data matrix
   }
 
 # Try to use the fast C code path
-  if(fastpath && missingmult && !iscomplex && !deflate && missing(scale) && missing(shift))
+  if(fastpath && missingmult && !iscomplex && !deflate && !right_only)
   {
     RESTART <- 0
     RV <- RW <- RS <- NULL
@@ -256,9 +257,21 @@ function (A,                     # data matrix
 
     SP <- ifelse(is.matrix(A), 0L, 1L)
     if(verbose) message("irlba: using fast C implementation")
+    SCALE <- NULL
+    SHIFT <- NULL
+    if(!missing(scale))
+    {
+      if(length(scale) != ncol(A)) stop("scale length must mactch number of matrix columns")
+      SCALE <- scale
+    }
+    if(!missing(shift))
+    {
+      if(length(shift) != 1) stop("shift length must be 1")
+      SHIFT <- shift
+    }
     ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
                  as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP),
-                 RESTART, RV, RW, RS, PACKAGE="irlba")
+                 RESTART, RV, RW, RS, SCALE, SHIFT, PACKAGE="irlba")
     if(ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
@@ -372,7 +385,6 @@ function (A,                     # data matrix
       else avj <- as.vector(avj)
     }
     W[, j_w] <- avj
-
     mprod <- mprod + 1
 
 #   Optionally apply shift

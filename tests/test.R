@@ -8,11 +8,6 @@ if(!isTRUE(all.equal(L$d, S$d[1:2])))
 {
   stop("Failed simple dense signular value test")
 }
-L_slow <- irlba(A, nu=2, nv=2, tol=1e-9, fastpath=FALSE)
-if(!isTRUE(all.equal(L_slow$d, S$d[1:2])))
-{
-  stop("Failed simple dense signular value test (fastpath=FALSE reference implementation)")
-}
 
 # restart
 L1 <- irlba(A, nv=3, v=L)
@@ -26,6 +21,20 @@ s <- sqrt(apply(A, 2, crossprod))
 m <- colMeans(A)
 L <- irlba(A, 3, tol=1e-9, center=m, scale=s)
 S <- svd(scale(A, center=TRUE, scale=s))
+if(!isTRUE(all.equal(L$d, S$d[1:3])))
+{
+  stop("Failed scaling/centering test")
+}
+# Scale only
+L <- irlba(A, 3, tol=1e-9, scale=s)
+S <- svd(scale(A, center=FALSE, scale=s))
+if(!isTRUE(all.equal(L$d, S$d[1:3])))
+{
+  stop("Failed scaling/centering test")
+}
+# Center only
+L <- irlba(A, 3, tol=1e-9, center=m)
+S <- svd(scale(A, center=TRUE, scale=FALSE))
 if(!isTRUE(all.equal(L$d, S$d[1:3])))
 {
   stop("Failed scaling/centering test")

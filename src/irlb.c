@@ -36,6 +36,8 @@
  * RESTART integer 0 no or > 0 indicates restart of dimension n
  * RV, RW, RS optional restart V W and S values of dimension RESTART
  *    (only used when RESTART > 0)
+ * SCALE either NULL (no scaling) or a vector of length ncol(X)
+ * SHIFT either NULL (no shift) a single double-precision number
  *
  * Returns a list with 6 elements:
  * 1. vector of estimated singular values
@@ -47,10 +49,11 @@
  */
 SEXP
 IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
-      SEXP MULT, SEXP RESTART, SEXP RV, SEXP RW, SEXP RS)
+      SEXP MULT, SEXP RESTART, SEXP RV, SEXP RW, SEXP RS, SEXP SCALE,
+      SEXP SHIFT)
 {
   SEXP ANS, S, U, V;
-  double *V1, *U1, *W, *F, *B, *BU, *BV, *BS, *BW, *res, *T;
+  double *V1, *U1, *W, *F, *B, *BU, *BV, *BS, *BW, *res, *T, *scale, *shift;
   int i, iter, mprod, ret, m, n;
 
   int mult = INTEGER (MULT)[0];
@@ -85,6 +88,17 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
       (REAL (V))[i] = (REAL (INIT))[i];
 
   /* set up intermediate working storage */
+  scale = NULL;
+  shift = NULL;
+  if (TYPEOF (SCALE) == REALSXP)
+    {
+      scale = (double *) R_alloc (n * 2, sizeof (double));
+      memcpy (scale, REAL (SCALE), n * sizeof (double));
+    }
+  if (TYPEOF (SHIFT) == REALSXP)
+    {
+      shift = REAL (SHIFT);
+    }
   V1 = (double *) R_alloc (n * work, sizeof (double));
   U1 = (double *) R_alloc (m * work, sizeof (double));
   W = (double *) R_alloc (m * work, sizeof (double));
@@ -104,11 +118,10 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
       for (i = 0; i < restart; ++i)
         B[i + work * i] = REAL (RS)[i];
     }
-
   ret =
-    irlb (A, mult, m, n, nu, work, maxit, restart, tol, REAL (S), REAL (U),
-          REAL (V), &iter, &mprod, eps, lwork, V1, U1, W, F, B, BU, BV, BS,
-          BW, res, T);
+    irlb (A, mult, m, n, nu, work, maxit, restart, tol, scale, shift,
+          REAL (S), REAL (U), REAL (V), &iter, &mprod, eps, lwork, V1, U1, W,
+          F, B, BU, BV, BS, BW, res, T);
   SET_VECTOR_ELT (ANS, 0, S);
   SET_VECTOR_ELT (ANS, 1, U);
   SET_VECTOR_ELT (ANS, 2, V);
@@ -140,6 +153,9 @@ irlb (void *A,                  // Input data matrix
       int maxit,                // maximum number of main iterations
       int restart,              // 0->no, n>0 -> restarted algorithm of dimension n
       double tol,               // convergence tolerance
+      double *scale,            // optional scale (NULL for no scale) size n * 2
+      double *shift,            // optional shift (NULL for no shift)
+      // output values
       double *s,                // output singular vectors at least length nu
       double *U,                // output left singular vectors  m x work
       double *V,                // output right singular vectors n x work
@@ -160,6 +176,7 @@ irlb (void *A,                  // Input data matrix
       double *T)                // lwork
 {
   double d, S, R, alpha, beta, R_F, SS;
+  double *x;
   int jj, kk;
   int converged;
   int info, j, k = restart;
@@ -190,24 +207,36 @@ irlb (void *A,                  // Input data matrix
         }
       else
         j = k;
-/*
- * Compute the Lanczos bidiagonal decomposition:
- * AV  = WB
- * t(A)W = VB + Ft(E)
- * with full reorthogonalization.
- */
+
+/* optionally apply scale */
+      x = V + j * n;
+      if (scale)
+        {
+          x = scale + n;
+          memcpy (scale + n, V + j * n, n * sizeof (double));
+          for (kk = 0; kk < n; ++kk)
+            x[kk] = x[kk] / scale[kk];
+        }
+
       switch (mult)
         {
         case 1:
-          dsdmult ('n', m, n, (CHM_SP) A, V + j * n, W + j * m);
+          dsdmult ('n', m, n, (CHM_SP) A, x, W + j * m);
           break;
         default:
           alpha = 1;
           beta = 0;
-          F77_NAME (dgemv) ("n", &m, &n, &alpha, (double *) A, &m, V + j * n,
+          F77_NAME (dgemv) ("n", &m, &n, &alpha, (double *) A, &m, x,
                             &inc, &beta, W + j * m, &inc);
         }
       mprod++;
+
+/* optionally apply shift in square cases m = n */
+      if (shift)
+        {
+          for (kk = 0; kk < m; ++kk)
+            W[j * m + kk] = W[j * m + kk] + shift[0] * x[kk];
+        }
 
       if (iter > 0)
         {
@@ -238,6 +267,17 @@ irlb (void *A,                  // Input data matrix
                                 W + j * m, &inc, &beta, F, &inc);
             }
           mprod++;
+/* optionally apply shift and scale */
+          if (shift)
+            {
+              for (kk = 0; kk < m; ++kk)
+                F[kk] = F[kk] + shift[0] * W[j * m + kk];
+            }
+          if (scale)
+            {
+              for (kk = 0; kk < n; ++kk)
+                F[kk] = F[kk] / scale[kk];
+            }
           SS = -S;
           F77_NAME (daxpy) (&n, &SS, V + j * n, &inc, F, &inc);
           orthog (V, F, T, n, j + 1, 1);
@@ -251,20 +291,35 @@ irlb (void *A,                  // Input data matrix
               F77_NAME (dscal) (&n, &R, V + (j + 1) * n, &inc);
               B[j * work + j] = S;
               B[(j + 1) * work + j] = R_F;
+
+/* optionally apply scale */
+              x = V + (j + 1) * n;
+              if (scale)
+                {
+                  x = scale + n;
+                  memcpy (x, V + (j + 1) * n, n * sizeof (double));
+                  for (kk = 0; kk < n; ++kk)
+                    x[kk] = x[kk] / scale[kk];
+                }
               switch (mult)
                 {
                 case 1:
-                  dsdmult ('n', m, n, (CHM_SP) A, V + (j + 1) * n,
-                           W + (j + 1) * m);
+                  dsdmult ('n', m, n, (CHM_SP) A, x, W + (j + 1) * m);
                   break;
                 default:
                   alpha = 1.0;
                   beta = 0.0;
                   F77_NAME (dgemv) ("n", &m, &n, &alpha, (double *) A, &m,
-                                    V + (j + 1) * n, &inc, &beta,
-                                    W + (j + 1) * m, &inc);
+                                    x, &inc, &beta, W + (j + 1) * m, &inc);
                 }
               mprod++;
+/* optionally apply shift and scale */
+              if (shift)
+                {
+                  for (kk = 0; kk < m; ++kk)
+                    W[(j + 1) * m + kk] =
+                      W[(j + 1) * m + kk] + shift[0] * x[kk];
+                }
 /* One step of classical Gram-Schmidt */
               R = -R_F;
               F77_NAME (daxpy) (&m, &R, W + j * m, &inc, W + (j + 1) * m,
