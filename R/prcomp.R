@@ -58,8 +58,8 @@
 #'
 #' @seealso \code{\link{prcomp}}
 #' @import Matrix
-#' @importFrom stats rnorm prcomp
-#' @importFrom methods slotNames
+#' @importFrom stats rnorm prcomp sd
+#' @importFrom methods slotNames slot
 #' @export
 prcomp_irlba <- function (x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, ...)
 {
