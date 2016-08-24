@@ -6,7 +6,7 @@ L <- irlba(A, nu=2, nv=2, tol=1e-9)
 S <- svd(A, nu=2, nv=2)
 if(!isTRUE(all.equal(L$d, S$d[1:2])))
 {
-  stop("Failed simple dense signular value test")
+  stop("Failed simple dense singular value test")
 }
 
 # restart
@@ -51,7 +51,7 @@ L <- irlba(A, nu=2, nv=2, tol=1e-9)
 S <- svd(A, nu=2, nv=2)
 if(!isTRUE(all.equal(L$d, S$d[1:2])))
 {
-  stop("Failed simple sparse signular value test")
+  stop("Failed simple sparse singular value test")
 }
 
 # Symmetric partial eigendecomposition
@@ -77,7 +77,7 @@ L <- irlba(A, nu=2, nv=2, tol=1e-9)
 S <- svd(A, nu=2, nv=2)
 if(!isTRUE(all.equal(L$d, S$d[1:2])))
 {
-  stop("Failed complex-valued dense signular value test")
+  stop("Failed complex-valued dense singular value test")
 }
 
 # test extra reorthogonalization

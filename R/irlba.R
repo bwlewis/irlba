@@ -230,8 +230,11 @@ function (A,                     # data matrix
     if(verbose) message("Tiny problem detected, using standard `svd` function.")
     if(!missing(scale)) A <- A / scale
     if(!missing(shift)) A <- A + diag(shift)
-    if(is.null(du)) du <- rep(1, nrow(A))
-    if(deflate) A <- A - (ds * du) %*% t(dv)
+    if(deflate)
+    {
+      if(is.null(du)) du <- rep(1, nrow(A))
+      A <- A - (ds * du) %*% t(dv)
+    }
     s <- svd(A)
     return(list(d=s$d[1:k], u=s$u[, 1:nu, drop=FALSE],
               v=s$v[, 1:nv, drop=FALSE], iter=0, mprod=0))
