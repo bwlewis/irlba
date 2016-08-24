@@ -86,31 +86,31 @@ and Lothar Reichel (Kent State University).
 \section{Introduction}
 
 The {\tt irlba} package provides a fast way to compute partial singular value
-decompositions (SVD) of large matrices. Recent additions to the package can
-also compute fast partial symmetric eigenvalue decompositions. The package is
-an R implementation of the {\it augmented implicitly restarted Lanczos
-bidiagonalization algorithm} of Jim Baglama and Lothar
-Reichel\footnote{Augmented Implicitly Restarted Lanczos Bidiagonalization
-Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput.  2005.}.  Source code
-is maintained at
+decompositions (SVD) of large sparse or dense matrices. Recent additions to the
+package can also compute fast partial symmetric eigenvalue decompositions and
+principal components. The package is an R implementation of the {\it augmented
+implicitly restarted Lanczos bidiagonalization algorithm} of Jim Baglama and
+Lothar Reichel\footnote{Augmented Implicitly Restarted Lanczos
+Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput.
+2005.}.  Source code is maintained at
 \href{https://github.com/bwlewis/irlba}{https://github.com/bwlewis/irlba}.
 
 The {\tt irlba} package works with real- and complex-valued dense R matrices
-and real-valued sparse matrices from the {\tt Matrix} package. The package
-provides several easy ways to define custom matrix arithmetic that works with
-other matrix classes including {\tt big.matrix} from the {\tt bigmemory}
-package and others.  The {\tt irlba} is both faster and more memory efficient
-than the usual R {\tt svd} function for computing a few of the largest singular
-vectors and corresponding singular values of a matrix, and advantage of
-available high-performance linear algebra libraries if R is compiled to use
-them. In particular, the package uses the same BLAS and LAPACK libraries that R
-uses (see \href{https://cran.r-project.org/doc/manuals/R-admin.html#BLAS}{https://cran.r-project.org/doc/manuals/R-admin.html\#BLAS}),
+and real-valued sparse matrices from the {\tt Matrix} package. It provides
+several easy ways to define custom matrix arithmetic that works with other
+matrix classes including {\tt big.matrix} from the {\tt bigmemory} package and
+others.  The {\tt irlba} is both faster and more memory efficient than the
+usual R {\tt svd} function for computing a few of the largest singular vectors
+and corresponding singular values of a matrix, and advantage of available
+high-performance linear algebra libraries if R is compiled to use them. In
+particular, the package uses the same BLAS and LAPACK libraries that R uses
+(see
+\href{https://cran.r-project.org/doc/manuals/R-admin.html#BLAS}{https://cran.r-project.org/doc/manuals/R-admin.html\#BLAS}),
 or the CHOLMOD library from R's Matrix package for sparse matrix problems.
 
 A whirlwind summary of the algorithm follows, along with a few basic examples.
-See the companion package vignette for more substantial applications. A much
-more detailed description and discussion of the algorithm may be found in the
-cited Baglama-Reichel reference.
+A much more detailed description and discussion of the algorithm may be found
+in the cited Baglama-Reichel reference.
 
 
 \section{Partial Singular Value Decomposition}
@@ -165,7 +165,7 @@ Ncells  1096734  58.6    1770749  94.6  1442291  77.1
 Vcells 26685618 203.6   62229965 474.8 52110704 397.6
 
 \end{lstlisting}
-Now, compare with the standard {\tt svd} function:
+Compare with the standard {\tt svd} function:\newpage
 \begin{lstlisting}
 > t1 <- proc.time()
 > S <- svd(A, nu=5, nv=5)
@@ -176,16 +176,39 @@ Now, compare with the standard {\tt svd} function:
            used  (Mb) gc trigger   (Mb)  max used   (Mb)
 Ncells  1097441  58.7    1770749   94.6   1442291   77.1
 Vcells 26741910 204.1  169891972 1296.2 176827295 1349.1
-
-# Compare the (default) relative error in the singular values
+\end{lstlisting}
+The {\tt irlba} method uses about 1/20 elapsed time as the
+{\tt svd} method in this example and less than one third the peak memory.
+The defalut tolerance value yields the following relative error
+in the estimated singular values:
+\begin{lstlisting}
 > sqrt (crossprod(S$d[1:5]-L$d)/crossprod(S$d[1:5]))
             [,1]
 [1,] 4.352641e-10
-
 \end{lstlisting}
-The {\tt irlba} method uses about 1/20 elapsed time as the
-{\tt svd} method in this example (only about 6 per cent of the total CPU time)
-and less than one third the peak memory.
+
+\subsection{Convergence tolerance}
+
+IRLBA is an iterative method that estimates a few largest singular values
+and associated singular vectors. A sketch of the algorithm is outlined
+in Section \ref{sketch} below. The R {\tt tol} argument controls when the algorithm converges.
+Convergence occurs when
+\[
+\|AV_k - US_k\| < \mbox{tol} \cdot \|A\|,
+\]
+where $\|\cdot\|$ means spectral matrix norm, $A$ is the matrix, $V_k$ and $U_k$
+are the {\it estimated} right and left $k$ singular vectors computed by the
+algorithm, and $\|A\|$ is the {\it estimated} spectral norm of the matrix defined
+by the largest singular value computed by the algorithm. Using R notation,
+the algorithm stops when
+\begin{lstlisting}
+L <- irlba(A, k, tol)
+svd(A %*% L$v - L$u %*% diag(L$d))$d[1] < tol * L$d[1]
+\end{lstlisting}
+It's possible, but unlikely, to encounter problems that fail to converge before
+the maximum number of algorithm iterations specified by the {\tt maxit}
+argument.
+
 
 \subsection{Differences with {\tt svd}}
 The {\tt irlba} function is designed to compute a {\it partial} singular
@@ -205,7 +228,7 @@ Problems with difficult convergence properties are not likely to be
 encountered, but the method will fail with an error after the iteration limit
 is reached in those cases.
 \end{enumerate}
-Watch out for the first difference noted above!
+Watch out especially for the first difference noted above!
 
 
 \subsection{Principal Components}
@@ -223,6 +246,9 @@ Use the following arguments to the {\tt irlba} function, or the new
      equal to the number of columns of the matrix, then each column is
      divided by the corresponding value from {\tt scale}.
 \end{itemize}
+Both centering and scaling options are performed implicitly in the algorithm
+and, for instance, do not affect sparsity of the input matrix or increase
+storage requirements.
 The following
 example compares the output of the usual {\tt prcomp} function with
 output from {\tt irlba}.
@@ -250,7 +276,7 @@ Proportion of Variance 0.443 0.2921 0.2649
 Cumulative Proportion  0.443 0.7351 1.0000
 \end{lstlisting}
 Alternatively, you can compute principal components directly using the
-singular value decomposition:
+singular value decomposition and the {\tt center} option:
 \begin{lstlisting}
 > p3 <- svd(scale(x, center=colMeans(x), scale=FALSE))
 > p4 <- irlba(x, 3, center=colMeans(x))
@@ -331,7 +357,7 @@ implementation is used instead of the faster C code path in newer package
 versions.
 
 
-\section{A Quick Summary of the IRLBA Method}
+\section{A Quick Summary of the IRLBA Method}\label{sketch}
 \subsection{Partial Lanczos Bidiagonalization}
 
 Start with a given vector $p_1$. Compute $m$ steps of the Lanczos process:

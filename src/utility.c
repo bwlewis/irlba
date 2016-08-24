@@ -61,7 +61,7 @@ convtests (int Bsz, int n, double tol, double Smax,
   int j, Len_res = 0;
   for (j = 0; j < Bsz; ++j)
     {
-      if (fabs(residuals[j]) <= tol * Smax)
+      if (fabs(residuals[j]) < tol * Smax)
         Len_res++;
     }
   if (Len_res >= n)

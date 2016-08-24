@@ -1,7 +1,7 @@
 #' Find a few approximate largest singular values and corresponding
 #' singular vectors of a matrix.
 #'
-#' The augmented implicitly restarted Lanczos bi-diagonalization algorithm
+#' The augmented implicitly restarted Lanczos bidiagonalization algorithm
 #' (IRLBA) finds a few approximate largest singular values and corresponding
 #' singular vectors of a sparse or dense matrix using a method of Baglama and
 #' Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
@@ -39,12 +39,12 @@
 #'
 #' @return
 #' Returns a list with entries:
-#' \itemize{
-#'   \item{d}{ max(nu, nv) approximate singular values}
-#'   \item{u}{ nu approximate left singular vectors (only when right_only=FALSE)}
-#'   \item{v}{ nv approximate right singular vectors}
-#'   \item{iter}{ The number of Lanczos iterations carried out}
-#'   \item{mprod}{ The total number of matrix vector products carried out}
+#' \describe{
+#'   \item{d:}{ max(nu, nv) approximate singular values}
+#'   \item{u:}{ nu approximate left singular vectors (only when right_only=FALSE)}
+#'   \item{v:}{ nv approximate right singular vectors}
+#'   \item{iter:}{ The number of Lanczos iterations carried out}
+#'   \item{mprod:}{ The total number of matrix vector products carried out}
 #' }
 #'
 #' @note
@@ -90,10 +90,26 @@
 #'
 #' Use the \code{v} option to supply a starting vector for the iterative
 #' method. A random vector is used by default. Optionally set \code{v} to
-#' the ouput of a previous run of \code{irlba} to restart the method, adding
+#' the output of a previous run of \code{irlba} to restart the method, adding
 #' additional singular values/vectors without recomputing the solution
 #' subspace. See the examples.
 #'
+#' The function may generate the following warnings:
+#' \itemize{
+#'   \item{"did not converge--results might be invalid!; try increasing maxit or fastpath=FALSE" means that the algorithm didn't
+#'   converge -- this is potentially a serious problem and the returned results may not be valid. \code{irlba}
+#'   reports a warning here instead of an error so that you can inspect whatever is returned. If this
+#'   happens, carefully heed the warning and inspect the result.}
+#'   \item{"You're computing a large percentage of total singular values, standard svd might work better!"
+#'     \code{irlba} is designed to efficiently compute a few of the largest singular values and associated
+#'      singular vectors of a matrix. The standard \code{svd} function will be more efficient for computing
+#'      large numbers of singular values than \code{irlba}.}
+#'    \item{"convergence criterion below machine epsilon" means that the product of \code{tol} and the
+#'      largest estimated singular value is really small and the normal convergence criterion is only
+#'      met up to round off error.}
+#' }
+#' The function might return an error for several reasons including a situation when the starting
+#' vector \code{v} is near the null space of the matrix. In that case, try a different \code{v}.
 #'
 #' @references
 #' Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
@@ -108,11 +124,13 @@
 #' # Compare with svd
 #' svd(A)$d[1:5]
 #'
-#' # Principal components
+#' # Principal components (see also prcomp_irlba)
 #' P <- irlba(A, nv=1, center=colMeans(A))
 #'
-#' # Compare with prcomp (might vary up to sign)
-#' cbind(P$v, prcomp(A)$rotation[, 1])
+#' # Compare with prcomp and prcomp_irlba (might vary up to sign)
+#' cbind(P$v,
+#'       prcomp(A)$rotation[, 1],
+#'       prcomp_irlba(A)$rotation[, 1])
 #'
 #' # A custom matrix multiplication function that scales the columns of A
 #' # (cf the scale option). This function scales the columns of A to unit norm.
@@ -289,7 +307,8 @@ function (A,                     # data matrix
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
       ans$u <- matrix(head(ans$u, m * nu), nrow=m, ncol=nu)
       ans$v <- matrix(head(ans$v, n * nv), nrow=n, ncol=nv)
-      if (ans[[6]] == -2) warning("did not converge; try increasing maxit or fastpath=FALSE")
+      if(tol * ans$d[1] < eps) warning("convergence criterion below machine epsilon")
+      if (ans[[6]] == -2) warning("did not converge--results might be invlaid!; try increasing maxit or fastpath=FALSE")
       return(ans[-6])
     }
     errors <- c("invalid dimensions",
@@ -299,7 +318,7 @@ function (A,                     # data matrix
                 "linear dependency encountered")
     erridx <- abs(ans[[6]])
     if (erridx > 1)
-      warning("fast code path encountered error ", errors[erridx], "; re-trying with fastpath=FALSE.")
+      warning("fast code path error ", errors[erridx], "; re-trying with fastpath=FALSE.")
   }
 
 # Allocate memory for W and F:
@@ -335,7 +354,8 @@ function (A,                     # data matrix
 # ---------------------------------------------------------------------
   B <- NULL                  # Bidiagonal matrix
   Bsz <- NULL                # Size of B
-  eps23 <- eps ^ (2 / 3)         # Used for Smax/avoids using zero
+  eps23 <- eps ^ (2 / 3)     # Used for Smax/avoids using zero
+  eps2 <- 2 * eps
   iter <- 1                  # Man loop iteration count
   mprod <- 0                 # Number of matrix-vector products
   R_F <- NULL                # 2-norm of residual vector F
@@ -419,8 +439,8 @@ function (A,                     # data matrix
 
     S <- norm2(W[, j_w, drop=FALSE])
 #   Check for linearly dependent vectors
-    if (S < SVTol && j == 1) stop("Starting vector near the null space")
-    if (S < SVTol)
+    if (S < eps2 && j == 1) stop("starting vector near the null space")
+    if (S < eps2)
     {
       W[, j_w] <- rnorm(nrow(W))
       if (w_dim > 1) W[, j] <- orthog(W[, j], W[, 1:(j - 1)])
@@ -449,7 +469,7 @@ function (A,                     # data matrix
       {
         R <- norm2(F)
 #       Check for linear dependence
-        if (R <= SVTol)
+        if (R < eps2)
         {
           F <- matrix(rnorm(dim(V)[1]), dim(V)[1], 1)
           F <- orthog(F, V[, 1:j, drop=FALSE])
@@ -493,7 +513,7 @@ function (A,                     # data matrix
         if (reorth && w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
         S <- norm2(W[, jp1_w])
 #       Check for linear dependence
-        if (S <= SVTol)
+        if (S < eps2)
         {
           W[, jp1_w] <- rnorm(nrow(W))
           if (w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
@@ -573,13 +593,14 @@ function (A,                     # data matrix
 # End of the main iteration loop
 # Output results
 # ---------------------------------------------------------------------
-  if (iter > maxit) warning("did not converge, try increasing maxit")
+  if (iter > maxit) warning("did not converge--results might be invalid!; try increasing maxit")
   d <- Bsvd$d[1:k_org]
   if (!right_only)
   {
     u <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[, 1:k_org, drop=FALSE]
   }
   v <- V[, 1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[, 1:k_org, drop=FALSE]
+  if(tol * d[1] < eps) warning("convergence criterion below machine epsilon")
   if (right_only)
     return(list(d=d, v=v[, 1:nv, drop=FALSE], iter=iter, mprod=mprod))
   return(list(d=d, u=u[, 1:nu, drop=FALSE],

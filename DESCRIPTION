@@ -3,7 +3,7 @@ Type: Package
 Title: Fast Truncated SVD, PCA and Symmetric Eigendecomposition for Large Dense
     and Sparse Matrices
 Version: 2.1.0
-Date: 2015-10-09
+Date: 2016-08-24
 Author: Jim Baglama and Lothar Reichel
 Maintainer: Bryan W. Lewis <blewis@illposed.net>
 Description: Fast and memory efficient methods for truncated singular and

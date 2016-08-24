@@ -59,16 +59,16 @@ column of \code{A}; must be as long as the number of columns of \code{A} and may
 }
 \value{
 Returns a list with entries:
-\itemize{
-  \item{d}{ max(nu, nv) approximate singular values}
-  \item{u}{ nu approximate left singular vectors (only when right_only=FALSE)}
-  \item{v}{ nv approximate right singular vectors}
-  \item{iter}{ The number of Lanczos iterations carried out}
-  \item{mprod}{ The total number of matrix vector products carried out}
+\describe{
+  \item{d:}{ max(nu, nv) approximate singular values}
+  \item{u:}{ nu approximate left singular vectors (only when right_only=FALSE)}
+  \item{v:}{ nv approximate right singular vectors}
+  \item{iter:}{ The number of Lanczos iterations carried out}
+  \item{mprod:}{ The total number of matrix vector products carried out}
 }
 }
 \description{
-The augmented implicitly restarted Lanczos bi-diagonalization algorithm
+The augmented implicitly restarted Lanczos bidiagonalization algorithm
 (IRLBA) finds a few approximate largest singular values and corresponding
 singular vectors of a sparse or dense matrix using a method of Baglama and
 Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
@@ -116,9 +116,26 @@ a matrix. See the examples.
 
 Use the \code{v} option to supply a starting vector for the iterative
 method. A random vector is used by default. Optionally set \code{v} to
-the ouput of a previous run of \code{irlba} to restart the method, adding
+the output of a previous run of \code{irlba} to restart the method, adding
 additional singular values/vectors without recomputing the solution
 subspace. See the examples.
+
+The function may generate the following warnings:
+\itemize{
+  \item{"did not converge--results might be invalid!; try increasing maxit or fastpath=FALSE" means that the algorithm didn't
+  converge -- this is potentially a serious problem and the returned results may not be valid. \code{irlba}
+  reports a warning here instead of an error so that you can inspect whatever is returned. If this
+  happens, carefully heed the warning and inspect the result.}
+  \item{"You're computing a large percentage of total singular values, standard svd might work better!"
+    \code{irlba} is designed to efficiently compute a few of the largest singular values and associated
+     singular vectors of a matrix. The standard \code{svd} function will be more efficient for computing
+     large numbers of singular values than \code{irlba}.}
+   \item{"convergence criterion below machine epsilon" means that the product of \code{tol} and the
+     largest estimated singular value is really small and the normal convergence criterion is only
+     met up to round off error.}
+}
+The function might return an error for several reasons including a situation when the starting
+vector \code{v} is near the null space of the matrix. In that case, try a different \code{v}.
 }
 \examples{
 set.seed(1)
@@ -130,11 +147,11 @@ S$d
 # Compare with svd
 svd(A)$d[1:5]
 
-# Principal components
+# Principal components (see also prcomp_irlba)
 P <- irlba(A, nv=1, center=colMeans(A))
 
-# Compare with prcomp (might vary up to sign)
-cbind(P$v, prcomp(A)$rotation[, 1])
+# Compare with prcomp and prcomp_irlba (might vary up to sign)
+cbind(P$v, prcomp(A)$rotation[, 1], prcomp_irlba(A)$rotation[, 1])
 
 # A custom matrix multiplication function that scales the columns of A
 # (cf the scale option). This function scales the columns of A to unit norm.

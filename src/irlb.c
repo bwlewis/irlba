@@ -239,7 +239,7 @@ irlb (void *A,                  // Input data matrix
                             &inc, &beta, W + j * m, &inc);
         }
       mprod++;
-      R_CheckUserInterrupt();
+      R_CheckUserInterrupt ();
 
 /* optionally apply shift in square cases m = n */
       if (shift)
@@ -264,10 +264,8 @@ irlb (void *A,                  // Input data matrix
         }
 
       S = F77_NAME (dnrm2) (&m, W + j * m, &inc);
-      if (S < tol && j == 1)
+      if (S < 2 * eps && j == 1)
         return -4;
-      if (S < eps)
-        return -5;
       SS = 1.0 / S;
       F77_NAME (dscal) (&m, &SS, W + j * m, &inc);
 
@@ -286,7 +284,7 @@ irlb (void *A,                  // Input data matrix
                                 W + j * m, &inc, &beta, F, &inc);
             }
           mprod++;
-          R_CheckUserInterrupt();
+          R_CheckUserInterrupt ();
 /* optionally apply shift and scale */
           if (shift)
             {
@@ -304,14 +302,11 @@ irlb (void *A,                  // Input data matrix
           R_F = F77_NAME (dnrm2) (&n, F, &inc);
           if (j + 1 < work)
             {
-              if (R_F < eps)
-                return -5;
               R = 1.0 / R_F;
               memmove (V + (j + 1) * n, F, n * sizeof (double));
               F77_NAME (dscal) (&n, &R, V + (j + 1) * n, &inc);
               B[j * work + j] = S;
               B[(j + 1) * work + j] = R_F;
-
 /* optionally apply scale */
               x = V + (j + 1) * n;
               if (scale)
@@ -333,7 +328,7 @@ irlb (void *A,                  // Input data matrix
                                     x, &inc, &beta, W + (j + 1) * m, &inc);
                 }
               mprod++;
-              R_CheckUserInterrupt();
+              R_CheckUserInterrupt ();
 /* optionally apply shift */
               if (shift)
                 {
@@ -357,8 +352,6 @@ irlb (void *A,                  // Input data matrix
               if (iter > 1)
                 orthog (W, W + (j + 1) * m, T, m, j + 1, 1);
               S = F77_NAME (dnrm2) (&m, W + (j + 1) * m, &inc);
-              if (S < eps)
-                return -5;
               SS = 1.0 / S;
               F77_NAME (dscal) (&m, &SS, W + (j + 1) * m, &inc);
             }
@@ -375,13 +368,17 @@ irlb (void *A,                  // Input data matrix
                          &work, BW, &lwork, BI, &info);
       R = 1.0 / R_F;
       F77_NAME (dscal) (&n, &R, F, &inc);
-      for (kk = 0; kk < j; ++kk)
-        res[kk] = R_F * BU[kk * work + (j - 1)];
+/* Force termination after encountering linear dependence */
+      if (R_F < 2 * eps)
+        R_F = 0;
 
-/* Update k to be the number of converged singular values. */
+      Smax = 0;
       for (jj = 0; jj < j; ++jj)
         if (BS[jj] > Smax)
           Smax = BS[jj];
+      for (kk = 0; kk < j; ++kk)
+        res[kk] = R_F * BU[kk * work + (j - 1)];
+/* Update k to be the number of converged singular values. */
       convtests (j, nu, tol, Smax, res, &k, &converged);
       if (converged == 1)
         {
