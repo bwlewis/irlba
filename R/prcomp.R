@@ -64,29 +64,29 @@
 prcomp_irlba <- function (x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, ...)
 {
   a <- names(as.list(match.call()))
-  if("tol" %in% a)
+  if ("tol" %in% a)
     warning("The `tol` truncation argument from `prcomp` is not supported by
 `prcomp_irlba`. If specified, `tol` is passed to the `irlba` function to
 control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
 # Try to convert to a matrix...
-  if(!is.matrix(x)) x <- as.matrix(x)
+  if (!is.matrix(x)) x <- as.matrix(x)
   args <- list(A=x, nv=n)
-  if(is.logical(center))
+  if (is.logical(center))
   {
-    if(center) args$center <- colMeans(x)
+    if (center) args$center <- colMeans(x)
   } else args$center <- center
-  if(is.logical(scale.))
+  if (is.logical(scale.))
   {
-    if(scale.) args$scale <- apply(x, 2, sd)
+    if (scale.) args$scale <- apply(x, 2, sd)
   } else args$scale <- scale.
-  if(!missing(...)) args <- c(args, list(...))
+  if (!missing(...)) args <- c(args, list(...))
 
   s <- do.call(irlba, args=args)
   ans <- list(sdev=s$d / sqrt(max(1, nrow(x) - 1)), rotation=s$v)
   colnames(ans$rotation) <- paste("PC", seq(1,ncol(ans$rotation)), sep="")
   ans$center <- args$center
   ans$scale <- args$scale
-  if(retx)
+  if (retx)
   {
     ans <- c(ans, list(x = s$d * s$u))
     colnames(ans$x) <- paste("PC", seq(1,ncol(ans$rotation)), sep="")

@@ -180,7 +180,7 @@ function (A,                     # data matrix
   {
     if (deflate) stop("the center parameter can't be specified together with deflation parameters")
     if (length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
-    if(fastpath) du <- NULL
+    if (fastpath) du <- NULL
     else du <- 1
     ds <- 1
     dv <- center
@@ -227,12 +227,12 @@ function (A,                     # data matrix
 # Check for tiny problem, use standard SVD in that case.
   if (min(m, n) < 6)
   {
-    if(verbose) message("Tiny problem detected, using standard `svd` function.")
-    if(!missing(scale)) A <- A / scale
-    if(!missing(shift)) A <- A + diag(shift)
-    if(deflate)
+    if (verbose) message("Tiny problem detected, using standard `svd` function.")
+    if (!missing(scale)) A <- A / scale
+    if (!missing(shift)) A <- A + diag(shift)
+    if (deflate)
     {
-      if(is.null(du)) du <- rep(1, nrow(A))
+      if (is.null(du)) du <- rep(1, nrow(A))
       A <- A - (ds * du) %*% t(dv)
     }
     s <- svd(A)
@@ -241,14 +241,14 @@ function (A,                     # data matrix
   }
 
 # Try to use the fast C-language code path
-  if(deflate) fastpath <- fastpath && is.null(du)
-  if(fastpath && missingmult && !iscomplex && !right_only)
+  if (deflate) fastpath <- fastpath && is.null(du)
+  if (fastpath && missingmult && !iscomplex && !right_only)
   {
     RESTART <- 0
     RV <- RW <- RS <- NULL
     if (is.null(v))
       v <- rnorm(n)
-    else if(is.list(v))  # restarted case
+    else if (is.list(v))  # restarted case
     {
       if (is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
       if (max(nu, nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
@@ -262,34 +262,34 @@ function (A,                     # data matrix
     }
 
     SP <- ifelse(is.matrix(A), 0L, 1L)
-    if(verbose) message("irlba: using fast C implementation")
+    if (verbose) message("irlba: using fast C implementation")
     SCALE <- NULL
     SHIFT <- NULL
     CENTER <- NULL
-    if(!missing(scale))
+    if (!missing(scale))
     {
-      if(length(scale) != ncol(A)) stop("scale length must mactch number of matrix columns")
+      if (length(scale) != ncol(A)) stop("scale length must mactch number of matrix columns")
       SCALE <- as.double(scale)
     }
-    if(!missing(shift))
+    if (!missing(shift))
     {
-      if(length(shift) != 1) stop("shift length must be 1")
+      if (length(shift) != 1) stop("shift length must be 1")
       SHIFT <- as.double(shift)
     }
-    if(deflate)
+    if (deflate)
     {
-      if(length(center) != ncol(A)) stop("the centering vector length must match the number of matrix columns")
+      if (length(center) != ncol(A)) stop("the centering vector length must match the number of matrix columns")
       CENTER <- as.double(center)
     }
     ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
                  as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP),
                  RESTART, RV, RW, RS, SCALE, SHIFT, CENTER, PACKAGE="irlba")
-    if(ans[[6]] == 0 || ans[[6]] == -2)
+    if (ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
       ans$u <- matrix(head(ans$u, m * nu), nrow=m, ncol=nu)
       ans$v <- matrix(head(ans$v, n * nv), nrow=n, ncol=nv)
-      if(ans[[6]] == -2) warning("did not converge; try increasing maxit or fastpath=FALSE")
+      if (ans[[6]] == -2) warning("did not converge; try increasing maxit or fastpath=FALSE")
       return(ans[-6])
     }
     errors <- c("invalid dimensions",
@@ -298,7 +298,7 @@ function (A,                     # data matrix
                 "starting vector near the null space",
                 "linear dependency encountered")
     erridx <- abs(ans[[6]])
-    if(erridx > 1)
+    if (erridx > 1)
       warning("fast code path encountered error ", errors[erridx], "; re-trying with fastpath=FALSE.")
   }
 
@@ -391,9 +391,9 @@ function (A,                     # data matrix
     }
 #   Handle sparse products.
     avj <- mult(A, VJ)
-    if("Matrix" %in% attributes(class(avj)) && "x" %in% slotNames(avj))
+    if ("Matrix" %in% attributes(class(avj)) && "x" %in% slotNames(avj))
     {
-      if(length(avj@x) == nrow(W)) avj <- slot(avj, "x")
+      if (length(avj@x) == nrow(W)) avj <- slot(avj, "x")
       else avj <- as.vector(avj)
     }
     W[, j_w] <- avj
@@ -419,7 +419,7 @@ function (A,                     # data matrix
 
     S <- norm2(W[, j_w, drop=FALSE])
 #   Check for linearly dependent vectors
-    if ( (S < SVTol) && (j == 1)) stop("Starting vector near the null space")
+    if ((S < SVTol) && (j == 1)) stop("Starting vector near the null space")
     if (S < SVTol)
     {
       W[, j_w] <- rnorm(nrow(W))
@@ -538,7 +538,7 @@ function (A,                     # data matrix
       Smin <- min(Smin, Bsvd$d[Bsz])
     }
     Smax <- max(eps23, Smax)
-    if ( (Smin / Smax < sqrteps) && !reorth)
+    if ((Smin / Smax < sqrteps) && !reorth)
     {
       warning("The matrix is ill-conditioned. Basis will be reorthogonalized.")
       reorth <- TRUE

@@ -6,7 +6,8 @@
 #'
 #' @param x numeric real-valued dense or sparse matrix.
 #' @param n number of largest eigenvalues and corresponding eigenvectors to compute.
-#' @param symmetric \code{TRUE} indicates \code{x} is a symmetric matrix (the default); specify \code{symmetric=FALSE} to compute the largest eigenvalues and corresponding eigenvectors of \code{t(x) \%*\% x} instead.
+#' @param symmetric \code{TRUE} indicates \code{x} is a symmetric matrix (the default);
+#'   specify \code{symmetric=FALSE} to compute the largest eigenvalues and corresponding eigenvectors of \code{t(x) \%*\% x} instead.
 #' @param ... optional additional parameters passed to the \code{irlba} function.
 #'
 #' @return
@@ -37,11 +38,17 @@
 #' # Compare with eigen
 #' eigen(x)$values[1:3]
 #'
+#' # Use symmetric=FALSE to compute the eigenvalues of t(x) %*% x for general
+#' # matrices x:
+#' x <- matrix(rnorm(100), 10)
+#' partial_eigen(x, 3, symmetric=FALSE)$values
+#' eigen(crossprod(x))$values
+#'
 #' @seealso \code{\link{eigen}}, \code{\link{irlba}}
 #' @export
 partial_eigen <- function(x, n=5, symmetric=TRUE, ...)
 {
-  if (n > 0.5 * min(nrow(x),ncol(x)))
+  if (n > 0.5 * min(nrow(x), ncol(x)))
   {
     warning("You're computing a large percentage of total eigenvalues, the standard eigen function will likely work better!")
   }

@@ -55,7 +55,7 @@ column of \code{A}; must be as long as the number of columns of \code{A} and may
 
 \item{mult}{optional custom matrix multiplication function (default is \code{\%*\%}, see notes).}
 
-\item{fastpath}{try a fast C algorithm implementation if possible, set \code{fastpath=FALSE} to use the reference R implementation.}
+\item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation.}
 }
 \value{
 Returns a list with entries:

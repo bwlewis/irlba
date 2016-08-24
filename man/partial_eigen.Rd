@@ -11,7 +11,8 @@ partial_eigen(x, n = 5, symmetric = TRUE, ...)
 
 \item{n}{number of largest eigenvalues and corresponding eigenvectors to compute.}
 
-\item{symmetric}{\code{TRUE} indicates \code{x} is a symmetric matrix (the default); specify \code{symmetric=FALSE} to compute the largest eigenvalues and corresponding eigenvectors of \code{t(x) \%*\% x} instead.}
+\item{symmetric}{\code{TRUE} indicates \code{x} is a symmetric matrix (the default);
+specify \code{symmetric=FALSE} to compute the largest eigenvalues and corresponding eigenvectors of \code{t(x) \%*\% x} instead.}
 
 \item{...}{optional additional parameters passed to the \code{irlba} function.}
 }
@@ -44,6 +45,12 @@ partial_eigen(x, 3)$values
 
 # Compare with eigen
 eigen(x)$values[1:3]
+
+# Use symmetric=FALSE to compute the eigenvalues of t(x) \%*\% x for general
+# matrices x:
+x <- matrix(rnorm(100), 10)
+partial_eigen(x, 3, symmetric=FALSE)$values
+eigen(crossprod(x))$values
 
 }
 \references{
