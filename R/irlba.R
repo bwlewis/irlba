@@ -269,17 +269,17 @@ function (A,                     # data matrix
     if(!missing(scale))
     {
       if(length(scale) != ncol(A)) stop("scale length must mactch number of matrix columns")
-      SCALE <- scale
+      SCALE <- as.double(scale)
     }
     if(!missing(shift))
     {
       if(length(shift) != 1) stop("shift length must be 1")
-      SHIFT <- shift
+      SHIFT <- as.double(shift)
     }
     if(deflate)
     {
       if(length(center) != ncol(A)) stop("the centering vector length must match the number of matrix columns")
-      CENTER <- center
+      CENTER <- as.double(center)
     }
     ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
                  as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP),

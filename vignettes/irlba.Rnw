@@ -93,19 +93,19 @@ bidiagonalization algorithm} of Jim Baglama and Lothar
 Reichel\footnote{Augmented Implicitly Restarted Lanczos Bidiagonalization
 Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput.  2005.}.  Source code
 is maintained at
-\href{https://github.com/bwlewis/irlba}{https://github.com/bwlewis/irlba}.  An
-old introductory example using the Netflix prize data set can be found at
-\href{http://goo.gl/fRech}{http://goo.gl/fRech}.
+\href{https://github.com/bwlewis/irlba}{https://github.com/bwlewis/irlba}.
 
-The {\tt irlba} package works with real- and complex-valued dense R
-matrices and real-valued sparse matrices from the {\tt Matrix} package. The
-package provides a simple way to define custom matrix arithmetic that works
-with other matrix classes including {\tt big.matrix} from the {\tt bigmemory}
+The {\tt irlba} package works with real- and complex-valued dense R matrices
+and real-valued sparse matrices from the {\tt Matrix} package. The package
+provides several easy ways to define custom matrix arithmetic that works with
+other matrix classes including {\tt big.matrix} from the {\tt bigmemory}
 package and others.  The {\tt irlba} is both faster and more memory efficient
 than the usual R {\tt svd} function for computing a few of the largest singular
-vectors and corresponding singular values of a matrix.  The package takes
-advantage of available high-performance linear algebra libraries if R is
-compiled to use them.
+vectors and corresponding singular values of a matrix, and advantage of
+available high-performance linear algebra libraries if R is compiled to use
+them. In particular, the package uses the same BLAS and LAPACK libraries that R
+uses (see \href{https://cran.r-project.org/doc/manuals/R-admin.html#BLAS}{https://cran.r-project.org/doc/manuals/R-admin.html\#BLAS}),
+or the CHOLMOD library from R's Matrix package for sparse matrix problems.
 
 A whirlwind summary of the algorithm follows, along with a few basic examples.
 See the companion package vignette for more substantial applications. A much
@@ -146,22 +146,23 @@ A_k &:=& \sum_{j=1}^k \sigma_j u_j v_j^T.\\
 The following simple example shows how to use {\tt irlba} to compute the five
 largest singular values and corresponding singular vectors of a
 $5000\times5000$ matrix. We compare to the usual R {\tt svd} function and
-report timings for our test machine, an 8-CPU core, 2.0\, GHz AMD Opteron
-server with 16\,GB RAM, using R version 2.13.0 compiled with the high
-performance AMD ACML core math libraries.
+report timings for our test machine, a 4-CPU core, 3.0\, GHz AMD  A10-7850K
+personal computer with 16\,GB RAM, using R version 3.3.1 using the high
+performance AMD ACML core math library BLAS and LAPACK.
 \lstset{columns=flexible, basicstyle={\ttfamily\slshape}}
 \begin{lstlisting}
 > library('irlba')
+> set.seed(1)
 > A <- matrix(rnorm(5000*5000), 5000)
 > t1 <- proc.time()
-> L <- irlba(A, nu=5, nv=5)
+> L <- irlba(A, 5)
 > print(proc.time() - t1)
    user  system elapsed
- 41.640   0.470  36.985
+ 17.440   0.192   4.417
 > gc()
            used  (Mb) gc trigger  (Mb) max used  (Mb)
-Ncells   137098   7.4     350000  18.7   350000  18.7
-Vcells 25180235 192.2   52881183 403.5 52881005 403.5
+Ncells  1096734  58.6    1770749  94.6  1442291  77.1
+Vcells 26685618 203.6   62229965 474.8 52110704 397.6
 
 \end{lstlisting}
 Now, compare with the standard {\tt svd} function:
@@ -170,21 +171,21 @@ Now, compare with the standard {\tt svd} function:
 > S <- svd(A, nu=5, nv=5)
 > print(proc.time() - t1)
    user  system elapsed
-616.035   4.396 187.371
+277.092  11.552  74.425
 > gc()
            used  (Mb) gc trigger   (Mb)  max used   (Mb)
-Ncells   137109   7.4     350000   18.7    350000   18.7
-Vcells 25235234 192.6  168397903 1284.8 200272760 1528.0
+Ncells  1097441  58.7    1770749   94.6   1442291   77.1
+Vcells 26741910 204.1  169891972 1296.2 176827295 1349.1
 
-# Compare the singular values computed by each method:
+# Compare the (default) relative error in the singular values
 > sqrt (crossprod(S$d[1:5]-L$d)/crossprod(S$d[1:5]))
             [,1]
-[1,] 1.56029e-12
+[1,] 4.352641e-10
 
 \end{lstlisting}
-The {\tt irlba} method uses less than one tenth total CPU time as the
-{\tt svd} method in this example, less than one fifth the total run time,
-and about one fourth the peak memory.
+The {\tt irlba} method uses about 1/20 elapsed time as the
+{\tt svd} method in this example (only about 6 per cent of the total CPU time)
+and less than one third the peak memory.
 
 \subsection{Differences with {\tt svd}}
 The {\tt irlba} function is designed to compute a {\it partial} singular
@@ -199,9 +200,8 @@ singular values are computed. The standard R {\tt svd} function always
 returns the {\it total} set of singular values for the matrix, regardless of how
 many singular vectors are specified.
 \item The {\tt irlba} function is an iterative method that continues until
-either a tolerance or maximum number of iterations is reached. There exists
-pathological problems for which {\tt irlba} does not converge (see the
-references for more information). Such problems are not likely to be
+either a tolerance or maximum number of iterations is reached.
+Problems with difficult convergence properties are not likely to be
 encountered, but the method will fail with an error after the iteration limit
 is reached in those cases.
 \end{enumerate}
@@ -210,10 +210,11 @@ Watch out for the first difference noted above!
 
 \subsection{Principal Components}
 
-Version 2.0.0 of the package introduces simple syntax for efficiently computing
-partial SVDs of matrices after centering and scaling their columns and other
-adjustments. These options are useful, for example, to compute principal
-components analysis (PCA). Three categories of options are available:
+Version 2.1.0 of the package introduces optional arguments and {\tt prcomp}-like
+function syntax for efficiently computing partial SVDs of matrices after
+centering and scaling their columns and other adjustments.
+Use the following arguments to the {\tt irlba} function, or the new
+{\tt irlba\_prcomp} function for PCA:
 \begin{itemize}
 \item {\tt center}: if {\tt center} is a numeric vector with length equal to
      the number of columns of the matrix, then each column of the matrix has the
@@ -221,49 +222,69 @@ components analysis (PCA). Three categories of options are available:
 \item {\tt scale}: if 'scale' is a numeric vector with length
      equal to the number of columns of the matrix, then each column is
      divided by the corresponding value from {\tt scale}.
-\item {\tt du, ds, dv}:  Optional real-valued deflation parameters to compute
-     the rank-one deflated partial SVD of {\tt A - ds*du \%*\% t(dv)}, where
-     {\tt A} is the data matrix, {\tt ds} a real-valued scalar,
-     and {\tt du} and {\tt dv} real-valued numeric vectors defining the
-     subspace such that {\tt t(du) \%*\% (A - ds * du \%*\% t(dv)) = 0}.
-     See the appendix for more information.
 \end{itemize}
-In particular, you can use the {\tt center} option for PCA. The following
-example compares the output of {\tt irlba} with the {\tt prcomp} function.
+The following
+example compares the output of the usual {\tt prcomp} function with
+output from {\tt irlba}.
 Note that in general, singular vectors and principal component vectors
 are only unique up to sign!
+
 \begin{lstlisting}
-> set.seed(1)
-> A <- matrix(runif(200),nrow=20)
-> P <- irlba(A, nv=1, center=colMeans(A))
-> cbind(P$v, prcomp(A)$rotation[,1])
-             [,1]        [,2]
- [1,] -0.46776256  0.46776158
- [2,]  0.26335590 -0.26335688
- [3,]  0.40484529 -0.40484233
- [4,]  0.20867236 -0.20867277
- [5,] -0.35983641  0.35983677
- [6,]  0.47980186 -0.47980195
- [7,] -0.04156462  0.04156139
- [8,]  0.34337641 -0.34338070
- [9,]  0.07680945 -0.07680577
-[10,] -0.13846032  0.13846091
+>      set.seed(1)
+>      x  <- matrix(rnorm(200), nrow=20)
+>      p1 <- prcomp_irlba(x, n=3)
+>      summary(p1)
+Importance of components:
+                         PC1    PC2    PC3
+Standard deviation     1.541 1.2513 1.1916
+Proportion of Variance 0.443 0.2921 0.2649
+Cumulative Proportion  0.443 0.7351 1.0000
+
+>      # Compare with
+>      p2 <- prcomp(x, tol=0.7)
+>      summary(p2)
+Importance of components:
+                         PC1    PC2    PC3
+Standard deviation     1.541 1.2513 1.1916
+Proportion of Variance 0.443 0.2921 0.2649
+Cumulative Proportion  0.443 0.7351 1.0000
 \end{lstlisting}
-The implementation of the {\tt center} and deflation options take advantage of
+Alternatively, you can compute principal components directly using the
+singular value decomposition:
+\begin{lstlisting}
+> p3 <- svd(scale(x, center=colMeans(x), scale=FALSE))
+> p4 <- irlba(x, 3, center=colMeans(x))
+
+> # compare with prcomp
+> sqrt(crossprod(p1$rotation[,1] - p3$v[,1]))
+             [,1]
+[1,] 9.773228e-13
+> sqrt(crossprod(p1$rotation[,1] + p4$v[,1]))
+             [,1]
+[1,] 1.652423e-12
+\end{lstlisting}
+The implementation of the {\tt center} function argument takes advantage of
 computational efficiencies in the IRLB algorithm that result in a modest
 savings of a few vector inner products per iteration compared to a naive
-implementation that replaces the matrix product {\tt A \%*\% x} with
-{\tt A \%*\% x - ds*du \%*\% t(dv) \%*\% x}--see the appendix for more
-information.
+implementation using a custom matrix vector product to center the matrix.
+
+\subsection{Truncated symmetric eigenvalue decomposition}
+
+Use the {\tt partial\_eigen} function to estimate a subset of the largest (most
+positive) eigenvalues and corresponding eigenvectors of a symmetric dense or
+sparse real-valued matrix. The function is particularly well-suited to
+estimating the largest eigenvalues and corresponding eigenvectors of symmetric
+positive semi-definite matrices of the form $A^T A$.
 
 \subsection{User-Defined Matrix Multiplication}
 
-The {\tt irlba} function includes an option for specifying a custom matrix
-multiplication function. Use this option, for example, the {\tt big.matrix}
-class from the {\tt bigmemory}/{\tt bigalgebra} packages, or to compute the
-partial SVD of matrix-free linear operators, for example.
+The {\tt irlba} function includes options for specifying a custom matrix
+multiplication function. Custom matrix multiplication functions can be used,
+for example, with the {\tt big.matrix} class from the {\tt bigmemory}/{\tt
+bigalgebra} packages, or to compute the partial SVD of matrix-free linear
+operators.
 
-User-defined matrix operations are specified using the optional {\tt mult}
+User-defined matrix operations may specified using the optional {\tt mult}
 parameter. If defined, it must be a function of two arguments that computes
 matrix vector products. Either argument can be a vector, and the {\tt mult}
 function must deal with that. The following example illustrates a simple
@@ -271,11 +292,12 @@ custom matrix function that scales the columns of the matrix, and then
 compares it with other ways of doing the same thing.
 \begin{lstlisting}
 > set.seed(1)
-> A <- matrix(runif(200),nrow=20)
+> A <- matrix(runif(200), nrow=20)
+> col_scale <- 1:10
 > mult <- function(x,y)
 +         {
-+           # check if x is a plain, row or column vector
-+           if(is.vector(x) || ncol(x)==1 || nrow(x)==1)
++           # check if x is a plain vector
++           if(is.vector(x))
 +           {
 +             return((x %*% y)/col_scale)
 +           }
@@ -284,21 +306,29 @@ compares it with other ways of doing the same thing.
 +         }
 
 > irlba(A, 3, mult=mult)$d
-[1] 2.8383609 0.7442858 0.6470490
+[1] 3.1384503 0.9477628 0.4313855
 
 > # Compare with:
 > irlba(A, 3, scale=col_scale)$d
-[1] 2.8383609 0.7442858 0.6470492
+[1] 3.1384503 0.9477628 0.4313855
 
 > # Compare with:
-> svd(sweep(A,2,col_scale,FUN=`/`))$d[1:3]
-[1] 2.8383609 0.7442858 0.6470492
+> svd(scale(A, scale=col_scale, center=FALSE))$d[1:3]
+[1] 3.1384503 0.9477628 0.4313855
 \end{lstlisting}
-Due to technical implementation details, you are prohibited from using
-custom matrix product functions together with the rank 1 deflation
-options. However, custom matrix products are powerful and you can
-easily craft such a function to perform arbitrary subspace deflation
-within the function itself.
+Alternatively, simply use R's operator overloading methods to define
+customized matrix vector products. This is the approach taken in
+the
+\\
+\href{https://bwlewis.github.io/1000_genomes_examples/PCA_whole_genome.html}{http://bwlewis.github.io/1000\_genomes\_examples/PCA\_whole\_genome.html}
+vignette to work with large out of core genomics data.
+I prefer the simple operator overloading approach and may consider
+retiring the {\tt mult} function argument in some future package version.
+
+NOTE! When a user-defined matrix multiplication function is used, either using
+the {\tt mult} argument or through operator overloading, the R reference IRLBA
+implementation is used instead of the faster C code path in newer package
+versions.
 
 
 \section{A Quick Summary of the IRLBA Method}
@@ -406,9 +436,6 @@ A\bar{P}_{k+1} = \bar{Q}_{k+1}\bar{B}_{k+1}.
 \]
 
 
-\section{Truncated symmetric eigenvalue decomposition}
-
-\section{Appendix: deflation}
 
 
 \end{document}
