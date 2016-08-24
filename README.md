@@ -5,36 +5,15 @@ symmetric eigenvalue decompositions of sparse and dense matrices.  IRLBA stands
 for <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos <b>B</b>idiagonalization
 <b>A</b>lgorithms.
 
-Version 2.0.0 of the package is a major update that includes many changes, new
-features, and removal of some old features that did not work well. In
-particular, use of harmonic Ritz vector augmentation and the ability to
-estimate the smallest singular values of a matrix WAS REMOVED. That method
-didn't work very well, and sometimes not at all. It suffered from poor
-performance and rarely converged to a solution for ill-conditioned matrices.
-Replacements are under consideration, and some version of that may reappear in
-a future package version.
+Version 2.1.0 of the package includes a convenience `prcomp`-like function for
+computing principal components and a fast C-language implementation of the
+algorithm for improved computational speed. The original R algorithm
+implementation is maintained for some cases and for refernce.
 
+## TODO
 
-### Package features that are mostly the same
-- Fast truncated singular value decomposition
-
-### Package features that were removed
-- Support for estimating smallest singular values
-- Harmonic Ritz vector augmentation
-
-### New features
-- Support for fast symmetric partial eigenvalue decompositions of real-valued matrices
-- Efficient principal components decomposition
-- Restarting (picking up where you left off to add more vectors/values)
-- Nice syntax for centering and scaling
-- Efficient generic subspace deflation (used by PCA)
-- Fixed support for complex-valued SVD of dense matrices
-
-## What's still missing
-
-The following new feature didn't make it in but will appear in version 2.1.0:
-an implementation of the IRBLB method that trickles out singular triplets in
-bounded memory using fast Leja-based accelerating polynomials.
+Implement Leja-point polynomial acceleration for even more efficient memory use
+for extremely large problems.
 
 ## References
 
