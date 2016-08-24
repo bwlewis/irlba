@@ -2,7 +2,7 @@
 # Internal supporting functions
 # ---------------------------------------------------------------------
 # General real/complex crossprod
-cross <- function(x,y)
+cross <- function(x, y)
 {
   if (missing(y))
   {
@@ -56,14 +56,14 @@ convtests <- function (Bsz, tol, k_org, U_B, S_B, V_B,
   len_res <- sum(residuals[1:k_org] < tol * Smax)
   if (is.na(len_res)) len_res <- 0
   if (len_res == k_org) {
-    return (list(converged=TRUE, U_B=U_B[,1:k_org, drop=FALSE],
+    return (list(converged=TRUE, U_B=U_B[, 1:k_org, drop=FALSE],
                   S_B=S_B[1:k_org, drop=FALSE],
-                  V_B=V_B[,1:k_org, drop=FALSE], k=k))
+                  V_B=V_B[, 1:k_org, drop=FALSE], k=k))
   }
 # Not converged yet...
 # Adjust k to include more vectors as the number of vectors converge.
   len_res <- sum(residuals[1:k_org] < SVTol * Smax)
   k <- max(k, k_org + len_res)
-  if (k > Bsz - 3) k <- max(Bsz - 3,1)
+  if (k > Bsz - 3) k <- max(Bsz - 3, 1)
   return (list(converged=FALSE, U_B=U_B, S_B=S_B, V_B=V_B, k=k) )
  }

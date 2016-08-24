@@ -1,20 +1,20 @@
 require("irlba")
 
-for(FAST in c(TRUE, FALSE))
+for (FAST in c(TRUE, FALSE))
 {
   # Dense matrix
   set.seed(1)
   A <- matrix(rnorm(400), 20)
   L <- irlba(A, nu=2, nv=2, tol=1e-9, fastpath=FAST)
   S <- svd(A, nu=2, nv=2)
-  if(!isTRUE(all.equal(L$d, S$d[1:2])))
+  if (!isTRUE(all.equal(L$d, S$d[1:2])))
   {
     stop("Failed simple dense singular value test", " fastpath=", FAST)
   }
 
   # restart
   L1 <- irlba(A, nv=3, v=L, fastpath=FAST)
-  if(!isTRUE(all.equal(L1$d, S$d[1:3])))
+  if (!isTRUE(all.equal(L1$d, S$d[1:3])))
   {
     stop("Failed restart", " fastpath=", FAST)
   }
@@ -24,7 +24,7 @@ for(FAST in c(TRUE, FALSE))
   m <- colMeans(A)
   L <- irlba(A, 3, tol=1e-9, center=m, scale=s, fastpath=FAST)
   S <- svd(scale(A, center=TRUE, scale=s))
-  if(!isTRUE(all.equal(L$d, S$d[1:3])))
+  if (!isTRUE(all.equal(L$d, S$d[1:3])))
   {
     stop("Failed scaling/centering test", " fastpath=", FAST)
   }
@@ -34,14 +34,14 @@ for(FAST in c(TRUE, FALSE))
   m <- colMeans(A)
   L <- irlba(A, 3, tol=1e-9, scale=s, fastpath=FAST)
   S <- svd(scale(A, center=FALSE, scale=s))
-  if(!isTRUE(all.equal(L$d, S$d[1:3])))
+  if (!isTRUE(all.equal(L$d, S$d[1:3])))
   {
     stop("Failed scaling/centering test", " fastpath=", FAST)
   }
   # Center only, non-square
   L <- irlba(A, 3, tol=1e-9, center=m, fastpath=FAST)
   S <- svd(scale(A, center=TRUE, scale=FALSE))
-  if(!isTRUE(all.equal(L$d, S$d[1:3])))
+  if (!isTRUE(all.equal(L$d, S$d[1:3])))
   {
     stop("Failed scaling/centering test", " fastpath=", FAST)
   }
@@ -54,7 +54,7 @@ for(FAST in c(TRUE, FALSE))
   A <- sparseMatrix(i, j, x=rnorm(N))
   L <- irlba(A, nu=2, nv=2, tol=1e-9, fastpath=FAST)
   S <- svd(A, nu=2, nv=2)
-  if(!isTRUE(all.equal(L$d, S$d[1:2])))
+  if (!isTRUE(all.equal(L$d, S$d[1:2])))
   {
     stop("Failed simple sparse singular value test", " fastpath=", FAST)
   }
@@ -63,7 +63,7 @@ for(FAST in c(TRUE, FALSE))
   set.seed(1)
   V <- qr.Q(qr(matrix(runif(100), nrow=10)))
   x <- V %*% diag(c(10, -9, 8, -7, 6, -5, 4, -3, 2, -1)) %*% t(V)
-  if(!isTRUE(all.equal(partial_eigen(x, 3, fastpath=FAST)$values, c(10,8,6))))
+  if (!isTRUE(all.equal(partial_eigen(x, 3, fastpath=FAST)$values, c(10, 8, 6))))
   {
     stop("Failed partial_eigen test", " fastpath=", FAST)
   }
@@ -71,7 +71,7 @@ for(FAST in c(TRUE, FALSE))
   # Test right-only option
   L <- irlba(A, 2, tol=1e-9, right_only=TRUE, fastpath=FAST)
   S <- svd(A, nu=2, nv=2)
-  if(!isTRUE(all.equal(L$d, S$d[1:2])))
+  if (!isTRUE(all.equal(L$d, S$d[1:2])))
   {
     stop("Failed right_only test", " fastpath=", FAST)
   }
@@ -80,14 +80,14 @@ for(FAST in c(TRUE, FALSE))
   A <- matrix(rnorm(400), 20) + 1i * matrix(rnorm(400), 20)
   L <- irlba(A, nu=2, nv=2, tol=1e-9, fastpath=FAST)
   S <- svd(A, nu=2, nv=2)
-  if(!isTRUE(all.equal(L$d, S$d[1:2])))
+  if (!isTRUE(all.equal(L$d, S$d[1:2])))
   {
     stop("Failed complex-valued dense singular value test", " fastpath=", FAST)
   }
 
   # test extra reorthogonalization
   L <- irlba(A, nu=2, nv=2, tol=1e-9, reorth=TRUE, fastpath=FAST)
-  if(!isTRUE(all.equal(L$d, S$d[1:2])))
+  if (!isTRUE(all.equal(L$d, S$d[1:2])))
   {
     stop("Failed reorthogonalization test", " fastpath=", FAST)
   }
@@ -96,7 +96,7 @@ for(FAST in c(TRUE, FALSE))
   x  <- matrix(rnorm(200), nrow=20)
   p1 <- prcomp_irlba(x, n=3, fastpath=FAST)
   p2 <- prcomp(x, tol=0.7)
-  if(!isTRUE(all.equal(p1$sdev[1:2], p2$sdev[1:2])))
+  if (!isTRUE(all.equal(p1$sdev[1:2], p2$sdev[1:2])))
   {
     stop("Failed prcomp test", " fastpath=", FAST)
   }
@@ -106,7 +106,7 @@ for(FAST in c(TRUE, FALSE))
   A <- matrix(rnorm(2000), 20)
   L1 <- irlba(A, nu=2, nv=2, tol=1e-9, fastpath=FAST)
   L2 <- irlba(t(A), nu=2, nv=2, tol=1e-9, fastpath=FAST)
-  if(!isTRUE(all.equal(L1$d, L2$d)))
+  if (!isTRUE(all.equal(L1$d, L2$d)))
   {
     stop("Failed nonsquare test", " fastpath=", FAST)
   }

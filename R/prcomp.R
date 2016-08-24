@@ -83,13 +83,13 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
 
   s <- do.call(irlba, args=args)
   ans <- list(sdev=s$d / sqrt(max(1, nrow(x) - 1)), rotation=s$v)
-  colnames(ans$rotation) <- paste("PC", seq(1,ncol(ans$rotation)), sep="")
+  colnames(ans$rotation) <- paste("PC", seq(1, ncol(ans$rotation)), sep="")
   ans$center <- args$center
   ans$scale <- args$scale
   if (retx)
   {
     ans <- c(ans, list(x = s$d * s$u))
-    colnames(ans$x) <- paste("PC", seq(1,ncol(ans$rotation)), sep="")
+    colnames(ans$x) <- paste("PC", seq(1, ncol(ans$rotation)), sep="")
   }
   class(ans) <- "prcomp"
   ans

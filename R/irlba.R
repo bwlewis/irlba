@@ -419,7 +419,7 @@ function (A,                     # data matrix
 
     S <- norm2(W[, j_w, drop=FALSE])
 #   Check for linearly dependent vectors
-    if ((S < SVTol) && (j == 1)) stop("Starting vector near the null space")
+    if (S < SVTol && j == 1) stop("Starting vector near the null space")
     if (S < SVTol)
     {
       W[, j_w] <- rnorm(nrow(W))
@@ -538,7 +538,7 @@ function (A,                     # data matrix
       Smin <- min(Smin, Bsvd$d[Bsz])
     }
     Smax <- max(eps23, Smax)
-    if ((Smin / Smax < sqrteps) && !reorth)
+    if (Smin / Smax < sqrteps && !reorth)
     {
       warning("The matrix is ill-conditioned. Basis will be reorthogonalized.")
       reorth <- TRUE

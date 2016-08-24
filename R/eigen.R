@@ -58,7 +58,7 @@ partial_eigen <- function(x, n=5, symmetric=TRUE, ...)
     return(list(vectors=L$v, values=L$d ^ 2))
   }
   L <- irlba(x, n, ...)
-  s <- sign(L$u[1,] * L$v[1,])
+  s <- sign(L$u[1, ] * L$v[1, ])
   if (all(s > 0))
   {
     return(list(vectors=L$u, values=L$d))
