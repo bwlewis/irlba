@@ -15,3 +15,13 @@ if(!isTRUE(all.equal(L1$d, S$d[1])))
 {
   stop("Failed tiny fastpath example")
 }
+
+# Tickle misc. checks
+L <- irlba(A, nv=3, tol=1e-9, fastpath=FALSE, work=2, v=rep(0, nrow(A)))
+set.seed(1)
+A <- matrix(rnorm(100), 10)
+L <- tryCatch(irlba(A, nv=3, tol=1e-9, fastpath=FALSE, work=2, v=rep(0, nrow(A))), error=function(e) "NULLSPACE")
+S <- svd(A)
+L <- irlba(A, nv=3, tol=1e-9, fastpath=FALSE, work=2, v=S$v[,1])
+A <- S$u %*% diag(c(1,1,1,1,1,1,1,1,1,1e-12)) %*% t(S$v)
+L <- irlba(A, nv=3, tol=1e-9, fastpath=FALSE, work=2, reorth=FALSE)

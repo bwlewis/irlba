@@ -61,7 +61,7 @@ if(!isTRUE(all.equal(L$d, S$d[1:2])))
 set.seed(1)
 V <- qr.Q(qr(matrix(runif(100), nrow=10)))
 x <- V %*% diag(c(10, -9, 8, -7, 6, -5, 4, -3, 2, -1)) %*% t(V)
-if(!isTRUE(all.equal(partial_eigen(x, 3)$values, c(10,8,6))))
+if(!isTRUE(all.equal(partial_eigen(x, 3, fastpath=FALSE)$values, c(10,8,6))))
 {
   stop("Failed partial_eigen test")
 }
