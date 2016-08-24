@@ -181,7 +181,7 @@ function (A,                     # data matrix
     if (deflate) stop("the center parameter can't be specified together with deflation parameters")
     if (length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
     if(fastpath) du <- NULL
-    else du <- rep(1, nrow(A))
+    else du <- 1
     ds <- 1
     dv <- center
     deflate <- TRUE
@@ -228,9 +228,10 @@ function (A,                     # data matrix
   if (min(m, n) < 6)
   {
     if(verbose) message("Tiny problem detected, using standard `svd` function.")
-    if(deflate) A <- A - (ds * du) %*% t(dv)
     if(!missing(scale)) A <- A / scale
     if(!missing(shift)) A <- A + diag(shift)
+    if(is.null(du)) du <- rep(1, nrow(A))
+    if(deflate) A <- A - (ds * du) %*% t(dv)
     s <- svd(A)
     return(list(d=s$d[1:k], u=s$u[, 1:nu, drop=FALSE],
               v=s$v[, 1:nv, drop=FALSE], iter=0, mprod=0))
@@ -404,7 +405,7 @@ function (A,                     # data matrix
 #   Optionally apply deflation
     if (deflate)
     {
-      W[, j_w] <- W[, j_w] - ds * cross(dv, VJ) * du
+      W[, j_w] <- W[, j_w] - ds * drop(cross(dv, VJ)) * du
     }
 
 #   Orthogonalize W
@@ -479,7 +480,7 @@ function (A,                     # data matrix
 #       Optionally apply deflation
         if (deflate)
         {
-          W[, jp1_w] <- W[, jp1_w] - ds * cross(dv, VJP1) * du
+          W[, jp1_w] <- W[, jp1_w] - ds * drop(cross(dv, VJP1)) * du
         }
 
 #       One step of the classical Gram-Schmidt process
