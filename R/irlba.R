@@ -180,7 +180,8 @@ function (A,                     # data matrix
   {
     if (deflate) stop("the center parameter can't be specified together with deflation parameters")
     if (length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
-    du <- rep(1, nrow(A))
+    if(fastpath) du <- NULL
+    else du <- rep(1, nrow(A))
     ds <- 1
     dv <- center
     deflate <- TRUE
@@ -235,8 +236,9 @@ function (A,                     # data matrix
               v=s$v[, 1:nv, drop=FALSE], iter=0, mprod=0))
   }
 
-# Try to use the fast C code path
-  if(fastpath && missingmult && !iscomplex && !deflate && !right_only)
+# Try to use the fast C-language code path
+  if(deflate) fastpath <- fastpath && is.null(du)
+  if(fastpath && missingmult && !iscomplex && !right_only)
   {
     RESTART <- 0
     RV <- RW <- RS <- NULL
@@ -259,6 +261,7 @@ function (A,                     # data matrix
     if(verbose) message("irlba: using fast C implementation")
     SCALE <- NULL
     SHIFT <- NULL
+    CENTER <- NULL
     if(!missing(scale))
     {
       if(length(scale) != ncol(A)) stop("scale length must mactch number of matrix columns")
@@ -269,9 +272,14 @@ function (A,                     # data matrix
       if(length(shift) != 1) stop("shift length must be 1")
       SHIFT <- shift
     }
+    if(deflate)
+    {
+      if(length(center) != ncol(A)) stop("the centering vector length must match the number of matrix columns")
+      CENTER <- center
+    }
     ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
                  as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP),
-                 RESTART, RV, RW, RS, SCALE, SHIFT, PACKAGE="irlba")
+                 RESTART, RV, RW, RS, SCALE, SHIFT, CENTER, PACKAGE="irlba")
     if(ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")

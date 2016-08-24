@@ -37,7 +37,8 @@
  * RV, RW, RS optional restart V W and S values of dimension RESTART
  *    (only used when RESTART > 0)
  * SCALE either NULL (no scaling) or a vector of length ncol(X)
- * SHIFT either NULL (no shift) a single double-precision number
+ * SHIFT either NULL (no shift) or a single double-precision number
+ * CENTER either NULL (no centering) or a vector of length ncol(X)
  *
  * Returns a list with 6 elements:
  * 1. vector of estimated singular values
@@ -50,10 +51,11 @@
 SEXP
 IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
       SEXP MULT, SEXP RESTART, SEXP RV, SEXP RW, SEXP RS, SEXP SCALE,
-      SEXP SHIFT)
+      SEXP SHIFT, SEXP CENTER)
 {
   SEXP ANS, S, U, V;
-  double *V1, *U1, *W, *F, *B, *BU, *BV, *BS, *BW, *res, *T, *scale, *shift;
+  double *V1, *U1, *W, *F, *B, *BU, *BV, *BS, *BW, *res, *T, *scale, *shift,
+    *center;
   int i, iter, mprod, ret, m, n;
 
   int mult = INTEGER (MULT)[0];
@@ -90,6 +92,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   /* set up intermediate working storage */
   scale = NULL;
   shift = NULL;
+  center = NULL;
   if (TYPEOF (SCALE) == REALSXP)
     {
       scale = (double *) R_alloc (n * 2, sizeof (double));
@@ -98,6 +101,10 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   if (TYPEOF (SHIFT) == REALSXP)
     {
       shift = REAL (SHIFT);
+    }
+  if (TYPEOF (CENTER) == REALSXP)
+    {
+      center = REAL (CENTER);
     }
   V1 = (double *) R_alloc (n * work, sizeof (double));
   U1 = (double *) R_alloc (m * work, sizeof (double));
@@ -119,7 +126,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
         B[i + work * i] = REAL (RS)[i];
     }
   ret =
-    irlb (A, mult, m, n, nu, work, maxit, restart, tol, scale, shift,
+    irlb (A, mult, m, n, nu, work, maxit, restart, tol, scale, shift, center,
           REAL (S), REAL (U), REAL (V), &iter, &mprod, eps, lwork, V1, U1, W,
           F, B, BU, BV, BS, BW, res, T);
   SET_VECTOR_ELT (ANS, 0, S);
@@ -155,6 +162,7 @@ irlb (void *A,                  // Input data matrix
       double tol,               // convergence tolerance
       double *scale,            // optional scale (NULL for no scale) size n * 2
       double *shift,            // optional shift (NULL for no shift)
+      double *center,           // optional center (NULL for no center)
       // output values
       double *s,                // output singular vectors at least length nu
       double *U,                // output left singular vectors  m x work
@@ -234,8 +242,17 @@ irlb (void *A,                  // Input data matrix
 /* optionally apply shift in square cases m = n */
       if (shift)
         {
+          jj = j * m;
           for (kk = 0; kk < m; ++kk)
-            W[j * m + kk] = W[j * m + kk] + shift[0] * x[kk];
+            W[jj + kk] = W[jj + kk] + shift[0] * x[kk];
+        }
+/* optionally apply centering */
+      if (center)
+        {
+          jj = j * m;
+          beta = F77_CALL (ddot) (&n, x, &inc, center, &inc);
+          for (kk = 0; kk < m; ++kk)
+            W[jj + kk] = W[jj + kk] - beta;
         }
 
       if (iter > 0)
@@ -313,12 +330,20 @@ irlb (void *A,                  // Input data matrix
                                     x, &inc, &beta, W + (j + 1) * m, &inc);
                 }
               mprod++;
-/* optionally apply shift and scale */
+/* optionally apply shift */
               if (shift)
                 {
+                  jj = j + 1;
                   for (kk = 0; kk < m; ++kk)
-                    W[(j + 1) * m + kk] =
-                      W[(j + 1) * m + kk] + shift[0] * x[kk];
+                    W[jj * m + kk] = W[jj * m + kk] + shift[0] * x[kk];
+                }
+/* optionally apply centering */
+              if (center)
+                {
+                  jj = (j + 1) * m;
+                  beta = F77_CALL (ddot) (&n, x, &inc, center, &inc);
+                  for (kk = 0; kk < m; ++kk)
+                    W[jj + kk] = W[jj + kk] - beta;
                 }
 /* One step of classical Gram-Schmidt */
               R = -R_F;

@@ -42,15 +42,16 @@ irlb(void *A,       // Input data matrix
      int maxit,     // maximum number of Lanzcos iterations
      int restart,   // 0 -> no restart, 1 -> restarted form
      double tol,    // convergence tolerance
-     double *scale, // optional scale (NULL for no scale) size n * 2 (1st n scale values 2nd n work)
-     double *shift, // optional shift (NULL for no shift) length 1 double
+     double *scale, // optional scale (NULL for no scale) length n * 2 (1st n scale values 2nd n work)
+     double *shift, // optional shift (NULL for no shift) length 1
+     double *center,// optional center (NULL for no center) length n
      double *s,     // output singular vectors at least length nu
-     double *U,     // output left singular vectors size >= m x m_b
-     double *V,     // output right singular vectors size >= n x m_b
+     double *U,     // output left singular vectors length >= m x m_b
+     double *V,     // output right singular vectors length >= n x m_b
      int *ITER,     // output number of iterations performed
      int *MPROD,    // output number of matrix vector products
      double eps,    // machine epsilon
-     int lwork,     // size for some intermediate values below
+     int lwork,     // length for some intermediate values below
      double *V1,    // working storage  n * work
      double *U1,    // working storage  m * work
      double *W,     // working storage  m * work

@@ -9,7 +9,7 @@ cross <- function(x,y)
     if(is.complex(x)) return(abs(Conj(t(x)) %*% x))
     return(crossprod(x))
   }
-  if(!is.complex(x) && !is.complex(y)) return(crossprod(x,y))
+  if(!is.complex(x) && !is.complex(y)) return(crossprod(x, y))
   Conj(t(x)) %*% y
 }
 
