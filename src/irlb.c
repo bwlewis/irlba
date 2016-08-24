@@ -18,6 +18,7 @@
 #include "R_ext/BLAS.h"
 #include "R_ext/Lapack.h"
 #include "R_ext/Rdynload.h"
+#include "R_ext/Utils.h"
 
 #include "Matrix.h"
 #include "Matrix_stubs.c"
@@ -238,6 +239,7 @@ irlb (void *A,                  // Input data matrix
                             &inc, &beta, W + j * m, &inc);
         }
       mprod++;
+      R_CheckUserInterrupt();
 
 /* optionally apply shift in square cases m = n */
       if (shift)
@@ -284,6 +286,7 @@ irlb (void *A,                  // Input data matrix
                                 W + j * m, &inc, &beta, F, &inc);
             }
           mprod++;
+          R_CheckUserInterrupt();
 /* optionally apply shift and scale */
           if (shift)
             {
@@ -330,6 +333,7 @@ irlb (void *A,                  // Input data matrix
                                     x, &inc, &beta, W + (j + 1) * m, &inc);
                 }
               mprod++;
+              R_CheckUserInterrupt();
 /* optionally apply shift */
               if (shift)
                 {
