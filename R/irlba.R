@@ -117,12 +117,16 @@
 #' @examples
 #' set.seed(1)
 #'
-#' A <- matrix(runif(200), nrow=20)
-#' S <- irlba(A)
+#' A <- matrix(runif(400), nrow=20)
+#' S <- irlba(A, 3)
 #' S$d
 #'
 #' # Compare with svd
-#' svd(A)$d[1:5]
+#' svd(A)$d[1:3]
+#'
+#' # Restart the algorithm to compute more singular values
+#' # (starting with an existing solution S)
+#' S1 <- irlba(A, 5, v=S)
 #'
 #' # Principal components (see also prcomp_irlba)
 #' P <- irlba(A, nv=1, center=colMeans(A))
@@ -216,25 +220,26 @@ function (A,                     # data matrix
     mult <- `%*%`
   }
   k <- max(nu, nv)
-  k_org <- k;
   if (k <= 0)  stop("max(nu, nv) must be positive")
   if (k > min(m - 1, n - 1)) stop("max(nu, nv) must be strictly less than min(nrow(A), ncol(A))")
-  if (k > 0.5 * min(m, n))
+  if (k >= 0.5 * min(m, n))
   {
     warning("You're computing a large percentage of total singular values, standard svd might work better!")
   }
   if (work <= 1) stop("work must be greater than 1")
   if (tol < 0) stop("tol must be non-negative")
   if (maxit <= 0) stop("maxit must be positive")
-  if (work <= k) work <- k + 1
+  if (work <= k) work <- k + 1 # work must be strictly larger than requested subspace dimension
   if (work >= min(n, m))
   {
-    work <- min(n, m) - 1
+    work <- min(n, m)
     if (work <= k)
     {
-      k <- work - 1
+      k <- work - 1  # the best we can do! Need to reduce output subspace dimension
+      warning("Requested subspace dimension too large! Reduced to ", k)
     }
   }
+  k_org <- k
   w_dim <- work
   if (right_only)
   {
@@ -242,10 +247,15 @@ function (A,                     # data matrix
     work <- min(min(m, n), work + 10 ) # typically need this to help convergence
   }
 
-# Check for tiny problem, use standard SVD in that case.
+  if (verbose)
+  {
+    message ("Working dimension size ", work)
+  }
+# Check for tiny problem, use standard SVD in that case. Make definition of 'tiny' larger?
   if (min(m, n) < 6)
   {
-    if (verbose) message("Tiny problem detected, using standard `svd` function.")
+    if (verbose) warning("Tiny problem detected, using standard `svd` function.")
+    algorithm = "svd"
     if (!missing(scale)) A <- A / scale
     if (!missing(shift)) A <- A + diag(shift)
     if (deflate)
@@ -531,7 +541,7 @@ function (A,                     # data matrix
     }
     if (verbose)
     {
-      message("\nLanczos iter = ", iter, " j = ", j - 1, "mprod = ", mprod)
+      message("Lanczos iter = ", iter, ", dim = ", j - 1, ", mprod = ", mprod)
     }
 # ---------------------------------------------------------------------
 # (End of the Lanczos bidiagonalization part)

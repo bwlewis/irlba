@@ -140,18 +140,24 @@ vector \code{v} is near the null space of the matrix. In that case, try a differ
 \examples{
 set.seed(1)
 
-A <- matrix(runif(200), nrow=20)
-S <- irlba(A)
+A <- matrix(runif(400), nrow=20)
+S <- irlba(A, 3)
 S$d
 
 # Compare with svd
-svd(A)$d[1:5]
+svd(A)$d[1:3]
+
+# Restart the algorithm to compute more singular values
+# (starting with an existing solution S)
+S1 <- irlba(A, 5, v=S)
 
 # Principal components (see also prcomp_irlba)
 P <- irlba(A, nv=1, center=colMeans(A))
 
 # Compare with prcomp and prcomp_irlba (might vary up to sign)
-cbind(P$v, prcomp(A)$rotation[, 1], prcomp_irlba(A)$rotation[, 1])
+cbind(P$v,
+      prcomp(A)$rotation[, 1],
+      prcomp_irlba(A)$rotation[, 1])
 
 # A custom matrix multiplication function that scales the columns of A
 # (cf the scale option). This function scales the columns of A to unit norm.
