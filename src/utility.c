@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <assert.h>
 #include <math.h>
 
