@@ -70,7 +70,8 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   SEXP ANS, S, U, V;
   double *V1, *U1, *W, *F, *B, *BU, *BV, *BS, *BW, *res, *T, *scale, *shift,
     *center;
-  int i, iter, mprod, ret, m, n;
+  int i, iter, mprod, ret;
+  R_xlen_t m, n;
 
   int mult = INTEGER (MULT)[0];
   void *A;
@@ -88,7 +89,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
       n = ncols (X);
     }
   int nu = INTEGER (NU)[0];
-  int work = INTEGER (WORK)[0];
+  R_xlen_t work = INTEGER (WORK)[0];
   int maxit = INTEGER (MAXIT)[0];
   double tol = REAL (TOL)[0];
   int lwork = 7 * work * (1 + work);
