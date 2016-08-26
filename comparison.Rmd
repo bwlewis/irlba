@@ -1,0 +1,524 @@
+---
+title: "Comparison of the irlba and RSpectra packages"
+output:
+html_document:
+    theme: cerulean
+---
+<style>
+body{ font-size: 15pt; }
+blockquote{ font-size: 14pt; }
+pre{ font-size: 14pt; }
+h1{ font-size: 28pt; }
+h2,h3,h4,h5,h6{ font-size: 24pt; }
+.main-container{ max-width: 85%; }
+</style>
+
+I introduced Baglama and Reichel's irlba algorithm to the R world in a talk at
+the useR! conference in Dortmund way back in 2008, and a stable version of the
+package has been on CRAN for more than five years. I guess I should have
+anticipated the day when something new and faster would come along, but I admit
+my surprise when it happened...
+
+In an interview with Lila Azam Zanganeh printed in the Paris Review (2008),
+Umberto Eco said
+
+> Since I became a novelist I have discovered that I am biased. Either I think a
+> new novel is worse than mine and I don’t like it, or I suspect it is better
+> than my novels and I don’t like it.
+
+(Read the whole interview here: http://www.theparisreview.org/interviews/5856/the-art-of-fiction-no-197-umberto-eco .)
+
+I experienced, briefly, just such an Umberto Eco moment after I became aware of
+the excellent RSpectra package by Yixuan Qiu (see https://github.com/yixuan and
+http://statr.me/) this summer (2016).  Indeed, the RSpectra package was quite a
+bit *faster* (lower elapsed times) and apparently *more efficient* (less CPU
+time at least) than my venerable irlba package for computing
+truncated singular value decomposition. But curiosity prevailed as I tried to
+understand the performance differences and then address them in irlba. For
+technical differences described below, I knew that irlba *should* be more
+efficient than the approach taken by RSpectra, at least for SVD-like problems.
+
+# Important references
+
+- The irlba package relies on: Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. (2005). (http://www.math.uri.edu/~jbaglama/papers/paper14.pdf)
+- RSpectra is based on algorithms from Lehoucq and Sorenson's "ARPACK: Fortran subroutines for solving large scale eigenvalue problems." (1994).
+(See also Lehoucq's Ph. D. thesis: Lehoucq, R. B. "Analysis and Implementation of an Implicitly Restarted Arnoldi Iteration." (1995). http://www.caam.rice.edu/tech_reports/1995/TR95-13.pdf.)
+
+A truly vast literature cites the large body of ARPACK work.
+A smaller, but rapidly growing number of papers cite the IRLB methods.
+
+# Upshot
+
+After some work, the (new) irlba implementation is faster and more efficient
+than RSpectra for truncated singular value decompositions and PCA, precisely
+the problems for which irlba was designed.
+
+RSpectra is a really impressive package and I encourage you to try it out and
+use it especially for eigenvalue problems. Although irlba can solve *some*
+specialized partial eigenvalue problems, RSpectra is overall better for that
+purpose because the algorithms it uses are designed for such problems.
+Conversely, although RSpectra *can* be used to solve truncated SVD and PCA
+problems, its algorithms aren't really specialized for that purpose.
+
+**[By the way, Jim Baglama informs
+me that the Mathworks now uses irlba in their 'svds' function (not to be
+confused with the 'svds' function in the RSpectra R package discussed in this
+note). See http://www.mathworks.com/help/matlab/ref/svds.html
+and  http://meetings.siam.org/sess/dsp_talk.cfm?p=79628 .]**
+
+**[Sorry, I can't help but add that of course R has had this function available
+for many years and many users and other R packages rely on it. I guess it's
+hard for proprietary software companies to keep up with the times--they have to
+spend so much effort on marketing after all.]**
+
+# Why is the new irlba faster than the old one?
+
+I'd like to say it was due to mathematical insight but, alas, the main reason
+is that I re-coded the core algorithm in C instead of R. I chose to implement
+the original method completely in R because it was so fast anyway (compared to
+available alternatives at the time), and I preferred to keep the code easier to
+read to promote understanding of the method.
+
+Plus I find that R programs are usually quite fast so that resorting to
+lower-level languages like Fortran, C, or C++ should be done sparingly and only
+after it's clear that a better R implementation is not easily attainable.
+
+I made the interesting discovery that simply coding the R irlba function in C
+does not tell the whole story. It turns out that a large portion of the
+performance improvement comes from low-level invocation of BLAS level 2
+operations (matrix times vector products), which are not available directly
+from R. At the moment, R's default matrix multiplication routines always resort
+to level 3 BLAS even when one argument is a vector--leading to sub-optimal
+performance (see the matprod functions in R's array.c source code).  I'm
+investigating improving this in the base R language now. I hope that at some
+point, the pure R reference implementation might be almost as fast as the new
+lower-level C code!
+
+**[Lothar Reichel reminded me that a block variation of the algorithm exists,
+see J. Baglama and L. Reichel Restarted block Lanczos bidiagonalization methods
+Numer. Algorithms, 43 (2006), pp. 251-272.  The block version uses mostly level
+3 BLAS and probably would have run much faster in plain old R than the original
+version I implemented. Perhaps a future implementation of the package will
+include the block version.]**
+
+Note that I retained the original R reference implementation and it can be
+invoked with the `fastpath=FALSE` argument. I kept it around because a few edge
+cases still use that code path (custom matrix products for instance, and also
+complex-valued matrix problems because I haven't got to that yet in the C
+code). But also I like having the reference implementation there for users to
+read, to easily debug and step through, and to help understand the algorithm better.
+
+
+# Performance and efficiency comparison of irlba and RSpectra
+
+Let me reiterate that RSpectra is a great package. It's just that we know that
+the irlba algorithms should, at least theoretically, out-perform ARPACK-like
+methods for truncated SVD computation, where the phrase "out-perform" means
+compute a similar solution estimate with fewer floating point operations.
+
+The following examples compare `irlba` and the `svds` function from RSpectra by
+absolute performance (elapsed run time) and one measure of efficiency (total
+resident memory use) for two generic problems. These aren't exhaustive tests,
+but give you the feel for differences in the packages.
+
+I ran the following examples on an old-ish but powerful computer with two Intel
+Xeon CPU E5-2650 processors (16 physical CPU cores) running at 2 GHz equipped
+with 128 GB of ECC DDR3 RAM running the 64-bit Ubuntu 14.04 operating system and
+R version 3.3.1.  R was rigged to use the libopenblas implementation of the
+Goto BLAS, with the environment variable `OMP_NUM_THREADS=16` set to avoid
+over subscription of CPU floating point resources. I used the flexible
+dynamic shared BLAS library linkage approach outlined in
+https://cran.r-project.org/doc/manuals/R-admin.html#Shared-BLAS
+(really, the best way to link R to BLAS in my opinion).
+The test RSpectra package
+version was 0.12-0 (2016-06-12), and the tested irlba version was 2.1.0.
+
+## Problem 1: Compute the largest 3 singular values and corresponding singular vectors for a dense 30,000 by 30,000 matrix
+
+Large, square matrices are a typically good case for clever truncated SVD
+algorithms like `svds` and `irlba` just because they are so hard to compute
+otherwise. The input matrix itself consumes about 6.7 GiB (7.2 GB) RAM.  That
+seems like a lot, but the test computer has plenty more (128 GB).  The entries
+of the matrix are sampled from a standard normal distribution with R's `rnorm`
+function, see the Appendix for details.
+
+The core of the following comparison compares
+```{r, eval=FALSE}
+l = irlba(x, 3, tol=1e-5)
+```
+with
+```{r, eval=FALSE}
+s = svds(x, 3, tol=1e-5)
+```
+I set the tolerance uniformly across the methods, although I'm not really
+sure what tolerance means in the `svds` function (more on that in the
+next section below).
+
+In order to carefully track real memory use while the algorithm runs, I take
+advantage of some Linux capabilities and use R's parallel package to fork each
+experiment in a separate (child) R process, letting the master R process
+monitor the child's progress and memory use until it finishes. Algorithm run
+times are self-reported by the child processes back to the master.
+See the Appendix section for full program listings that I used to compare
+performance and carefully track memory use.
+
+The test program writes an output file named 'dense.out' that contains the
+total elapsed times for `irlba` and `svds` in the `l_dense` and `s_dense`
+variables, respectively, and the matrices `mem_l_dense` and `mem_s_dense` that
+track detailed memory usage by the R process running each algorithm in
+approximately 1/10 second intervals.
+
+
+## Problem 2: Compute the largest 2 singular values and corresponding singular vectors for a general sparse 10M by 10M matrix with one million non-zero entries (very sparse)
+
+This example proceeds just like the previous one with a different problem
+set-up, saving its output to a file named 'sparse.out'.
+
+
+## Results
+
+Elapsed wall-clock times for each method and problem are shown in the plots below.
+In the 30,000 &times; 30,000 dense matrix case, `irlba` was about 6 times faster than
+`svds`, but `irlba` was only about 4 times faster in the large sparse matrix case.
+```{r, eval=TRUE}
+load("sparse.out")
+load("dense.out")
+par(mfrow=c(1,2))
+barplot(c(s_dense, l_dense), ylab="Seconds", col=c(2, 4), legend=c("svds", "irlba"), main="Dense")
+barplot(c(s_sparse, l_sparse), ylab="Seconds", col=c(2, 4), legend=c("svds", "irlba"), main="Sparse")
+```
+
+Peak memory use during computation of the sparse case was similar for the two
+methods, with `svds` using slightly less memory than `irlba` (2.4 GiB versus 2.6
+GiB, respectively).  The next plot shows memory use in GiB over time for each
+method for the sparse problem.  Despite similar peak use, memory use over time
+while each algorithm runs is interestingly different.  (Note that Linux reports
+resident memory use in pages, which on our test system means 4096 bytes.)
+I used the following program to plot memory use:
+```{r, eval=FALSE}
+t = seq(1:nrow(mem_s_sparse)) / 10  # approx. time in seconds
+plot(t, 4096 * mem_s_sparse[, 2] / 2 ^ 30, type='l', col=2, lwd=4, ylab="",
+     ylim=c(0, 4096 * max(mem_s_sparse[, 2], mem_l_sparse[, 2]) / 2^30),
+     xlab="time (seconds)", main="Sparse problem resident memory use (GiB)",
+     cex=2, cex.axis=1.5, cex.lab=1.5, cex.main=1.8)
+lines(t[1:nrow(mem_l_sparse)], 4096 * mem_l_sparse[,2] / 2 ^ 30, col=4, lwd=4)
+grid()
+legend("bottomright", legend=c("svds", "irlba"), fill=c(2, 4), bty="n", cex=2)
+```
+
+Unlike the sparse problem case, the dense problem exhibits significantly
+different memory use patterns. The `irlba` peak memory
+during computation of the dense 30,000 &times; 30,000 problem was about 6.8 GiB
+(just slightly more than the 6.7 GiB required to store the input matrix), but
+`svds` used much more--a peak of 53.8 GiB.
+```{r, eval=FALSE}
+t = seq(1:nrow(mem_s_dense)) / 10  # approx. time in seconds
+plot(t, 4096 * mem_s_dense[, 2] / 2 ^ 30, type='l', col=2, lwd=4, ylab="",
+     ylim=c(0, 4096 * max(mem_s_dense[, 2], mem_l_dense[, 2]) / 2^30),
+     xlab="time (seconds)", main="Sparse problem resident memory use (GiB)",
+     cex=2, cex.axis=1.5, cex.lab=1.5, cex.main=1.8)
+lines(t[1:nrow(mem_l_dense)], 4096 * mem_l_dense[,2] / 2 ^ 30, col=4, lwd=4)
+grid()
+legend("bottomright", legend=c("svds", "irlba"), fill=c(2, 4), bty="n", cex=2)
+```
+```{r, eval=TRUE, echo=FALSE}
+t = seq(1:nrow(mem_s_sparse)) / 10  # approx. time in seconds
+plot(t, 4096 * mem_s_sparse[, 2] / 2 ^ 30, type='l', col=2, lwd=4, ylab="",
+     ylim=c(0, 4096 * max(mem_s_sparse[, 2], mem_l_sparse[, 2]) / 2^30),
+     xlab="time (seconds)", main="Sparse problem resident memory use (GiB)",
+     cex=2, cex.axis=1.5, cex.lab=1.5, cex.main=1.8)
+lines(t[1:nrow(mem_l_sparse)], 4096 * mem_l_sparse[,2] / 2 ^ 30, col=4, lwd=4)
+grid()
+legend("bottomright", legend=c("svds", "irlba"), fill=c(2, 4), bty="n", cex=2)
+```
+```{r, eval=TRUE, echo=FALSE}
+t = seq(1:nrow(mem_s_dense)) * s_dense / nrow(mem_s_dense)  # approx. time in seconds
+plot(t, 4096 * mem_s_dense[, 2] / 2 ^ 30, type='l', col=2, lwd=4, ylab="",
+     ylim=c(0, 4096 * max(mem_s_dense[, 2], mem_l_dense[, 2]) / 2^30),
+     xlab="time (seconds)", main="Dense problem resident memory use (GiB)",
+     cex=2, cex.axis=1.5, cex.lab=1.5, cex.main=1.8)
+lines(t[1:nrow(mem_l_dense)], 4096 * mem_l_dense[,2] / 2 ^ 30, col=4, lwd=4)
+grid()
+legend("bottomright", legend=c("svds", "irlba"), fill=c(2, 4), bty="n", cex=2)
+```
+
+
+# More thoughts on differences in RSpectra and irlba
+
+What makes these algorithms different? The irlba approach directly estimates
+the decomposition $AV_k = U_kD_K$ for diagonal matrix of $k$ singular values
+$D_k$ and left and right singular basis matrices with orthonormal columns $U_k$
+and $V_k$ for an input matrix $A$. Similarly to ARPACK-like methods, irlba uses
+an implicit restarting acceleration scheme to perform this estimation efficiently.
+
+The `svds` function is based on the RSpectra ARPACK-like eigenvalue
+decomposition methods. It computes a few eigenvalues and eigenvectors of the
+matrix $A^T A$ (or $A A^T$, depending on the matrix size) to form the
+eigenvalue decomposition  $A^T A V_k = V_k D_k ^2$, where $V_k$ is a
+matrix of right singular vectors for $A$, and $D_k ^ 2$ is the diagonal matrix
+of *squared* singular values of $A$. The `svds` function then computes $D_k$ by
+taking the square roots of the diagonal entries of the matrix $D_k ^ 2$ and
+then computing the left singular vectors as $U_k = A V_k D_k ^ {-1}$.
+A few things are worth noting here.
+
+1. RSpectra is careful to work only implicitly with the matrix $A A^T$ or $A^T A$ without ever explicitly forming it. But still, `svds` solves an eigenvalue problem associated with one of those matrices. Note that the numerical condition number of $A A^T$ and $A^T A$ is potentially much worse than that of $A$. For well-conditioned matrices $A$ this might not be that big of a deal, but for ill-conditioned problems that can slow convergence of the method. This is one general reason why we expect irlba to need fewer flops.
+2. `svds` computes eigenvalues that are the squares of the desired singular values, then takes their square roots, and then inverts those to compute either the left or right singular values depending on the size of the matrix. If some of the desired singular values are small or the differences between them are small, then the computed eigenvalues can underflow in floating point arithmetic and lose accuracy. That loss of accuracy carries through and can further accumulate in the singular vector solution step.
+
+Here are a few pathological examples that illustrate these points. The examples
+explicitly construct matrices with known singular vectors and singular values,
+and then compute truncated singular value decompositions using R's default
+`svd` function, `irlba`, and `svds`. The examples then compare the differences
+in the computed singular values and the 2-norm error in the computed singular
+vectors for each approach.
+
+## Pathological example 1
+
+The following example creates a numerically well-conditioned toy matrix `x`
+that has a few closely-spaced singular values. Although this example is
+unlikely to occur in practice, the results warrant caution.
+```{r}
+library(irlba, quietly=TRUE)
+library(RSpectra)
+
+set.seed(1)
+N = 3
+tol = 1e-15
+d = c(1 + 1e-12, 1, 1 - 1e-12, 0.5, 0.4, 0.3)
+m = length(d)
+u = qr.Q(qr(matrix(rnorm(m ^ 2), m)))
+v = qr.Q(qr(matrix(rnorm(m ^ 2), m)))
+x = u %*% diag(d) %*% t(v)
+
+s = svd(x)
+z = svds(x, N, tol=tol)
+l = irlba(x, N, tol=tol)
+
+# Exact minus computed singular values for each method
+print(rbind(svd=d[1:N] - s$d[1:N], irlba=d[1:N] - l$d, svds=d[1:N] - z$d))
+```
+We see that in this example, each algorithm does a pretty OK job of estimating
+the top three singular values. We get a warning from irlba that we're computing
+a large percentage of them. Ironically and despite the warning, `irlba`'s
+estimates are slightly more accurate than `svd` in this example.
+
+The `bdiff` function below compares the 2-norm errors of singular vectors
+correcting for possible sign differences (singular vectors are only unique up
+to sign). Despite the relative accurate estimation of singular values, `svds`
+exhibits a near complete loss of accuracy and seriously mis-estimates the
+singular vectors even though the matrix is well-conditioned.
+```{r}
+bdiff = function(x, y)
+{
+  s = sign(x[1,] / y[1,])
+  apply(sweep(x, 2, s, `*`) - y, 2, crossprod)
+}
+
+# Exact minus computed singular vector 2-norm errors for each method, up to sign
+print(rbind(svd_v = bdiff(v[,1:N], s$v[, 1:N]),
+      svd_u   = bdiff(u[, 1:N], s$u[, 1:N]),
+      irlba_v = bdiff(v[, 1:N], l$v),
+      irlba_u = bdiff(u[, 1:N], l$u),
+      svds_v  = bdiff(v[, 1:N], z$v),
+      svds_u  = bdiff(u[, 1:N], z$u)))
+```
+
+## Pathological example 2
+
+A related pathological example shown next is such that the largest singular
+value is small. In this case `svds` fails with a misleading warning. This is
+a less interesting example and far less likely to occur in practice.
+```{r}
+d = exp(-seq(20, 40))
+m = length(d)
+u = qr.Q(qr(matrix(rnorm(m^2),m)))
+v = qr.Q(qr(matrix(rnorm(m^2),m)))
+x = u %*% diag(d) %*% t(v)
+
+# svds fails
+z = svds(x, 3)
+print(z$d)
+
+# svd and irlba are OK
+s = svd(x)
+l = irlba(x, 3)
+print(rbind(svd=d[1:N] - s$d[1:N], irlba=d[1:N] - l$d))
+```
+
+
+Again, these are toy pathological examples that I explicitly constructed to
+illustrate problems that can occur when using eigenvalue algorithms to solve
+singular value problems. They are unlikely to occur in practice, but they
+do illustrate some core numerical differences in the algorithm approaches.
+
+
+Finally, I'll mention a minor point that is not a big deal but would be nice to know.
+The documentation for the `tol` tolerance parameter in the `svds` function says:
+```
+tol: Precision parameter. Default is 1e-10.
+```
+Compare with the `tol` parameter documentation in the irlba package:
+```
+tol: convergence is determined when ||AV - US|| < tol*||A||, where
+     the spectral norm ||A|| is approximated by the largest
+     estimated singular value, and U, V, S are the matrices
+     corresponding to the estimated left and right singular
+     vectors and diagonal matrix of estimated singular values,
+     respectively.
+```
+Irlba tells us what the tolerance means, how it stops the algorithm,
+and how to interpret it in terms of error in the computed solution. It
+would be nice to understand `tol` for `svds` in similar terms.
+
+**[Yixuan shouldn't feel too put out though, here is the documentation for
+the tolerance option from the Matlab 'svds' function (which you
+have the privilege of paying for):]**
+```
+Option Field    Description             Default
+opts.tol        Convergence tolerance   1e-10
+```
+
+
+
+# Appendix: Full performance comparison programs
+
+## Dense 30,000&times;30,000 matrix problem
+
+```{r, eval=FALSE}
+library(irlba)
+library(RSpectra)
+
+set.seed(1)
+N = 3e4
+x = matrix(rnorm(N ^ 2), N)
+gc(reset=TRUE) # prior to forking to avoid carrying extra cruft into the children
+
+p = parallel:::mcfork()
+if (inherits(p, "masterProcess"))
+{
+  t1 = proc.time()
+  l = irlba(x, 3, tol=1e-5)
+  x = paste(capture.output(cat(as.double((proc.time() - t1)[3]))), collapse="\n")
+  parallel:::mcexit(, x)
+}
+cat("Running irlba...\n")
+f = sprintf("/proc/%d/statm", p$pid)
+mem_l_dense = c()
+while(TRUE)
+{
+  s = parallel:::selectChildren(p, timeout=0.1)
+  if(is.integer(s)) break
+  if(!s) stop("OH NO, ERROR")
+  mem_l_dense = c(mem_l_dense, readLines(f))
+}
+l_dense = as.double(unserialize(parallel:::readChild(p))) # self-reported elapsed time
+parallel:::mckill(p, 9L) # force the child to exit, if it has not already
+
+p = parallel:::mcfork()
+if (inherits(p, "masterProcess"))
+{
+  t1 = proc.time()
+  s = svds(x, 3, tol=1e-5)
+  x = paste(capture.output(cat(as.double((proc.time() - t1)[3]))), collapse="\n")
+  parallel:::mcexit(, x)
+}
+cat("Running svds...\n")
+f = sprintf("/proc/%d/statm", p$pid)
+mem_s_dense = c()
+while(TRUE)
+{
+  s = parallel:::selectChildren(p, timeout=0.1)
+  if(is.integer(s)) break
+  if(!s) stop("OH NO, ERROR")
+  mem_s_dense = c(mem_s_dense, readLines(f))
+}
+s_dense = as.double(unserialize(parallel:::readChild(p))) # self-reported elapsed time
+parallel:::mckill(p, 9L)
+
+# now process the Linux /proc/pid/statm output for each process
+# fields are, as measured in kernel pages:
+# size       (1) total program size (same as VmSize in /proc/[pid]/status)
+# resident   (2) resident set size (same as VmRSS in /proc/[pid]/status)
+# share      (3) shared pages (i.e., backed by a file)
+# text       (4) text (code)
+# lib        (5) library (unused in Linux 2.6)
+# data       (6) data + stack
+# dt         (7) dirty pages (unused in Linux 2.6)
+
+mem_l _dense= Reduce(rbind, Map(as.double, strsplit(mem_l_dense, " ")))
+colnames(mem_l_dense) = c("size", "resident", "share", "text", "lib", "data", "dt")
+rownames(mem_l_dense) = c()
+
+mem_s _dense= Reduce(rbind, Map(as.double, strsplit(mem_s,_dense " ")))
+colnames(mem_s_dense) = c("size", "resident", "share", "text", "lib", "data", "dt")
+rownames(mem_s_dense) = c()
+
+save(l_dense, s_dense, mem_l_dense, mem_s_dense, file="dense.out")
+```
+
+## Sparse 10,000,000&times;10,000,000 matrix problem
+
+```{r, eval=FALSE}
+library(Matrix)
+library(irlba)
+library(RSpectra)
+
+set.seed(1)
+N = 1e6
+x = rnorm(N)
+m = 1e7
+n = 1e7
+A = sparseMatrix(dims=c(m, n), i=c(1:N, rep(1,N)),j=c(rep(1,N),1:N), x=runif(2*N))
+gc(reset=TRUE)
+
+p = parallel:::mcfork()
+if (inherits(p, "masterProcess"))
+{
+  t1 = proc.time()
+  l = irlba(A, 2)
+  x = paste(capture.output(cat(as.double((proc.time() - t1)[3]))), collapse="\n")
+  parallel:::mcexit(, x)
+}
+cat("Running irlba...\n")
+f = sprintf("/proc/%d/statm", p$pid)
+mem_l_sparse = c()
+while(TRUE)
+{
+  s = parallel:::selectChildren(p, timeout=0.1)
+  if(is.integer(s)) break
+  if(!s) stop("OH NO, ERROR")
+  mem_l_sparse = c(mem_l_sparse, readLines(f))
+}
+l_sparse = as.double(unserialize(parallel:::readChild(p))) # self-reported elapsed time
+parallel:::mckill(p, 9L)
+
+p = parallel:::mcfork()
+if (inherits(p, "masterProcess"))
+{
+  t1 = proc.time()
+  s = svds(A, 2)
+  x = paste(capture.output(cat(as.double((proc.time() - t1)[3]))), collapse="\n")
+  parallel:::mcexit(, x)
+}
+cat("Running svds...\n")
+f = sprintf("/proc/%d/statm", p$pid)
+mem_s_sparse = c()
+while(TRUE)
+{
+  s = parallel:::selectChildren(p, timeout=0.1)
+  if(is.integer(s)) break
+  if(!s) stop("OH NO, ERROR")
+  mem_s_sparse = c(mem_s_sparse, readLines(f))
+}
+s_sparse = as.double(unserialize(parallel:::readChild(p))) # self-reported elapsed time
+parallel:::mckill(p, 9L)
+
+mem_l_sparse = Reduce(rbind, Map(as.double, strsplit(mem_l_sparse, " ")))
+colnames(mem_l_sparse) = c("size", "resident", "share", "text", "lib", "data", "dt")
+rownames(mem_l_sparse) = c()
+
+mem_s_sparse = Reduce(rbind, Map(as.double, strsplit(mem_s_sparse, " ")))
+colnames(mem_s_sparse) = c("size", "resident", "share", "text", "lib", "data", "dt")
+rownames(mem_s_sparse) = c()
+
+save(l_sparse, s_sparse, mem_l_sparse, mem_s_sparse, file="sparse.out")
+```

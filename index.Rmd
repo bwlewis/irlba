@@ -1,0 +1,59 @@
+---
+title: "The irlba package"
+output:
+html_document:
+    theme: cerulean
+---
+<style>
+body{ font-size: 15pt; }
+blockquote{ font-size: 14pt; }
+pre{ font-size: 14pt; }
+h1{ font-size: 28pt; }
+h2,h3,h4,h5,h6{ font-size: 24pt; }
+.main-container{ max-width: 85%; }
+</style>
+
+The augmented implicitly restarted Lanczos bidiagonalization algorithm (IRLBA)
+finds a few approximate largest singular values and corresponding singular
+vectors of a sparse or dense matrix using a method of Baglama and Reichel.
+
+> J. Baglama and L. Reichel, SIAM J. Sci. Comput. (2005). (http://www.math.uri.edu/~jbaglama/papers/paper14.pdf)
+
+It is a fast and memory-efficient way to compute a partial SVD, principal
+components, and some specialized partial eigenvalue decompositions.
+
+I introduced Baglama and Reichel's irlba algorithm to the R world in a talk at
+the useR! conference in Dortmund way back in 2008, and a stable version of the
+package has been on CRAN for more than five years.
+
+# What's new
+
+The current stable version of the package is 2.1.0 (August 2016).
+
+Version 2.1.0 of the package includes a convenience `prcomp`-like function for
+computing principal components and a fast C-language implementation for
+improved computational speed. The original R algorithm implementation is
+maintained for some special cases and for refernce.
+
+# Vignettes
+
+The package vignette (PDF): https://cran.r-project.org/web/packages/irlba/irlba.pdf.
+
+This example uses a special one-sided basis option and a custom matrix product
+to compute the top three principal components of the entire 1000 Genomes
+Project variant data set (whole genome variants for 2,504 people):
+http://bwlewis.github.io/1000_genomes_examples/PCA_whole_genome.html The
+example optionally works in parallel and finishes in only 8 minutes on a 4 node
+Linux cluster.
+
+https://bwlewis.github.io/irlba/comparison.html compares the irlba package
+with the RSpectra package, a high-quality eigenvalue solver for R.
+
+## Other applications
+
+The newe `tcor` algorithm (http://arxiv.org/abs/1512.07246) and R package
+(https://github.com/bwlewis/tcor -- not yet on CRAN) use irlba to compute
+thresholded correlation matrices very quickly. This example computes the most
+highly correlated gene expressions from the Cancer Genome Atlas RNASeq gene
+expression data for breast cancer:
+https://github.com/bwlewis/tcor/blob/master/vignettes/brca.Rmd.
