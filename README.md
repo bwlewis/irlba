@@ -2,13 +2,13 @@
 
 Implicitly-restarted Lanczos methods for fast truncated singular value and
 symmetric eigenvalue decompositions of sparse and dense matrices.  IRLBA stands
-for <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos <b>B</b>idiagonalization
-<b>A</b>lgorithms.
+for Augmented, <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos
+<b>B</b>idiagonalization <b>A</b>lgorithm.
 
 Version 2.1.0 of the package includes a convenience `prcomp`-like function for
-computing principal components and a fast C-language implementation of the
-algorithm for improved computational speed. The original R algorithm
-implementation is maintained for some cases and for refernce.
+computing principal components and a fast C-language implementation for
+improved computational speed. The original R algorithm implementation is
+maintained for some special cases and for refernce.
 
 ## TODO
 
