@@ -179,7 +179,7 @@ h2,h3,h4,h5,h6{ font-size: 24pt; }
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
-<p>Elapsed wall-clock times for each method and problem are shown in the plots below. In the 30,000 × 30,000 dense matrix case, <code>irlba</code> was about 6 times faster than <code>svds</code>, but <code>irlba</code> was only about 4 times faster in the large sparse matrix case.</p>
+<p>Elapsed wall-clock times for each method and problem are shown in the plots below. In the 30,000 × 30,000 dense matrix case, <code>irlba</code> was about 6 times faster than <code>svds</code>, but <code>irlba</code> was only about 4 times faster in the large sparse matrix case. I’ll point out that any benchmarking result of these methods will strongly depend on the hardware and BLAS library used, in this example it was OpenBLAS (<a href="http://www.openblas.net/" class="uri">http://www.openblas.net/</a>).</p>
 <pre class="r"><code>load(&quot;sparse.out&quot;)
 load(&quot;dense.out&quot;)
 par(mfrow=c(1,2))

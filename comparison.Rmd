@@ -180,6 +180,8 @@ set-up, saving its output to a file named 'sparse.out'.
 Elapsed wall-clock times for each method and problem are shown in the plots below.
 In the 30,000 &times; 30,000 dense matrix case, `irlba` was about 6 times faster than
 `svds`, but `irlba` was only about 4 times faster in the large sparse matrix case.
+I'll point out that any benchmarking result of these methods will strongly
+depend on the hardware and BLAS library used, in this example it was OpenBLAS (http://www.openblas.net/).
 ```{r, eval=TRUE}
 load("sparse.out")
 load("dense.out")
