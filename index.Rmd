@@ -33,7 +33,7 @@ The current stable version of the package is 2.1.0 (August 2016).
 Version 2.1.0 of the package includes a convenience `prcomp`-like function for
 computing principal components and a fast C-language implementation for
 improved computational speed. The original R algorithm implementation is
-maintained for some special cases and for refernce.
+maintained for some special cases and for reference.
 
 # Vignettes
 
