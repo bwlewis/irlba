@@ -260,7 +260,7 @@ eigenvalue decomposition  $A^T A V_k = V_k D_k ^2$, where $V_k$ is a
 matrix of right singular vectors for $A$, and $D_k ^ 2$ is the diagonal matrix
 of *squared* singular values of $A$. The `svds` function then computes $D_k$ by
 taking the square roots of the diagonal entries of the matrix $D_k ^ 2$ and
-then computing the left singular vectors as $U_k = A V_k D_k ^ {-1}$.
+then computes the left singular vectors as $U_k = A V_k D_k ^ {-1}$.
 A few things are worth noting here.
 
 1. RSpectra is careful to work only implicitly with the matrix $A A^T$ or $A^T A$ without ever explicitly forming it. But still, `svds` solves an eigenvalue problem associated with one of those matrices. Note that the numerical condition number of $A A^T$ and $A^T A$ is potentially much worse than that of $A$. For well-conditioned matrices $A$ this might not be that big of a deal, but for ill-conditioned problems that can slow convergence of the method. This is one general reason why we expect irlba to need fewer flops.
