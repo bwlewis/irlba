@@ -35,7 +35,7 @@ bit *faster* (lower elapsed times) and apparently *more efficient* (less CPU
 time at least) than my venerable irlba package for computing
 truncated singular value decomposition. But curiosity prevailed as I tried to
 understand the performance differences and then address them in irlba. For
-technical differences described below, I knew that irlba *should* be more
+technical reasons described below, I knew that irlba *should* be more
 efficient than the approach taken by RSpectra, at least for SVD-like problems.
 
 # Important references
