@@ -19,7 +19,7 @@ for (FAST in c(TRUE, FALSE))
     stop("Failed restart", " fastpath=", FAST)
   }
 
-  # Scaling and centering
+  # Scaling and centering, dense
   s <- sqrt(apply(A, 2, crossprod))
   m <- colMeans(A)
   L <- irlba(A, 3, tol=1e-9, center=m, scale=s, fastpath=FAST)
@@ -28,7 +28,7 @@ for (FAST in c(TRUE, FALSE))
   {
     stop("Failed scaling/centering test", " fastpath=", FAST)
   }
-  # Scale only, non-square
+  # Scale only, non-square, dense
   A <- matrix(rnorm(200), 10)
   s <- seq(1, ncol(A))
   m <- colMeans(A)
@@ -36,14 +36,14 @@ for (FAST in c(TRUE, FALSE))
   S <- svd(scale(A, center=FALSE, scale=s))
   if (!isTRUE(all.equal(L$d, S$d[1:3])))
   {
-    stop("Failed scaling/centering test", " fastpath=", FAST)
+    stop("Failed dense scaling test", " fastpath=", FAST)
   }
-  # Center only, non-square
+  # Center only, non-square, dense
   L <- irlba(A, 3, tol=1e-9, center=m, fastpath=FAST)
   S <- svd(scale(A, center=TRUE, scale=FALSE))
   if (!isTRUE(all.equal(L$d, S$d[1:3])))
   {
-    stop("Failed scaling/centering test", " fastpath=", FAST)
+    stop("Failed dense centering test", " fastpath=", FAST)
   }
   # Sparse matrix
   require("Matrix")
@@ -57,6 +57,22 @@ for (FAST in c(TRUE, FALSE))
   if (!isTRUE(all.equal(L$d, S$d[1:2])))
   {
     stop("Failed simple sparse singular value test", " fastpath=", FAST)
+  }
+  # Center only, sparse
+  m <- colMeans(A)
+  L <- irlba(A, 3, tol=1e-9, center=m, fastpath=FAST)
+  S <- svd(scale(A, center=TRUE, scale=FALSE))
+  if (!isTRUE(all.equal(L$d, S$d[1:3])))
+  {
+    stop("Failed sparse centering test", " fastpath=", FAST)
+  }
+  # scale only, spase
+  s <- seq(1, ncol(A))
+  L <- irlba(A, 3, tol=1e-9, scale=s, fastpath=FAST)
+  S <- svd(scale(A, center=FALSE, scale=s))
+  if (!isTRUE(all.equal(L$d, S$d[1:3])))
+  {
+    stop("Failed sparse scaling test", " fastpath=", FAST)
   }
 
   # Symmetric partial eigendecomposition
