@@ -34,3 +34,6 @@ for (tol in 10 ^ -(7:12))
   converged <- svd(A %*% L$v - L$u  %*% diag(L$d))$d[1] < tol * L$d[1]
   stopifnot(converged)
 }
+
+# Test for issue #6
+irlba(Matrix(runif(100), 10, 10), 2)
