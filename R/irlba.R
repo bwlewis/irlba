@@ -204,7 +204,7 @@ function (A,                     # data matrix
   {
     if (deflate) stop("the center parameter can't be specified together with deflation parameters")
     if (length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
-    if (fastpath) du <- NULL
+    if (fastpath && ! right_only) du <- NULL
     else du <- 1
     ds <- 1
     dv <- center

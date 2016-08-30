@@ -37,3 +37,7 @@ for (tol in 10 ^ -(7:12))
 
 # Test for issue #6
 irlba(Matrix(runif(100), 10, 10), 2)
+
+# Test for issue #7, a really dumb bug.
+mx <- matrix(sample(1:10, 10 * 100, replace=TRUE), nrow=10)
+S <- irlba(mx, nv=2, verbose=TRUE, center=colMeans(mx), right_only=TRUE)
