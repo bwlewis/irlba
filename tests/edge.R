@@ -35,8 +35,14 @@ for (tol in 10 ^ -(7:12))
   stopifnot(converged)
 }
 
-# Test for issue #6
-irlba(Matrix(runif(100), 10, 10), 2)
+# Sparse but not dgCMatrix (issue #6)
+A <- Matrix(matrix(rnorm(100), 10))
+L <- irlba(A, nv=1)
+S <- svd(A, nu=1, nv=1)
+if (!isTRUE(all.equal(L$d, S$d[1])))
+{
+  stop("Failed general sparse matrix example ")
+}
 
 # Test for issue #7, a really dumb bug.
 mx <- matrix(sample(1:10, 10 * 100, replace=TRUE), nrow=10)

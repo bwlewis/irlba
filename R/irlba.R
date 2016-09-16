@@ -272,14 +272,10 @@ function (A,                     # data matrix
 
 # Try to use the fast C-language code path
   if (deflate) fastpath <- fastpath && is.null(du)
-  if ("Matrix" %in% attributes(class(A)))
+# Only dgCMatrix supported by fastpath for now
+  if ("Matrix" %in% attributes(class(A)) && !("dgCMatrix" %in% class(A)))
   {
-    fastpath <- tryCatch(
-    {
-      if (verbose) warning ("converting to class dgCMatrix")
-      A <- as(A, "dgCMatrix")
-      TRUE
-    }, error=function(e) FALSE)
+    fastpath <- FALSE
   }
   if (fastpath && missingmult && !iscomplex && !right_only)
   {
