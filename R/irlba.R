@@ -257,7 +257,6 @@ function (A,                     # data matrix
   if (min(m, n) < 6)
   {
     if (verbose) warning("Tiny problem detected, using standard `svd` function.")
-    algorithm = "svd"
     if (!missing(scale)) A <- A / scale
     if (!missing(shift)) A <- A + diag(shift)
     if (deflate)
