@@ -43,6 +43,14 @@ if (!isTRUE(all.equal(L$d, S$d[1])))
   stop("Failed general sparse matrix example ")
 }
 
+A <- Matrix(sample(c(FALSE, TRUE), 100, replace=TRUE), 10, 10)
+L <- irlba(A, nv=1)
+S <- svd(A, nu=1, nv=1)
+if (!isTRUE(all.equal(L$d, S$d[1])))
+{
+  stop("Failed logical sparse matrix example ")
+}
+
 # Test for issue #7, a really dumb bug.
 mx <- matrix(sample(1:10, 10 * 100, replace=TRUE), nrow=10)
 S <- irlba(mx, nv=2, verbose=TRUE, center=colMeans(mx), right_only=TRUE)
