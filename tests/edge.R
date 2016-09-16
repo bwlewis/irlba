@@ -17,7 +17,6 @@ if (!isTRUE(all.equal(L1$d, S$d[1])))
 }
 
 # Tickle misc. checks
-L <- irlba(A, nv=3, tol=1e-9, fastpath=FALSE, work=2, v=rep(0, nrow(A)))
 set.seed(1)
 A <- matrix(rnorm(100), 10)
 L <- tryCatch(irlba(A, nv=3, tol=1e-9, fastpath=FALSE, work=2, v=rep(0, nrow(A))), error=function(e) "NULLSPACE")
