@@ -35,7 +35,7 @@
 #' @param dv DEPRECATED optional subspace deflation vector (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
 #' @param mult optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
-#' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation.
+#' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.
 #'
 #' @return
 #' Returns a list with entries:
@@ -110,6 +110,8 @@
 #' }
 #' The function might return an error for several reasons including a situation when the starting
 #' vector \code{v} is near the null space of the matrix. In that case, try a different \code{v}.
+#'
+#' If your matrix is sparse and \code{fastpath=TRUE} it will try to be coerced to the \code{dgCMatrix} class. Use \code{fastpath=FALSE} to bypass this coercion.
 #'
 #' @references
 #' Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
@@ -202,7 +204,7 @@ function (A,                     # data matrix
   {
     if (deflate) stop("the center parameter can't be specified together with deflation parameters")
     if (length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
-    if (fastpath) du <- NULL
+    if (fastpath && ! right_only) du <- NULL
     else du <- 1
     ds <- 1
     dv <- center
@@ -270,6 +272,11 @@ function (A,                     # data matrix
 
 # Try to use the fast C-language code path
   if (deflate) fastpath <- fastpath && is.null(du)
+# Only dgCMatrix supported by fastpath for now
+  if ("Matrix" %in% attributes(class(A)) && !("dgCMatrix" %in% class(A)))
+  {
+    fastpath <- FALSE
+  }
   if (fastpath && missingmult && !iscomplex && !right_only)
   {
     RESTART <- 0

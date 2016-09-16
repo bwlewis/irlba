@@ -55,7 +55,7 @@ column of \code{A}; must be as long as the number of columns of \code{A} and may
 
 \item{mult}{optional custom matrix multiplication function (default is \code{\%*\%}, see notes).}
 
-\item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation.}
+\item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.}
 }
 \value{
 Returns a list with entries:
@@ -136,6 +136,8 @@ The function may generate the following warnings:
 }
 The function might return an error for several reasons including a situation when the starting
 vector \code{v} is near the null space of the matrix. In that case, try a different \code{v}.
+
+If your matrix is sparse and \code{fastpath=TRUE} it will try to be coerced to the \code{dgCMatrix} class. Use \code{fastpath=FALSE} to bypass this coercion.
 }
 \examples{
 set.seed(1)
