@@ -219,7 +219,7 @@ legend(&quot;bottomright&quot;, legend=c(&quot;svds&quot;, &quot;irlba&quot;), f
 <div id="pathological-example-1" class="section level2">
 <h2>Pathological example 1</h2>
 <p>The following example creates a numerically well-conditioned toy matrix <code>x</code> that has a few closely-spaced singular values. Although this example is unlikely to occur in practice, the results warrant caution.</p>
-<pre class="r"><code>library(irlba, quietly=TRUE)
+<pre class="r"><code>library(irlba)
 library(RSpectra)
 
 set.seed(1)
