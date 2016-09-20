@@ -157,11 +157,10 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
 /* irlb: main computation function.
  * returns:
  *  0 on success,
- * -1 on misc error
+ * -1 invalid dimensions,
  * -2 not converged
  * -3 out of memory
  * -4 starting vector near the null space of A
- * -5 other linear dependence error
  *
  * all data must be allocated by caller, required sizes listed below
  */
@@ -204,7 +203,6 @@ irlb (void *A,                  // Input data matrix
   int converged;
   int info, j, k = restart;
   int inc = 1;
-  int retval = -3;
   int mprod = 0;
   int iter = 0;
   double Smax = 0;
@@ -278,7 +276,7 @@ irlb (void *A,                  // Input data matrix
         }
 
       S = F77_NAME (dnrm2) (&m, W + j * m, &inc);
-      if (S < 2 * eps && j == 1)
+      if (S < 2 * eps && j == 0)
         return -4;
       SS = 1.0 / S;
       F77_NAME (dscal) (&m, &SS, W + j * m, &inc);
@@ -314,9 +312,20 @@ irlb (void *A,                  // Input data matrix
           F77_NAME (daxpy) (&n, &SS, V + j * n, &inc, F, &inc);
           orthog (V, F, T, n, j + 1, 1);
           R_F = F77_NAME (dnrm2) (&n, F, &inc);
+          R = 1.0 / R_F;
+
+          if (R_F < 2 * eps)    // near invariant subspace
+            {
+              for (kk = 0; kk < n; ++kk)
+                F[kk] = (double) rand () / (double) RAND_MAX;
+              orthog (V, F, T, n, j + 1, 1);
+              R_F = F77_NAME (dnrm2) (&n, F, &inc);
+              R = 1.0 / R_F;
+              R_F = 0;
+            }
+
           if (j + 1 < work)
             {
-              R = 1.0 / R_F;
               memmove (V + (j + 1) * n, F, n * sizeof (double));
               F77_NAME (dscal) (&n, &R, V + (j + 1) * n, &inc);
               B[j * work + j] = S;
@@ -363,8 +372,7 @@ irlb (void *A,                  // Input data matrix
               F77_NAME (daxpy) (&m, &R, W + j * m, &inc, W + (j + 1) * m,
                                 &inc);
 /* full re-orthogonalization of W */
-              if (iter > 1)
-                orthog (W, W + (j + 1) * m, T, m, j + 1, 1);
+              orthog (W, W + (j + 1) * m, T, m, j + 1, 1);
               S = F77_NAME (dnrm2) (&m, W + (j + 1) * m, &inc);
               SS = 1.0 / S;
               F77_NAME (dscal) (&m, &SS, W + (j + 1) * m, &inc);
@@ -380,12 +388,12 @@ irlb (void *A,                  // Input data matrix
       int *BI = (int *) T;
       F77_NAME (dgesdd) ("O", &work, &work, BU, &work, BS, BU, &work, BV,
                          &work, BW, &lwork, BI, &info);
+      R_F = F77_NAME (dnrm2) (&n, F, &inc);
       R = 1.0 / R_F;
       F77_NAME (dscal) (&n, &R, F, &inc);
 /* Force termination after encountering linear dependence */
       if (R_F < 2 * eps)
         R_F = 0;
-
       Smax = 0;
       for (jj = 0; jj < j; ++jj)
         if (BS[jj] > Smax)
@@ -429,15 +437,13 @@ irlb (void *A,                  // Input data matrix
   beta = 0;
   F77_NAME (dgemm) ("n", "n", &m, &nu, &work, &alpha, W, &m, BU, &work, &beta,
                     U, &m);
-
   F77_NAME (dgemm) ("n", "t", &n, &nu, &work, &alpha, V, &n, BV, &work, &beta,
                     V1, &n);
   memmove (V, V1, n * nu * sizeof (double));
 
   *ITER = iter;
   *MPROD = mprod;
-  retval = (converged == 1) ? 0 : -2;   // 0 = Success, -2 = not converged.
-  return (retval);
+  return (converged == 1 ? 0 : -2);
 }
 
 

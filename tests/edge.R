@@ -54,3 +54,13 @@ if (!isTRUE(all.equal(L$d, S$d[1])))
 # Test for issue #7, a really dumb bug.
 mx <- matrix(sample(1:10, 10 * 100, replace=TRUE), nrow=10)
 S <- irlba(mx, nv=2, verbose=TRUE, center=colMeans(mx), right_only=TRUE)
+
+# test for issue #9
+set.seed(2)
+s1 <- irlba(diag(c(1,2,3,4,5,0,0,0,0)), 4)
+set.seed(2)
+s2 <- irlba(diag(c(1,2,3,4,5,0,0,0,0)), 4, fastpath=FALSE)
+if (!isTRUE(all.equal(s1$d, s2$d)))
+{
+  stop("Failed fastpath invariant subspace detection")
+}

@@ -256,7 +256,7 @@ function (A,                     # data matrix
 # Check for tiny problem, use standard SVD in that case. Make definition of 'tiny' larger?
   if (min(m, n) < 6)
   {
-    if (verbose) warning("Tiny problem detected, using standard `svd` function.")
+    if (verbose) message ("Tiny problem detected, using standard `svd` function.")
     if (!missing(scale)) A <- A / scale
     if (!missing(shift)) A <- A + diag(shift)
     if (deflate)
@@ -281,8 +281,10 @@ function (A,                     # data matrix
     RESTART <- 0
     RV <- RW <- RS <- NULL
     if (is.null(v))
+    {
       v <- rnorm(n)
-    else if (is.list(v))  # restarted case
+      if (verbose) message("Initializing starting vector v with samples from standard normal distribution.\nUse `set.seed` first for reproducibility.")
+    } else if (is.list(v))  # restarted case
     {
       if (is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
       if (max(nu, nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
@@ -334,7 +336,7 @@ function (A,                     # data matrix
                 "linear dependency encountered")
     erridx <- abs(ans[[6]])
     if (erridx > 1)
-      warning("fast code path error ", errors[erridx], "; re-trying with fastpath=FALSE.")
+      warning("fast code path error ", errors[erridx], "; re-trying with fastpath=FALSE.", immediate.=TRUE)
   }
 
 # Allocate memory for W and F:
@@ -455,8 +457,8 @@ function (A,                     # data matrix
 
     S <- norm2(W[, j_w, drop=FALSE])
 #   Check for linearly dependent vectors
-    if (S < eps2 && j == 1) stop("starting vector near the null space")
-    if (S < eps2)
+    if (is.na(S) || S < eps2 && j == 1) stop("starting vector near the null space")
+    if (is.na(S) || S < eps2)
     {
       W[, j_w] <- rnorm(nrow(W))
       if (w_dim > 1) W[, j] <- orthog(W[, j], W[, 1:(j - 1)])
