@@ -32,11 +32,33 @@
 #include "R_ext/Lapack.h"
 #include "R_ext/Rdynload.h"
 #include "R_ext/Utils.h"
+#include "R_ext/Parse.h"
 
 #include "Matrix.h"
 #include "Matrix_stubs.c"
 
 #include "irlb.h"
+
+/* helper function for calling rnorm below */
+SEXP
+RNORM (int n)
+{
+  char buf[4096];
+  SEXP cmdSexp, cmdexpr, ans = R_NilValue;
+  ParseStatus status;
+  cmdSexp = PROTECT(allocVector(STRSXP, 1));
+  snprintf(buf, 4095, "rnorm(%d)", n);
+  SET_STRING_ELT(cmdSexp, 0, mkChar(buf));
+  cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
+  if (status != PARSE_OK) {
+    UNPROTECT(2);
+   error("invalid call");
+  }
+  for(int i = 0; i < length(cmdexpr); i++)
+    ans = eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
+  UNPROTECT(2);
+  return ans;
+}
 
 /* irlb C implementation wrapper
  * X double precision input matrix
@@ -316,8 +338,9 @@ irlb (void *A,                  // Input data matrix
 
           if (R_F < 2 * eps)    // near invariant subspace
             {
+              SEXP FOO = RNORM(n);
               for (kk = 0; kk < n; ++kk)
-                F[kk] = (double) rand () / (double) RAND_MAX;
+                F[kk] = REAL(FOO)[kk];
               orthog (V, F, T, n, j + 1, 1);
               R_F = F77_NAME (dnrm2) (&n, F, &inc);
               R = 1.0 / R_F;
