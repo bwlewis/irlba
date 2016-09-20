@@ -62,6 +62,7 @@ set.seed(2)
 s2 <- irlba(diag(c(1,2,3,4,5,0,0,0,0)), 4, fastpath=FALSE)
 if (!isTRUE(all.equal(s1$d, s2$d)))
 {
-  print(s1$d - s2$d)
+  print(s1$d)
+  print(s2$d)
   stop("Failed fastpath invariant subspace detection")
 }
