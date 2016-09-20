@@ -64,5 +64,7 @@ if (!isTRUE(all.equal(s1$d, s2$d)))
 {
   print(s1$d)
   print(s2$d)
+print(R.version)
+print(.Machine)
   stop("Failed fastpath invariant subspace detection")
 }

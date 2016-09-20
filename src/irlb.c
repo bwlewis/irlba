@@ -338,7 +338,6 @@ irlb (void *A,                  // Input data matrix
 
           if (R_F < 2 * eps)    // near invariant subspace
             {
-printf("%d R_F %g\n",j,R_F); //TRAVIS TEST
               SEXP FOO = RNORM(n);
               for (kk = 0; kk < n; ++kk)
                 F[kk] = REAL(FOO)[kk];
