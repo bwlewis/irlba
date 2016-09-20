@@ -57,6 +57,10 @@ S <- irlba(mx, nv=2, verbose=TRUE, center=colMeans(mx), right_only=TRUE)
 
 # test for issue #9
 set.seed(2)
+# ----- TRAVIS TESTING
+system("cat /proc/cpuinfo")
+cat(paste(.Random.seed, collapse=","))
+# ----- TRAVIS TESTING
 s1 <- irlba(diag(c(1,2,3,4,5,0,0,0,0)), 4)
 set.seed(2)
 s2 <- irlba(diag(c(1,2,3,4,5,0,0,0,0)), 4, fastpath=FALSE)
