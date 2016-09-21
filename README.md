@@ -10,9 +10,9 @@ functions (see help on each for details and examples).
 * `prcomp_irlba`  principal components function similar to the `prcomp` function in stats package for computing the first few principal components of large matrices
 * `partial_eigen` a very limited partial eigenvalue decomposition for symmetric matrices (see the [RSpectra](https://cran.r-project.org/package=RSpectra) package for more comprehensive truncated eigenvalue decomposition)
 
-The online help for each function includes examples. Also see the package
+Help documentation for each function includes examples. Also see the package
 vignette, `vignette("irlba", package="irlba")`, and demo,
-`demo("custom_matrix_multiply", package="irlba")`
+`demo("custom_matrix_multiply", package="irlba")`.
 
 Version 2.1.2 of the package includes a convenience `prcomp`-like function for
 computing principal components and numerous bug fixes and numerical stability
