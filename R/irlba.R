@@ -13,7 +13,8 @@
 #' @param work working subspace dimension, larger values can speed convergence at the cost of more memory use.
 #' @param reorth if \code{TRUE}, apply full reorthogonalization to both SVD bases, otherwise
 #'   only apply reorthogonalization to the right SVD basis vectors; the latter case is cheaper per
-#'   iteration but, overall, may require more iterations for convergence.
+#'   iteration but, overall, may require more iterations for convergence. Always set to \code{TRUE}
+#'   when \code{fastpath=TRUE} (see below).
 #' @param tol convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||},
 #'   where the spectral norm ||A|| is approximated by the
 #'   largest estimated singular value, and U, V, S are the matrices corresponding
@@ -88,10 +89,11 @@
 #' Specify an optional alternative matrix multiplication operator in the
 #' \code{mult} parameter. \code{mult} must be a function of two arguments,
 #' and must handle both cases where one argument is a vector and the other
-#' a matrix. See the examples.
+#' a matrix. See the examples and the demos for an alternative approach.
 #'
 #' Use the \code{v} option to supply a starting vector for the iterative
-#' method. A random vector is used by default. Optionally set \code{v} to
+#' method. A random vector is used by default (precede with \code{set.seed()} to
+#' for reproducibility). Optionally set \code{v} to
 #' the output of a previous run of \code{irlba} to restart the method, adding
 #' additional singular values/vectors without recomputing the solution
 #' subspace. See the examples.
@@ -113,7 +115,9 @@
 #' The function might return an error for several reasons including a situation when the starting
 #' vector \code{v} is near the null space of the matrix. In that case, try a different \code{v}.
 #'
-#' If your matrix is sparse and \code{fastpath=TRUE} it will try to be coerced to the \code{dgCMatrix} class. Use \code{fastpath=FALSE} to bypass this coercion.
+#' The \code{fastpath=TRUE} option only supports real-valued matrices and sparse matrices
+#' of type \code{dgCMatrix} (for now). Other problems fall back to the reference
+#' R implementation.
 #'
 #' @references
 #' Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
@@ -275,7 +279,12 @@ function (A,                     # data matrix
 # Try to use the fast C-language code path
   if (deflate) fastpath <- fastpath && is.null(du)
 # Only dgCMatrix supported by fastpath for now
-  if ("Matrix" %in% attributes(class(A)) && !("dgCMatrix" %in% class(A)))
+  if ("Matrix" %in% attributes(class(A)) && ! ("dgCMatrix" %in% class(A)))
+  {
+    fastpath <- FALSE
+  }
+# Check for custom class
+  if ("matrix" %in% attributes(A)$.S3Class && ! ("matrix" %in% class(A))
   {
     fastpath <- FALSE
   }
