@@ -284,7 +284,7 @@ function (A,                     # data matrix
     fastpath <- FALSE
   }
 # Check for custom class
-  if ("matrix" %in% attributes(A)$.S3Class && ! ("matrix" %in% class(A))
+  if ("matrix" %in% attributes(A)$.S3Class && ! ("matrix" %in% class(A)))
   {
     fastpath <- FALSE
   }
