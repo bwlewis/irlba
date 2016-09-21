@@ -33,7 +33,7 @@
 /* orthog(X,Y,...)
  * compute Y = Y - X * t(X) * Y
  * xm,xn: nrow, ncol X
- * yn: ncol Y
+ * yn: ncol Y (ASSUMED TO BE 1)
  * On entry, number of rows of Y must be xm to compute t(X) * Y and
  * T must be allocated of at least size xn * yn.
  * Modifies contents of Y.
@@ -41,14 +41,15 @@
 void
 orthog (double *X, double *Y, double *T, int xm, int xn, int yn)
 {
-  double a = 1, b = 0;
+  double a = 1, b = 1;
+  int inc = 1;
   memset(T, 0, xn * yn * sizeof(double));
   // T = t(X) * Y
-  F77_NAME(dgemm) ("t", "n", &xn, &yn, &xm, &a, X, &xm, Y, &xm, &b, T, &xm);
+  F77_NAME (dgemv) ("t", &xm, &xn, &a, X, &xm, Y, &inc, &b, T, &inc);
   // Y = Y - X * T
   a = -1.0;
   b = 1.0;
-  F77_NAME(dgemm) ("n", "n", &xm, &yn, &xn, &a, X, &xm, T, &xn, &b, Y, &xm);
+  F77_NAME (dgemv) ("n", &xm, &xn, &a, X, &xm, T, &inc, &b, Y, &inc);
 }
 
 

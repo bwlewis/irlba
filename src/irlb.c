@@ -46,17 +46,18 @@ RNORM (int n)
   char buf[4096];
   SEXP cmdSexp, cmdexpr, ans = R_NilValue;
   ParseStatus status;
-  cmdSexp = PROTECT(allocVector(STRSXP, 1));
-  snprintf(buf, 4095, "rnorm(%d)", n);
-  SET_STRING_ELT(cmdSexp, 0, mkChar(buf));
-  cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
-  if (status != PARSE_OK) {
-    UNPROTECT(2);
-   error("invalid call");
-  }
-  for(int i = 0; i < length(cmdexpr); i++)
-    ans = eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
-  UNPROTECT(2);
+  cmdSexp = PROTECT (allocVector (STRSXP, 1));
+  snprintf (buf, 4095, "rnorm(%d)", n);
+  SET_STRING_ELT (cmdSexp, 0, mkChar (buf));
+  cmdexpr = PROTECT (R_ParseVector (cmdSexp, -1, &status, R_NilValue));
+  if (status != PARSE_OK)
+    {
+      UNPROTECT (2);
+      error ("invalid call");
+    }
+  for (int i = 0; i < length (cmdexpr); i++)
+    ans = eval (VECTOR_ELT (cmdexpr, i), R_GlobalEnv);
+  UNPROTECT (2);
   return ans;
 }
 
@@ -228,6 +229,7 @@ irlb (void *A,                  // Input data matrix
   int mprod = 0;
   int iter = 0;
   double Smax = 0;
+  SEXP FOO;
 
 /* Check for valid input dimensions */
   if (work < 4 || n < 4 || m < 4)
@@ -291,12 +293,6 @@ irlb (void *A,                  // Input data matrix
             W[jj + kk] = W[jj + kk] - beta;
         }
 
-      if (iter > 0)
-        {
-/* Orthogonalize jth column of W with previous j columns */
-          orthog (W, W + j * m, T, m, j, 1);
-        }
-
       S = F77_NAME (dnrm2) (&m, W + j * m, &inc);
       if (S < 2 * eps && j == 0)
         return -4;
@@ -338,9 +334,9 @@ irlb (void *A,                  // Input data matrix
 
           if (R_F < 2 * eps)    // near invariant subspace
             {
-              SEXP FOO = RNORM(n);
+              FOO = RNORM (n);
               for (kk = 0; kk < n; ++kk)
-                F[kk] = REAL(FOO)[kk];
+                F[kk] = REAL (FOO)[kk];
               orthog (V, F, T, n, j + 1, 1);
               R_F = F77_NAME (dnrm2) (&n, F, &inc);
               R = 1.0 / R_F;
@@ -394,11 +390,24 @@ irlb (void *A,                  // Input data matrix
               R = -R_F;
               F77_NAME (daxpy) (&m, &R, W + j * m, &inc, W + (j + 1) * m,
                                 &inc);
-/* full re-orthogonalization of W */
+/* full re-orthogonalization of W_{j+1} */
               orthog (W, W + (j + 1) * m, T, m, j + 1, 1);
               S = F77_NAME (dnrm2) (&m, W + (j + 1) * m, &inc);
               SS = 1.0 / S;
-              F77_NAME (dscal) (&m, &SS, W + (j + 1) * m, &inc);
+              if (S < 2 * eps)
+                {
+                  FOO = RNORM (m);
+                  jj = (j + 1) * m;
+                  for (kk = 0; kk < m; ++kk)
+                    W[jj + kk] = REAL (FOO)[kk];
+                  orthog (W, W + (j + 1) * m, T, m, j + 1, 1);
+                  S = F77_NAME (dnrm2) (&m, W + (j + 1) * m, &inc);
+                  SS = 1.0 / S;
+                  F77_NAME (dscal) (&m, &SS, W + (j + 1) * m, &inc);
+                  S = 0;
+                }
+              else
+                F77_NAME (dscal) (&m, &SS, W + (j + 1) * m, &inc);
             }
           else
             {
