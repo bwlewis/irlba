@@ -293,6 +293,8 @@ irlb (void *A,                  // Input data matrix
             W[jj + kk] = W[jj + kk] - beta;
         }
 
+      if (iter > 0)
+        orthog (W, W + j * m, T, m, j, 1);
       S = F77_NAME (dnrm2) (&m, W + j * m, &inc);
       if (S < 2 * eps && j == 0)
         return -4;
@@ -329,22 +331,22 @@ irlb (void *A,                  // Input data matrix
           SS = -S;
           F77_NAME (daxpy) (&n, &SS, V + j * n, &inc, F, &inc);
           orthog (V, F, T, n, j + 1, 1);
-          R_F = F77_NAME (dnrm2) (&n, F, &inc);
-          R = 1.0 / R_F;
-
-          if (R_F < 2 * eps)    // near invariant subspace
-            {
-              FOO = RNORM (n);
-              for (kk = 0; kk < n; ++kk)
-                F[kk] = REAL (FOO)[kk];
-              orthog (V, F, T, n, j + 1, 1);
-              R_F = F77_NAME (dnrm2) (&n, F, &inc);
-              R = 1.0 / R_F;
-              R_F = 0;
-            }
 
           if (j + 1 < work)
             {
+              R_F = F77_NAME (dnrm2) (&n, F, &inc);
+              R = 1.0 / R_F;
+              if (R_F < 2 * eps)        // near invariant subspace
+                {
+                  FOO = RNORM (n);
+                  for (kk = 0; kk < n; ++kk)
+                    F[kk] = REAL (FOO)[kk];
+                  orthog (V, F, T, n, j + 1, 1);
+                  R_F = F77_NAME (dnrm2) (&n, F, &inc);
+                  R = 1.0 / R_F;
+                  R_F = 0;
+                }
+
               memmove (V + (j + 1) * n, F, n * sizeof (double));
               F77_NAME (dscal) (&n, &R, V + (j + 1) * n, &inc);
               B[j * work + j] = S;
