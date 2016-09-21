@@ -25,6 +25,9 @@
 #' This function uses the \code{irlba} function under the hood. See \code{?irlba}
 #' for description of additional options, especially the \code{tol} parameter.
 #'
+#' See the RSpectra package https://cran.r-project.org/package=RSpectra for more comprehensive
+#' partial eigenvalue decomposition.
+#'
 #' @references
 #' Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
 #'

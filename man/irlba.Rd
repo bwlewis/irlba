@@ -22,7 +22,8 @@ irlba(A, nv = 5, nu, maxit = 1000, work = nv + 7, reorth = TRUE,
 
 \item{reorth}{if \code{TRUE}, apply full reorthogonalization to both SVD bases, otherwise
 only apply reorthogonalization to the right SVD basis vectors; the latter case is cheaper per
-iteration but, overall, may require more iterations for convergence.}
+iteration but, overall, may require more iterations for convergence. Always set to \code{TRUE}
+when \code{fastpath=TRUE} (see below).}
 
 \item{tol}{convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||},
 where the spectral norm ||A|| is approximated by the
@@ -114,10 +115,13 @@ product functions.
 Specify an optional alternative matrix multiplication operator in the
 \code{mult} parameter. \code{mult} must be a function of two arguments,
 and must handle both cases where one argument is a vector and the other
-a matrix. See the examples.
+a matrix. See the examples and
+\code{demo("custom_matrix_multiply", package="irlba")} for an 
+alternative approach.
 
 Use the \code{v} option to supply a starting vector for the iterative
-method. A random vector is used by default. Optionally set \code{v} to
+method. A random vector is used by default (precede with \code{set.seed()} to
+for reproducibility). Optionally set \code{v} to
 the output of a previous run of \code{irlba} to restart the method, adding
 additional singular values/vectors without recomputing the solution
 subspace. See the examples.
@@ -139,7 +143,9 @@ The function may generate the following warnings:
 The function might return an error for several reasons including a situation when the starting
 vector \code{v} is near the null space of the matrix. In that case, try a different \code{v}.
 
-If your matrix is sparse and \code{fastpath=TRUE} it will try to be coerced to the \code{dgCMatrix} class. Use \code{fastpath=FALSE} to bypass this coercion.
+The \code{fastpath=TRUE} option only supports real-valued matrices and sparse matrices
+of type \code{dgCMatrix} (for now). Other problems fall back to the reference
+R implementation.
 }
 \examples{
 set.seed(1)

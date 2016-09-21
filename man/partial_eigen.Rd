@@ -35,6 +35,9 @@ and corresponding eigenvectors of the symmetric matrix cross-product
 
 This function uses the \code{irlba} function under the hood. See \code{?irlba}
 for description of additional options, especially the \code{tol} parameter.
+
+See the RSpectra package https://cran.r-project.org/package=RSpectra for more comprehensive
+partial eigenvalue decomposition.
 }
 \examples{
 set.seed(1)
