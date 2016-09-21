@@ -89,7 +89,9 @@
 #' Specify an optional alternative matrix multiplication operator in the
 #' \code{mult} parameter. \code{mult} must be a function of two arguments,
 #' and must handle both cases where one argument is a vector and the other
-#' a matrix. See the examples and the demos for an alternative approach.
+#' a matrix. See the examples and
+#' \code{demo("custom_matrix_multiply", package="irlba")} for an 
+#' alternative approach.
 #'
 #' Use the \code{v} option to supply a starting vector for the iterative
 #' method. A random vector is used by default (precede with \code{set.seed()} to
