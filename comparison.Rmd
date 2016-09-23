@@ -307,7 +307,7 @@ The `bdiff` function below compares the 2-norm errors of singular vectors
 correcting for possible sign differences (singular vectors are only unique up
 to sign). Despite the relative accurate estimation of singular values, `svds`
 exhibits a near complete loss of accuracy and seriously mis-estimates the
-singular vectors even though the matrix is well-conditioned.
+singular vectors (even though the matrix is well-conditioned).
 ```{r}
 bdiff = function(x, y)
 {

@@ -131,12 +131,16 @@ h2,h3,h4,h5,h6{ font-size: 24pt; }
 <blockquote>
 <p>J. Baglama and L. Reichel, SIAM J. Sci. Comput. (2005). (<a href="http://www.math.uri.edu/~jbaglama/papers/paper14.pdf" class="uri">http://www.math.uri.edu/~jbaglama/papers/paper14.pdf</a>)</p>
 </blockquote>
-<p>It is a fast and memory-efficient way to compute a partial SVD, principal components, and some specialized partial eigenvalue decompositions.</p>
-<p>I introduced Baglama and Reichel’s irlba algorithm to the R world in a talk at the useR! conference in Dortmund way back in 2008, and a stable version of the package has been on CRAN for more than five years.</p>
+<p>It is a fast and memory-efficient way to compute a partial SVD, principal components, and some specialized partial eigenvalue decompositions. I introduced Baglama and Reichel’s irlba algorithm to the R world in a talk at the useR! conference in Dortmund way back in 2008.</p>
 <div id="whats-new" class="section level1">
 <h1>What’s new</h1>
-<p>The current stable version of the package is 2.1.0 (August 2016).</p>
-<p>Version 2.1.0 of the package includes a convenience <code>prcomp</code>-like function for computing principal components and a fast C-language implementation for improved computational speed. The original R algorithm implementation is maintained for some special cases and for reference.</p>
+<ul>
+<li>The current stable version of the package is 2.1.2 (September 2016).</li>
+<li>Version 2.1.2 of the package includes a convenience <code>prcomp</code>-like function for computing principal components and a fast C-language implementation for improved computational speed. The original R algorithm implementation is maintained for some special cases and for reference.</li>
+<li>A somewhat faster C implementation is now used by default for real-valued dense and some sparse problems. Use the  parameter to run the original reference R implementation.</li>
+<li>Many more package tests for numerical edge cases have been added.</li>
+<li>A new demo shows several ways to implement custom matrix products.</li>
+</ul>
 </div>
 <div id="vignettes" class="section level1">
 <h1>Vignettes</h1>
