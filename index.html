@@ -137,7 +137,7 @@ h2,h3,h4,h5,h6{ font-size: 24pt; }
 <ul>
 <li>The current stable version of the package is 2.1.2 (September 2016).</li>
 <li>Version 2.1.2 of the package includes a convenience <code>prcomp</code>-like function for computing principal components and a fast C-language implementation for improved computational speed. The original R algorithm implementation is maintained for some special cases and for reference.</li>
-<li>A somewhat faster C implementation is now used by default for real-valued dense and some sparse problems. Use the  parameter to run the original reference R implementation.</li>
+<li>A somewhat faster C implementation is now used by default for real-valued dense and some sparse problems. Use the <code>fastpath=FALSE</code> parameter to run the original reference R implementation.</li>
 <li>Many more package tests for numerical edge cases have been added.</li>
 <li>A new demo shows several ways to implement custom matrix products.</li>
 </ul>
