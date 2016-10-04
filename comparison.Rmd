@@ -303,7 +303,7 @@ the top three singular values. We get a warning from irlba that we're computing
 a large percentage of them. Ironically and despite the warning, `irlba`'s
 estimates are slightly more accurate than `svd` in this example.
 
-The `bdiff` function below compares the 2-norm errors of singular vectors
+The `bdiff` function below compares the squared 2-norm errors of singular vectors
 correcting for possible sign differences (singular vectors are only unique up
 to sign). Despite the relative accurate estimation of singular values, `svds`
 exhibits a near complete loss of accuracy and seriously mis-estimates the
