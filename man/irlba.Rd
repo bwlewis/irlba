@@ -25,7 +25,7 @@ only apply reorthogonalization to the right SVD basis vectors; the latter case i
 iteration but, overall, may require more iterations for convergence. Always set to \code{TRUE}
 when \code{fastpath=TRUE} (see below).}
 
-\item{tol}{convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||},
+\item{tol}{convergence is determined when \eqn{\|A^TU - VS\| < tol\|A\|}{||A^T U - VS|| < tol*||A||},
 where the spectral norm ||A|| is approximated by the
 largest estimated singular value, and U, V, S are the matrices corresponding
 to the estimated left and right singular vectors, and diagonal matrix of

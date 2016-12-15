@@ -15,7 +15,7 @@
 #'   only apply reorthogonalization to the right SVD basis vectors; the latter case is cheaper per
 #'   iteration but, overall, may require more iterations for convergence. Always set to \code{TRUE}
 #'   when \code{fastpath=TRUE} (see below).
-#' @param tol convergence is determined when \eqn{\|AV - US\| < tol\|A\|}{||AV - US|| < tol*||A||},
+#' @param tol convergence is determined when \eqn{\|A^TU - VS\| < tol\|A\|}{||A^T U - VS|| < tol*||A||},
 #'   where the spectral norm ||A|| is approximated by the
 #'   largest estimated singular value, and U, V, S are the matrices corresponding
 #'   to the estimated left and right singular vectors, and diagonal matrix of
@@ -503,6 +503,7 @@ function (A,                     # data matrix
 #       Check for linear dependence
         if (R < eps2)
         {
+          if (verbose) message("F near zero")
           F <- matrix(rnorm(dim(V)[1]), dim(V)[1], 1)
           F <- orthog(F, V[, 1:j, drop=FALSE])
           V[, j + 1] <- F / norm2(F)
@@ -547,6 +548,7 @@ function (A,                     # data matrix
 #       Check for linear dependence
         if (S < eps2)
         {
+          if (verbose) message("W[, j+1] near zero")
           W[, jp1_w] <- rnorm(nrow(W))
           if (w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
           W[, jp1_w] <- W[, jp1_w] / norm2(W[, jp1_w])
@@ -570,9 +572,10 @@ function (A,                     # data matrix
 # ---------------------------------------------------------------------
     Bsz <- nrow(B)
     R_F <- norm2(F)
+print(R_F)
     F <- F / R_F
-#   Compute singular triplets of B. Expect svd to return s.v.s in order
-#   from largest to smallest.
+#   Compute singular triplets of B, svd must return ordered singular
+#   values from largest to smallest.
     Bsvd <- svd(B)
 
 #   Estimate ||A|| using the largest singular value over all iterations
@@ -598,6 +601,7 @@ function (A,                     # data matrix
 
 #   Compute the residuals
     R <- R_F * Bsvd$u[Bsz, , drop=FALSE]
+print(R)
 #   Check for convergence
     ct <- convtests(Bsz, tol, k_org, Bsvd$u,
                     Bsvd$d, Bsvd$v, abs(R), k, SVTol, Smax)
