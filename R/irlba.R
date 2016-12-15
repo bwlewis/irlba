@@ -572,7 +572,6 @@ function (A,                     # data matrix
 # ---------------------------------------------------------------------
     Bsz <- nrow(B)
     R_F <- norm2(F)
-print(R_F)
     F <- F / R_F
 #   Compute singular triplets of B, svd must return ordered singular
 #   values from largest to smallest.
@@ -601,7 +600,6 @@ print(R_F)
 
 #   Compute the residuals
     R <- R_F * Bsvd$u[Bsz, , drop=FALSE]
-print(R)
 #   Check for convergence
     ct <- convtests(Bsz, tol, k_org, Bsvd$u,
                     Bsvd$d, Bsvd$v, abs(R), k, SVTol, Smax)
