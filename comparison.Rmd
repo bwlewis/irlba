@@ -360,7 +360,7 @@ tol: Precision parameter. Default is 1e-10.
 ```
 Compare with the `tol` parameter documentation in the irlba package:
 ```
-tol: convergence is determined when ||AV - US|| < tol*||A||, where
+tol: convergence is determined when ||A^TU - VS|| < tol*||A||, where
      the spectral norm ||A|| is approximated by the largest
      estimated singular value, and U, V, S are the matrices
      corresponding to the estimated left and right singular
