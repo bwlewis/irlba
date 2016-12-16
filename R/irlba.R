@@ -32,13 +32,12 @@
 #'   must be as long as the number of columns of \code{A} (see notes).
 #' @param center optional column centering vector whose values are subtracted from each
 #'   column of \code{A}; must be as long as the number of columns of \code{A} and may
-#"   not be used together with the deflation options below (see notes).
-#' @param du DEPRECATED optional subspace deflation vector (see notes).
-#' @param ds DEPRECATED optional subspace deflation scalar (see notes).
-#' @param dv DEPRECATED optional subspace deflation vector (see notes).
+#'   not be used together with the deflation options below (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
 #' @param mult optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
 #' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.
+#' @param svtol alternative additional stopping tolerance, see notes for discussion.
+#' @param ... optional additional arguments used to support experimental features.
 #'
 #' @return
 #' Returns a list with entries:
@@ -68,23 +67,11 @@
 #' Use the optional \code{center} parameter to implicitly subtract the values
 #' in the \code{center} vector from each column of \code{A}, computing the
 #' truncated SVD of \code{sweep(A, 2, center, FUN=`-`)},
-#' without explicitly forming the centered matrix. This option may not be
-#' used together with the general rank 1 deflation options. \code{center}
+#' without explicitly forming the centered matrix. \code{center}
 #' must be a vector of length equal to the number of columns of \code{A}.
 #' This option may be used to efficiently compute principal components without
 #' explicitly forming the centered matrix (which can, importantly, preserve
 #' sparsity in the matrix). See the examples.
-#'
-#' The optional deflation parameters are deprecated and will be removed in
-#' a future version. They could be used to compute the rank-one deflated
-#' SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}, where
-#' \eqn{du^T A - ds\cdot dv^T = 0}{t(du) \%*\% A - ds * t(dv) == 0}. For
-#' example, the triple \code{ds, du, dv} may be a known singular value
-#' and corresponding singular vectors. Or \code{ds=m} and \code{dv}
-#' and \code{du} represent a vector of column means of \code{A} and of ones,
-#' respectively, where \code{m} is the number of rows of \code{A}.
-#' This functionality can be effectively replaced with custom matrix
-#' product functions.
 #'
 #' Specify an optional alternative matrix multiplication operator in the
 #' \code{mult} parameter. \code{mult} must be a function of two arguments,
@@ -185,10 +172,11 @@ function (A,                     # data matrix
           verbose=FALSE,         # display status messages
           scale,                 # optional column scaling
           center,                # optional column centering
-          du, ds, dv,            # optional general rank 1 deflation
           shift,                 # optional shift for square matrices
           mult,                  # optional custom matrix multiplication func.
-          fastpath=TRUE)         # use the faster C implementation if possible
+          fastpath=TRUE,         # use the faster C implementation if possible
+          svtol=tol,             # alternative stopping tolerance/change in smallest estimated sv
+          ...)                   # optional arguments (really just to support old removed args)
 {
 # ---------------------------------------------------------------------
 # Check input parameters
@@ -196,14 +184,24 @@ function (A,                     # data matrix
   ropts <- options(warn=1) # immediately show warnings
   on.exit(options(ropts))  # reset on exit
   eps <- .Machine$double.eps
-  deflate <- missing(du) + missing(ds) + missing(dv)
+  # hidden support for old, removed (previously deprecated) parameters
+  # this is here as a convenience to keep old code working without change
+  mcall <- as.list(match.call())
+  # Maximum number of Ritz vectors to use in augmentation, may be less
+  # depending on workspace size.
+  maxritz <- mcall[["maxritz"]]
+  if(is.null(maxritz)) maxritz <- 4
+  du <- mcall[["du"]]
+  dv <- mcall[["dv"]]
+  ds <- mcall[["ds"]]
+  deflate <- is.null(du) + is.null(ds) + is.null(dv)
   if (deflate == 3)
   {
     deflate <- FALSE
   } else if (deflate == 0)
   {
     deflate <- TRUE
-    warning("The deflation options are deprecated and will be removed in a future version.")
+    warning("The deflation options are deprecated and have been removed as formal arugments. Please modify your code to not use them.")
     if (length(ds) > 1) stop("deflation limited to one dimension")
     if (!is.null(dim(du))) du <- du[, 1]
     if (!is.null(dim(dv))) dv <- dv[, 1]
@@ -396,7 +394,7 @@ function (A,                     # data matrix
                              # B est. ||A||_2
   Smin <- NULL               # Min value of all computed singular values of
                              # B est. cond(A)
-  SVTol <- tol  # Tolerance for singular vector convergence
+  lastsv <- c()              # estimated sv in last iteration
 
 # Check for user-supplied restart condition
   if (restart)
@@ -474,6 +472,7 @@ function (A,                     # data matrix
     if (is.na(S) || S < eps2 && j == 1) stop("starting vector near the null space")
     if (is.na(S) || S < eps2)
     {
+      if (verbose) message("S near zero")
       W[, j_w] <- rnorm(nrow(W))
       if (w_dim > 1) W[, j] <- orthog(W[, j], W[, 1:(j - 1)])
       W[, j_w] <- W[, j_w] / norm2(W[, j_w])
@@ -563,10 +562,6 @@ function (A,                     # data matrix
       }
       j <- j + 1
     }
-    if (verbose)
-    {
-      message("Lanczos iter = ", iter, ", dim = ", j - 1, ", mprod = ", mprod)
-    }
 # ---------------------------------------------------------------------
 # (End of the Lanczos bidiagonalization part)
 # ---------------------------------------------------------------------
@@ -601,8 +596,16 @@ function (A,                     # data matrix
 #   Compute the residuals
     R <- R_F * Bsvd$u[Bsz, , drop=FALSE]
 #   Check for convergence
-    ct <- convtests(Bsz, tol, k_org, Bsvd$u,
-                    Bsvd$d, Bsvd$v, abs(R), k, SVTol, Smax)
+    ct <- convtests(Bsz, tol, k_org, Bsvd$u, Bsvd$d, Bsvd$v, abs(R), k, Smax, lastsv, svtol, maxritz, work)
+    if (verbose)
+    {
+      message("iter= ", iter,
+              ", mprod= ", mprod,
+              ", smallest sv=", sprintf(".2%e", Bsvd$d[k_org]),
+              ", %change=", sprintf("%.2e", (Bsvd$d[k_org] - lastsv[k_org])/Bsvd$d[k_org]),
+              ", k=", ct$k)
+    }
+    lastsv <- Bsvd$d
     k <- ct$k
 
 #   If all desired singular values converged, then exit main loop
@@ -611,8 +614,7 @@ function (A,                     # data matrix
 
 #   Compute the starting vectors and first block of B[1:k, 1:(k+1), drop=FALSE]
 #   using the Ritz vectors
-      V[, 1:(k + dim(F)[2])] <- cbind(V[, 1:(dim(Bsvd$v)[1]),
-                                     drop=FALSE] %*% Bsvd$v[, 1:k], F)
+      V[, 1:(k + dim(F)[2])] <- cbind(V[, 1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[, 1:k], F)
       B <- cbind( diag(Bsvd$d[1:k], nrow=k), R[1:k])
 
 #   Update the left approximate singular vectors
@@ -627,7 +629,7 @@ function (A,                     # data matrix
 # End of the main iteration loop
 # Output results
 # ---------------------------------------------------------------------
-  if (iter > maxit) warning("did not converge--results might be invalid!; try increasing maxit")
+  if (!ct$converged) warning("did not converge--results might be invalid!; try increasing maxit or work")
   d <- Bsvd$d[1:k_org]
   if (!right_only)
   {

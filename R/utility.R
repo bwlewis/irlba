@@ -41,29 +41,26 @@ orthog <- function (Y, X)
 # V_B            Right singular vectors of B
 # residuals
 # k
-# SVTol
 # Smax
+# lastsv, svtol, work
 #
 # Output parameter list
 # converged      TRUE/FALSE
-# U_B            Left singular vectors of small matrix B
-# S_B            Singular values of B
-# V_B            Right singular vectors of B
 # k              Number of singular vectors returned
 convtests <- function (Bsz, tol, k_org, U_B, S_B, V_B,
-                       residuals, k, SVTol, Smax)
+                       residuals, k, Smax, lastsv, svtol, maxritz, work)
  {
-  len_res <- sum(residuals[1:k_org] < tol * Smax)
+# Converged singular triplets
+  subspace_converged <- residuals[1:k_org] < tol * Smax
+# Converged fixed point triplets
+  delta_converged <- (abs(S_B[1:k_org] - lastsv[1:k_org]) / S_B[1:k_org])  < svtol
+  len_res <- sum(subspace_converged & delta_converged) # both
   if (is.na(len_res)) len_res <- 0
-  if (len_res == k_org) {
-    return (list(converged=TRUE, U_B=U_B[, 1:k_org, drop=FALSE],
-                  S_B=S_B[1:k_org, drop=FALSE],
-                  V_B=V_B[, 1:k_org, drop=FALSE], k=k))
-  }
+  if (len_res >= k_org) return (list(converged=TRUE, k=k))
 # Not converged yet...
-# Adjust k to include more vectors as the number of vectors converge.
-  len_res <- sum(residuals[1:k_org] < SVTol * Smax)
-  k <- max(k, k_org + len_res)
-  if (k > Bsz - 3) k <- max(Bsz - 3, 1)
-  return (list(converged=FALSE, U_B=U_B, S_B=S_B, V_B=V_B, k=k) )
+# Adjust k to include more vectors as the number of vectors converge, but not
+# too many (maxritz):
+  augment <- min(sum(subspace_converged), maxritz)
+  k <- min(max(k, k_org + augment), work - 1)
+  return (list(converged=FALSE, k=k) )
  }

@@ -7,7 +7,7 @@ singular vectors of a matrix.}
 \usage{
 irlba(A, nv = 5, nu, maxit = 1000, work = nv + 7, reorth = TRUE,
   tol = 1e-05, v = NULL, right_only = FALSE, verbose = FALSE, scale,
-  center, du, ds, dv, shift, mult, fastpath = TRUE)
+  center, shift, mult, fastpath = TRUE, svtol = tol, ...)
 }
 \arguments{
 \item{A}{numeric real- or complex-valued matrix or real-valued sparse matrix.}
@@ -46,19 +46,18 @@ for really large problems that run out of memory).}
 must be as long as the number of columns of \code{A} (see notes).}
 
 \item{center}{optional column centering vector whose values are subtracted from each
-column of \code{A}; must be as long as the number of columns of \code{A} and may}
-
-\item{du}{DEPRECATED optional subspace deflation vector (see notes).}
-
-\item{ds}{DEPRECATED optional subspace deflation scalar (see notes).}
-
-\item{dv}{DEPRECATED optional subspace deflation vector (see notes).}
+column of \code{A}; must be as long as the number of columns of \code{A} and may
+not be used together with the deflation options below (see notes).}
 
 \item{shift}{optional shift value (square matrices only, see notes).}
 
 \item{mult}{optional custom matrix multiplication function (default is \code{\%*\%}, see notes).}
 
 \item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.}
+
+\item{svtol}{alternative additional stopping tolerance, see notes for discussion.}
+
+\item{...}{optional additional arguments}
 }
 \value{
 Returns a list with entries:
@@ -94,23 +93,11 @@ to the number of columns of \code{A}.
 Use the optional \code{center} parameter to implicitly subtract the values
 in the \code{center} vector from each column of \code{A}, computing the
 truncated SVD of \code{sweep(A, 2, center, FUN=`-`)},
-without explicitly forming the centered matrix. This option may not be
-used together with the general rank 1 deflation options. \code{center}
+without explicitly forming the centered matrix. \code{center}
 must be a vector of length equal to the number of columns of \code{A}.
 This option may be used to efficiently compute principal components without
 explicitly forming the centered matrix (which can, importantly, preserve
 sparsity in the matrix). See the examples.
-
-The optional deflation parameters are deprecated and will be removed in
-a future version. They could be used to compute the rank-one deflated
-SVD of \eqn{A - ds \cdot du dv^T}{A - ds*du \%*\% t(dv)}, where
-\eqn{du^T A - ds\cdot dv^T = 0}{t(du) \%*\% A - ds * t(dv) == 0}. For
-example, the triple \code{ds, du, dv} may be a known singular value
-and corresponding singular vectors. Or \code{ds=m} and \code{dv}
-and \code{du} represent a vector of column means of \code{A} and of ones,
-respectively, where \code{m} is the number of rows of \code{A}.
-This functionality can be effectively replaced with custom matrix
-product functions.
 
 Specify an optional alternative matrix multiplication operator in the
 \code{mult} parameter. \code{mult} must be a function of two arguments,
