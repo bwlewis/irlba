@@ -36,9 +36,7 @@ orthog <- function (Y, X)
 # Bsz            Number of rows of the bidiagonal matrix B
 # tol
 # k_org
-# U_B            Left singular vectors of small matrix B
-# S_B            Singular values of B
-# V_B            Right singular vectors of B
+# Bsvd           svd list of small matrix B
 # residuals
 # k
 # Smax
@@ -47,13 +45,12 @@ orthog <- function (Y, X)
 # Output parameter list
 # converged      TRUE/FALSE
 # k              Number of singular vectors returned
-convtests <- function (Bsz, tol, k_org, U_B, S_B, V_B,
-                       residuals, k, Smax, lastsv, svtol, maxritz, work)
+convtests <- function (Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, maxritz, work)
  {
 # Converged singular triplets
   subspace_converged <- residuals[1:k_org] < tol * Smax
 # Converged fixed point triplets
-  delta_converged <- (abs(S_B[1:k_org] - lastsv[1:k_org]) / S_B[1:k_org])  < svtol
+  delta_converged <- (abs(Bsvd$d[1:k_org] - lastsv[1:k_org]) / Bsvd$d[1:k_org])  < svtol
   len_res <- sum(subspace_converged & delta_converged) # both
   if (is.na(len_res)) len_res <- 0
   if (len_res >= k_org) return (list(converged=TRUE, k=k))

@@ -13,9 +13,11 @@
 #' @param work working subspace dimension, larger values can speed convergence at the cost of more memory use.
 #' @param reorth if \code{TRUE}, apply full reorthogonalization to both SVD bases, otherwise
 #'   only apply reorthogonalization to the right SVD basis vectors; the latter case is cheaper per
-#'   iteration but, overall, may require more iterations for convergence. Always set to \code{TRUE}
+#'   iteration but, overall, may require more iterations for convergence. Automatically \code{TRUE}
 #'   when \code{fastpath=TRUE} (see below).
 #' @param tol convergence is determined when \eqn{\|A^TU - VS\| < tol\|A\|}{||A^T U - VS|| < tol*||A||},
+#'   and when the maximum percent change in estimated singular values from one iteration to the
+#'   next is less than \code{svtol = tol} (see \code{svtol} below),
 #'   where the spectral norm ||A|| is approximated by the
 #'   largest estimated singular value, and U, V, S are the matrices corresponding
 #'   to the estimated left and right singular vectors, and diagonal matrix of
@@ -36,7 +38,12 @@
 #' @param shift optional shift value (square matrices only, see notes).
 #' @param mult optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
 #' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.
-#' @param svtol alternative additional stopping tolerance, see notes for discussion.
+#' @param svtol additional stopping tolerance on minimum allowd percent change in each estimated singular value between iterations,
+#' the default value of this parameter is to set it to \code{tol}. You can set \code{svtol=Inf} to
+#' effectively disable this stopping criterion. Setting \code{svtol=Inf} allows the method to
+#' terminate on the first Lanczos iteration if it finds an invariant subspace, but with less certainty
+#' that the converged subspace is the desired one. (It may, for instance, miss some of the largest
+#' singular values in difficult problems.)
 #' @param ... optional additional arguments used to support experimental features.
 #'
 #' @return
@@ -175,7 +182,7 @@ function (A,                     # data matrix
           shift,                 # optional shift for square matrices
           mult,                  # optional custom matrix multiplication func.
           fastpath=TRUE,         # use the faster C implementation if possible
-          svtol=tol,             # alternative stopping tolerance/change in smallest estimated sv
+          svtol=tol,             # stopping tolerance percent change in estimated svs
           ...)                   # optional arguments (really just to support old removed args)
 {
 # ---------------------------------------------------------------------
@@ -190,7 +197,7 @@ function (A,                     # data matrix
   # Maximum number of Ritz vectors to use in augmentation, may be less
   # depending on workspace size.
   maxritz <- mcall[["maxritz"]]
-  if(is.null(maxritz)) maxritz <- 4
+  if(is.null(maxritz)) maxritz <- 3
   du <- mcall[["du"]]
   dv <- mcall[["dv"]]
   ds <- mcall[["ds"]]
@@ -596,12 +603,12 @@ function (A,                     # data matrix
 #   Compute the residuals
     R <- R_F * Bsvd$u[Bsz, , drop=FALSE]
 #   Check for convergence
-    ct <- convtests(Bsz, tol, k_org, Bsvd$u, Bsvd$d, Bsvd$v, abs(R), k, Smax, lastsv, svtol, maxritz, work)
+    ct <- convtests(Bsz, tol, k_org, Bsvd, abs(R), k, Smax, lastsv, svtol, maxritz, work)
     if (verbose)
     {
       message("iter= ", iter,
               ", mprod= ", mprod,
-              ", smallest sv=", sprintf(".2%e", Bsvd$d[k_org]),
+              ", smallest sv=", sprintf("%.2e", Bsvd$d[k_org]),
               ", %change=", sprintf("%.2e", (Bsvd$d[k_org] - lastsv[k_org])/Bsvd$d[k_org]),
               ", k=", ct$k)
     }
