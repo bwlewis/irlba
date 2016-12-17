@@ -88,7 +88,7 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
   ans$scale <- args$scale
   if (retx)
   {
-    ans <- c(ans, list(x = s$d * s$u))
+    ans <- c(ans, list(x = sweep(s$u, 2, s$d, FUN=`*`)))
     colnames(ans$x) <- paste("PC", seq(1, ncol(ans$rotation)), sep="")
   }
   class(ans) <- "prcomp"
