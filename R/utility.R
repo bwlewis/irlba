@@ -40,12 +40,12 @@ orthog <- function (Y, X)
 # residuals
 # k
 # Smax
-# lastsv, svtol, work
+# lastsv, svtol, work, S
 #
 # Output parameter list
 # converged      TRUE/FALSE
 # k              Number of singular vectors returned
-convtests <- function (Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, maxritz, work)
+convtests <- function (Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, maxritz, work, S)
  {
 # Converged singular triplets
   subspace_converged <- residuals[1:k_org] < tol * Smax
@@ -54,6 +54,7 @@ convtests <- function (Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol,
   len_res <- sum(subspace_converged & delta_converged) # both
   if (is.na(len_res)) len_res <- 0
   if (len_res >= k_org) return (list(converged=TRUE, k=k))
+  if(S == 0) return(list(converged=TRUE, k=k))
 # Not converged yet...
 # Adjust k to include more vectors as the number of vectors converge, but not
 # too many (maxritz):

@@ -479,7 +479,7 @@ function (A,                     # data matrix
     if (is.na(S) || S < eps2 && j == 1) stop("starting vector near the null space")
     if (is.na(S) || S < eps2)
     {
-      if (verbose) message("S near zero")
+      if (verbose) message("invariant subspace found")
       W[, j_w] <- rnorm(nrow(W))
       if (w_dim > 1) W[, j] <- orthog(W[, j], W[, 1:(j - 1)])
       W[, j_w] <- W[, j_w] / norm2(W[, j_w])
@@ -509,7 +509,7 @@ function (A,                     # data matrix
 #       Check for linear dependence
         if (R < eps2)
         {
-          if (verbose) message("F near zero")
+          if (verbose) message("invariant subspace found")
           F <- matrix(rnorm(dim(V)[1]), dim(V)[1], 1)
           F <- orthog(F, V[, 1:j, drop=FALSE])
           V[, j + 1] <- F / norm2(F)
@@ -554,7 +554,7 @@ function (A,                     # data matrix
 #       Check for linear dependence
         if (S < eps2)
         {
-          if (verbose) message("W[, j+1] near zero")
+          if (verbose) message("invariant subspace found")
           W[, jp1_w] <- rnorm(nrow(W))
           if (w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
           W[, jp1_w] <- W[, jp1_w] / norm2(W[, jp1_w])
@@ -603,7 +603,7 @@ function (A,                     # data matrix
 #   Compute the residuals
     R <- R_F * Bsvd$u[Bsz, , drop=FALSE]
 #   Check for convergence
-    ct <- convtests(Bsz, tol, k_org, Bsvd, abs(R), k, Smax, lastsv, svtol, maxritz, work)
+    ct <- convtests(Bsz, tol, k_org, Bsvd, abs(R), k, Smax, lastsv, svtol, maxritz, work, S)
     if (verbose)
     {
       message("iter= ", iter,

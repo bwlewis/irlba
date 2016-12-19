@@ -14,9 +14,15 @@ Help documentation for each function includes examples. Also see the package
 vignette, `vignette("irlba", package="irlba")`, and demo,
 `demo("custom_matrix_multiply", package="irlba")`.
 
-Version 2.1.2 of the package includes a convenience `prcomp`-like function for
-computing principal components and numerous bug fixes and numerical stability
-improvements in edge cases.
+## What's new?
+
+Version 2.2.0 includes stronger convergence detection and a new argument
+`svtol` associated with that. The new approach helps guarantee more accurate
+solutions for some difficult problems. The tradeoff is that the default
+behavior is a little slower than before because it always performs at least two
+Lanczos iterations. The new convergence behavior can be disabled with
+`svtol=Inf`.
+
 
 
 ## References
