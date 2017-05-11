@@ -101,7 +101,7 @@ several easy ways to define custom matrix arithmetic that works with other
 matrix classes including {\tt big.matrix} from the {\tt bigmemory} package and
 others.  The {\tt irlba} is both faster and more memory efficient than the
 usual R {\tt svd} function for computing a few of the largest singular vectors
-and corresponding singular values of a matrix, and advantage of available
+and corresponding singular values of a matrix. It takes advantage of available
 high-performance linear algebra libraries if R is compiled to use them. In
 particular, the package uses the same BLAS and LAPACK libraries that R uses
 (see

@@ -36,7 +36,7 @@
 #'   column of \code{A}; must be as long as the number of columns of \code{A} and may
 #'   not be used together with the deflation options below (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
-#' @param mult optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
+#' @param mult DEPRECATED optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
 #' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.
 #' @param svtol additional stopping tolerance on minimum allowd percent change in each estimated singular value between iterations,
 #' the default value of this parameter is to set it to \code{tol}. You can set \code{svtol=Inf} to
@@ -83,9 +83,9 @@
 #' Specify an optional alternative matrix multiplication operator in the
 #' \code{mult} parameter. \code{mult} must be a function of two arguments,
 #' and must handle both cases where one argument is a vector and the other
-#' a matrix. See the examples and
-#' \code{demo("custom_matrix_multiply", package="irlba")} for an 
-#' alternative approach.
+#' a matrix. This option is deprecated and will be removed in a future version.
+#' The new preferred method simply uses R itself to define a custom matrix class
+#' with your user-defined matrix multiplication operator. See the examples.
 #'
 #' Use the \code{v} option to supply a starting vector for the iterative
 #' method. A random vector is used by default (precede with \code{set.seed()} to
@@ -142,6 +142,7 @@
 #'
 #' # A custom matrix multiplication function that scales the columns of A
 #' # (cf the scale option). This function scales the columns of A to unit norm.
+#' # This approach is deprecated (see below for a bettwe way to do this).
 #' col_scale <- sqrt(apply(A, 2, crossprod))
 #' mult <- function(x, y)
 #'         {
@@ -156,10 +157,14 @@
 #' irlba(A, 3, mult=mult)$d
 #'
 #' # Compare with:
-#' irlba(A, 3, scale=col_scale)$d
-#'
-#' # Compare with:
 #' svd(sweep(A, 2, col_scale, FUN=`/`))$d[1:3]
+#'
+#' # Compare with the new recommended approach:
+#' setClass("scaled_matrix", contains="matrix", slots=c(scale="numeric"))
+#' setMethod("%*%", signature(x="scaled_matrix", y="numeric"), function(x ,y) x@.Data %*% (y / x@scale))
+#' setMethod("%*%", signature(x="numeric", y="scaled_matrix"), function(x ,y) (x %*% y@.Data) / y@scale)
+#' a <- new("scaled_matrix", A, scale=col_scale)
+#' irlba(a, 3)$d
 #'
 #' @seealso \code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}
 #' @import Matrix
@@ -239,7 +244,7 @@ function (A,                     # data matrix
   if (k > min(m - 1, n - 1)) stop("max(nu, nv) must be strictly less than min(nrow(A), ncol(A))")
   if (k >= 0.5 * min(m, n))
   {
-    warning("You're computing a large percentage of total singular values, standard svd might work better!")
+    stop("You're computing too large a percentage of total singular values. Use a standard svd.")
   }
   if (work <= 1) stop("work must be greater than 1")
   if (tol < 0) stop("tol must be non-negative")
@@ -286,12 +291,11 @@ function (A,                     # data matrix
 # Try to use the fast C-language code path
   if (deflate) fastpath <- fastpath && is.null(du)
 # Only dgCMatrix supported by fastpath for now
+# also check for custom class
   if ("Matrix" %in% attributes(class(A)) && ! ("dgCMatrix" %in% class(A)))
   {
     fastpath <- FALSE
-  }
-# Check for custom class
-  if ("matrix" %in% attributes(A)$.S3Class && ! ("matrix" %in% class(A)))
+  } else if( !("matrix" %in% class(A)))
   {
     fastpath <- FALSE
   }
