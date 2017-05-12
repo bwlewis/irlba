@@ -54,7 +54,7 @@ svd(A)$d[1:3]
 irlba(A, 3)$d
 
 \dontrun{
-# A problem with clustered large singular values where svdr out-performns irlba.
+# A problem with clustered large singular values where svdr out-performs irlba.
 tprolate <- function(n, w=0.25)
 {
   a <- rep(0, n)
