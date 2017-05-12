@@ -25,8 +25,10 @@ run. The new convergence behavior can be disabled with `svtol=Inf`.
 Version 2.2.0 also includes a new function, svdr()--another state of the art
 truncated SVD method based on the superb randomized SVD algorithm of Gunnar
 Martinsson and others. Both irlba() and svdr() work well. Svdr uses a block
-method and exhibits better convergence in problems where the largest singular
-values are clustered. See the documentation and examples in the package.
+method and often exhibits better convergence in problems where the largest
+singular values are clustered. See the documentation and examples in the
+package. (Block versions of irlba exists, but are not yet implemented by
+this R package--something coming in the future.)
 
 ## Deprecated features
 
