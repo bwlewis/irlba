@@ -132,25 +132,24 @@ for (FAST in c(FALSE, TRUE))
 ## subspace containing the largest few singular values (they are all very close).
 ## Or, for that matter, the smallest.
 ##
-#%   Reference:
-#%   J. M. Varah. The Prolate matrix. Linear Algebra and Appl.,
-#%   187:269-278, 1993.
-#%  Michela Redivo-Zaglia, University of Padova, Italy
-#%       Email: Michela.RedivoZaglia@unipd.it
-#%  Giuseppe Rodriguez, University of Cagliari, Italy
-#%       Email: rodriguez@unica.it
-  tprolate = function(n, w=0.25)
+##   Reference:
+##   J. M. Varah. The Prolate matrix. Linear Algebra and Appl.,
+##   187:269-278, 1993.
+##  Michela Redivo-Zaglia, University of Padova, Italy
+##       Email: Michela.RedivoZaglia@unipd.it
+##  Giuseppe Rodriguez, University of Cagliari, Italy
+##       Email: rodriguez@unica.it
+  tprolate <- function(n, w=0.25)
   {
-    a = rep(0, n)
-    a[1] = 2 * w
-    a[2:n] = sin( 2 * pi * w * (1:(n-1)) ) / ( pi * (1:(n-1)) )
+    a <- rep(0, n)
+    a[1] <- 2 * w
+    a[2:n] <- sin( 2 * pi * w * (1:(n-1)) ) / ( pi * (1:(n-1)) )
     toeplitz(a)
   }
 
-  library(irlba)
-  x = tprolate(512)
+  x <- tprolate(512)
   set.seed(1)
-  l = irlba(x, nv=20, fastpath=FAST)
+  l <- irlba(x, nv=20, fastpath=FAST)
   if (isTRUE(max(abs(l$d - 1)) > 1e-3))
   {
     stop("Failed tprolate test fastpath=", FAST)
