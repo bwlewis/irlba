@@ -171,7 +171,7 @@
 #' @import Matrix
 #' @importFrom stats rnorm
 #' @importFrom methods slotNames
-#' @useDynLib irlba
+#' @useDynLib irlba, .registration=TRUE, .fixes="C_"
 #' @export
 irlba <-
 function(A,                     # data matrix
