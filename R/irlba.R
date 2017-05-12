@@ -37,7 +37,8 @@
 #'   not be used together with the deflation options below (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
 #' @param mult DEPRECATED optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
-#' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.
+#' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the
+#'     reference R implementation. See the notes for more details.
 #' @param svtol additional stopping tolerance on maximum allowed absolute relative change across each
 #' estimated singular value between iterations.
 #' The default value of this parameter is to set it to \code{tol}. You can set \code{svtol=Inf} to
@@ -267,7 +268,7 @@ function(A,                     # data matrix
   if (right_only)
   {
     w_dim <- 1
-    work <- min(min(m, n), work + 20 ) # typically need this to help convergence
+    work <- min(min(m, n), work + 20) # typically need this to help convergence
     fastpath <- FALSE
   }
 
@@ -622,7 +623,7 @@ function(A,                     # data matrix
 #   Compute the starting vectors and first block of B[1:k, 1:(k+1), drop=FALSE]
 #   using the Ritz vectors
       V[, 1:(k + dim(F)[2])] <- cbind(V[, 1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[, 1:k], F)
-      B <- cbind( diag(Bsvd$d[1:k], nrow=k), R[1:k])
+      B <- cbind(diag(Bsvd$d[1:k], nrow=k), R[1:k])
 
 #   Update the left approximate singular vectors
     if (w_dim > 1)

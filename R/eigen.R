@@ -7,7 +7,8 @@
 #' @param x numeric real-valued dense or sparse matrix.
 #' @param n number of largest eigenvalues and corresponding eigenvectors to compute.
 #' @param symmetric \code{TRUE} indicates \code{x} is a symmetric matrix (the default);
-#'   specify \code{symmetric=FALSE} to compute the largest eigenvalues and corresponding eigenvectors of \code{t(x) \%*\% x} instead.
+#'   specify \code{symmetric=FALSE} to compute the largest eigenvalues and corresponding
+#'   eigenvectors of \code{t(x) \%*\% x} instead.
 #' @param ... optional additional parameters passed to the \code{irlba} function.
 #'
 #' @return

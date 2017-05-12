@@ -61,17 +61,17 @@
 #' data.frame(time=c(tL[3], tR[3]),
 #'            error=sqrt(c(crossprod(L$d - S$d[1:20]), crossprod(R$d - S$d[1:20]))),
 #'            row.names=c("IRLBA", "Randomized SVD"))
-#' 
+#'
 #' }
 #' @export
 svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL)
 {
   n <- min(ncol(x), k + extra)
-  if(isTRUE(center)) center <- colMeans(x)
-  if(is.null(Q)) Q <-  matrix(rnorm(ncol(x) * n), ncol(x))
-  for(j in 1:it)
+  if (isTRUE(center)) center <- colMeans(x)
+  if (is.null(Q)) Q <-  matrix(rnorm(ncol(x) * n), ncol(x))
+  for (j in 1:it)
   {
-    if(is.null(center))
+    if (is.null(center))
     {
       Q <- qr.Q(qr(x %*% Q))
       Q <- qr.Q(qr(t(crossprod(Q, x))))   # a.k.a. Q <- qr.Q(qr(t(x) %*% Q)), but avoiding t(x)
@@ -81,7 +81,7 @@ svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL)
       Q <- qr.Q(qr(t(crossprod(Q, x) - tcrossprod(crossprod(Q, rep(1, nrow(x))), center))))
     }
   }
-  if(is.null(center))
+  if (is.null(center))
   {
     Q <- qr.Q(qr(x %*% Q))
     B <- t(Q) %*% x
