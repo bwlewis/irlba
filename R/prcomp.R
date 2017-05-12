@@ -61,7 +61,7 @@
 #' @importFrom stats rnorm prcomp sd
 #' @importFrom methods slotNames slot
 #' @export
-prcomp_irlba <- function (x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, ...)
+prcomp_irlba <- function(x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, ...)
 {
   a <- names(as.list(match.call()))
   if ("tol" %in% a)

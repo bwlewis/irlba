@@ -173,7 +173,7 @@
 #' @useDynLib irlba
 #' @export
 irlba <-
-function (A,                     # data matrix
+function(A,                     # data matrix
           nv=5, nu,              # number of singular vectors to estimate
           maxit=1000,            # maximum number of iterations
           work=nv + 7,           # working subspace size
@@ -202,7 +202,7 @@ function (A,                     # data matrix
   # Maximum number of Ritz vectors to use in augmentation, may be less
   # depending on workspace size.
   maxritz <- mcall[["maxritz"]]
-  if(is.null(maxritz)) maxritz <- 3
+  if (is.null(maxritz)) maxritz <- 3
   du <- mcall[["du"]]
   dv <- mcall[["dv"]]
   ds <- mcall[["ds"]]
@@ -270,12 +270,12 @@ function (A,                     # data matrix
 
   if (verbose)
   {
-    message ("Working dimension size ", work)
+    message("Working dimension size ", work)
   }
 # Check for tiny problem, use standard SVD in that case. Make definition of 'tiny' larger?
   if (min(m, n) < 6)
   {
-    if (verbose) message ("Tiny problem detected, using standard `svd` function.")
+    if (verbose) message("Tiny problem detected, using standard `svd` function.")
     if (!missing(scale)) A <- A / scale
     if (!missing(shift)) A <- A + diag(shift)
     if (deflate)
@@ -341,7 +341,7 @@ function (A,                     # data matrix
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
       ans$u <- matrix(head(ans$u, m * nu), nrow=m, ncol=nu)
       ans$v <- matrix(head(ans$v, n * nv), nrow=n, ncol=nv)
-      if(tol * ans$d[1] < eps) warning("convergence criterion below machine epsilon")
+      if (tol * ans$d[1] < eps) warning("convergence criterion below machine epsilon")
       if (ans[[6]] == -2) warning("did not converge--results might be invlaid!; try increasing maxit or fastpath=FALSE")
       return(ans[-6])
     }
@@ -468,7 +468,7 @@ function (A,                     # data matrix
 #   Orthogonalize W
     if (iter != 1 && w_dim > 1 && reorth)
     {
-      W[, j] <- orthog (W[, j, drop=FALSE], W[, 1:(j - 1), drop=FALSE])
+      W[, j] <- orthog(W[, j, drop=FALSE], W[, 1:(j - 1), drop=FALSE])
     }
 
     S <- norm2(W[, j_w, drop=FALSE])
@@ -640,7 +640,7 @@ function (A,                     # data matrix
     u <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[, 1:k_org, drop=FALSE]
   }
   v <- V[, 1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[, 1:k_org, drop=FALSE]
-  if(tol * d[1] < eps) warning("convergence criterion below machine epsilon")
+  if (tol * d[1] < eps) warning("convergence criterion below machine epsilon")
   if (right_only)
     return(list(d=d, v=v[, 1:nv, drop=FALSE], iter=iter, mprod=mprod))
   return(list(d=d, u=u[, 1:nu, drop=FALSE],

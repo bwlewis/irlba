@@ -27,7 +27,7 @@ L <- irlba(A, nv=3, tol=1e-9, fastpath=FALSE, work=2, reorth=FALSE)
 
 # Convergence
 A <- S$u %*% (c(1e-5, rep(1e-9, 9)) * t(S$v))
-for (tol in 10 ^ -(7:12))
+for (tol in 10 ^ - (7:12))
 {
   L <- irlba(A, 3, tol=tol)
   converged <- svd(A %*% L$v - L$u  %*% diag(L$d))$d[1] < tol * L$d[1]
@@ -57,9 +57,9 @@ S <- irlba(mx, nv=2, verbose=TRUE, center=colMeans(mx), right_only=TRUE)
 
 # test for issue #9
 set.seed(2)
-s1 <- irlba(diag(c(1,2,3,4,5,0,0,0,0)), 4)
+s1 <- irlba(diag(c(1, 2, 3, 4, 5, 0, 0, 0, 0)), 4)
 set.seed(2)
-s2 <- irlba(diag(c(1,2,3,4,5,0,0,0,0)), 4, fastpath=FALSE)
+s2 <- irlba(diag(c(1, 2, 3, 4, 5, 0, 0, 0, 0)), 4, fastpath=FALSE)
 if (!isTRUE(all.equal(s1$d, s2$d)))
 {
   stop("Failed fastpath invariant subspace detection")

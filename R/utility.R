@@ -14,13 +14,13 @@ cross <- function(x, y)
 }
 
 # Euclidean norm
-norm2 <- function (x)
+norm2 <- function(x)
 {
   drop(sqrt(cross(x)))
 }
 
 # Orthogonalize vectors Y against vectors X.
-orthog <- function (Y, X)
+orthog <- function(Y, X)
  {
   dx2 <- dim(X)[2]
   if (is.null(dx2)) dx2 <- 1
@@ -28,7 +28,7 @@ orthog <- function (Y, X)
   if (is.null(dy2)) dy2 <- 1
   if (dx2 < dy2) doty <- cross(X, Y)
   else doty <- Conj(t(cross(Y, X)))
-  return (Y - X %*% doty)
+  Y - X %*% doty
  }
 
 # Convergence tests
@@ -45,7 +45,7 @@ orthog <- function (Y, X)
 # Output parameter list
 # converged      TRUE/FALSE
 # k              Number of singular vectors returned
-convtests <- function (Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, maxritz, work, S)
+convtests <- function(Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, maxritz, work, S)
  {
 # Converged singular triplets
   subspace_converged <- residuals[1:k_org] < tol * Smax
@@ -53,12 +53,12 @@ convtests <- function (Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol,
   delta_converged <- (abs(Bsvd$d[1:k_org] - lastsv[1:k_org]) / Bsvd$d[1:k_org])  < svtol
   len_res <- sum(subspace_converged & delta_converged) # both
   if (is.na(len_res)) len_res <- 0
-  if (len_res >= k_org) return (list(converged=TRUE, k=k))
-  if(S == 0) return(list(converged=TRUE, k=k))
+  if (len_res >= k_org) return(list(converged=TRUE, k=k))
+  if (S == 0) return(list(converged=TRUE, k=k))
 # Not converged yet...
 # Adjust k to include more vectors as the number of vectors converge, but not
 # too many (maxritz):
   augment <- min(sum(subspace_converged), maxritz)
   k <- min(max(k, k_org + augment), work - 1)
-  return (list(converged=FALSE, k=k) )
+  list(converged=FALSE, k=k)
  }
