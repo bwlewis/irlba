@@ -503,14 +503,21 @@ irlba_R_cholmod_error (int status, const char *file, int line,
     warning ("Cholmod warning '%s' at file:%s, line %d", message, file, line);
 }
 
+static const R_CallMethodDef CallEntries[] = {
+  {"IRLB", (DL_FUNC) & IRLB, 16},
+  {NULL, NULL, 0}
+};
+
 #ifdef HAVE_VISIBILITY_ATTRIBUTE
 __attribute__ ((visibility ("default")))
 #endif
-     void R_init_irlba (DllInfo * dll)
+void
+R_init_irlba (DllInfo * dll)
 {
+  R_registerRoutines (dll, NULL, CallEntries, NULL, NULL);
+  R_useDynamicSymbols (dll, 0);
   M_R_cholmod_start (&chol_c);
   chol_c.final_ll = 1;          /* LL' form of simplicial factorization */
-
   /* need own error handler, that resets  final_ll (after *_defaults()) : */
   chol_c.error_handler = irlba_R_cholmod_error;
 }

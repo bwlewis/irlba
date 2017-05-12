@@ -334,9 +334,9 @@ function(A,                     # data matrix
       if (length(center) != ncol(A)) stop("the centering vector length must match the number of matrix columns")
       CENTER <- as.double(center)
     }
-    ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
+    ans <- .Call(C_IRLB, A, as.integer(k), as.double(v), as.integer(work),
                  as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP),
-                 RESTART, RV, RW, RS, SCALE, SHIFT, CENTER, svtol, PACKAGE="irlba")
+                 RESTART, RV, RW, RS, SCALE, SHIFT, CENTER, svtol)
     if (ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
