@@ -162,8 +162,10 @@
 #'
 #' # Compare with the new recommended approach:
 #' setClass("scaled_matrix", contains="matrix", slots=c(scale="numeric"))
-#' setMethod("%*%", signature(x="scaled_matrix", y="numeric"), function(x ,y) x@.Data %*% (y / x@scale))
-#' setMethod("%*%", signature(x="numeric", y="scaled_matrix"), function(x ,y) (x %*% y@.Data) / y@scale)
+#' setMethod("%*%", signature(x="scaled_matrix", y="numeric"),
+#'    function(x ,y) x@.Data %*% (y / x@scale))
+#' setMethod("%*%", signature(x="numeric", y="scaled_matrix"),
+#'    function(x ,y) (x %*% y@.Data) / y@scale)
 #' a <- new("scaled_matrix", A, scale=col_scale)
 #' irlba(a, 3)$d
 #'
