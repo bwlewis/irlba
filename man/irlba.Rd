@@ -5,9 +5,10 @@
 \title{Find a few approximate largest singular values and corresponding
 singular vectors of a matrix.}
 \usage{
-irlba(A, nv = 5, nu, maxit = 1000, work = nv + 7, reorth = TRUE,
-  tol = 1e-05, v = NULL, right_only = FALSE, verbose = FALSE, scale,
-  center, shift, mult, fastpath = TRUE, svtol = tol, ...)
+irlba(A, nv = 5, nu = nv, maxit = 1000, work = nv + 7, reorth = TRUE,
+  tol = 1e-05, v = NULL, right_only = FALSE, verbose = FALSE,
+  scale = NULL, center = NULL, shift = NULL, mult = NULL,
+  fastpath = TRUE, svtol = tol, ...)
 }
 \arguments{
 \item{A}{numeric real- or complex-valued matrix or real-valued sparse matrix.}
@@ -57,7 +58,7 @@ not be used together with the deflation options below (see notes).}
 
 \item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.}
 
-\item{svtol}{additional stopping tolerance on minimum allowd percent change in each estimated singular value between iterations,
+\item{svtol}{additional stopping tolerance on maximum allowed percent change in each estimated singular value between iterations,
 the default value of this parameter is to set it to \code{tol}. You can set \code{svtol=Inf} to
 effectively disable this stopping criterion. Setting \code{svtol=Inf} allows the method to
 terminate on the first Lanczos iteration if it finds an invariant subspace, but with less certainty
