@@ -27,7 +27,7 @@ iteration but, overall, may require more iterations for convergence. Automatical
 when \code{fastpath=TRUE} (see below).}
 
 \item{tol}{convergence is determined when \eqn{\|A^TU - VS\| < tol\|A\|}{||A^T U - VS|| < tol*||A||},
-and when the maximum percent change in estimated singular values from one iteration to the
+and when the maximum relative change in estimated singular values from one iteration to the
 next is less than \code{svtol = tol} (see \code{svtol} below),
 where the spectral norm ||A|| is approximated by the
 largest estimated singular value, and U, V, S are the matrices corresponding
@@ -58,8 +58,9 @@ not be used together with the deflation options below (see notes).}
 
 \item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.}
 
-\item{svtol}{additional stopping tolerance on maximum allowed percent change in each estimated singular value between iterations,
-the default value of this parameter is to set it to \code{tol}. You can set \code{svtol=Inf} to
+\item{svtol}{additional stopping tolerance on maximum allowed absolute relative change across each
+estimated singular value between iterations.
+The default value of this parameter is to set it to \code{tol}. You can set \code{svtol=Inf} to
 effectively disable this stopping criterion. Setting \code{svtol=Inf} allows the method to
 terminate on the first Lanczos iteration if it finds an invariant subspace, but with less certainty
 that the converged subspace is the desired one. (It may, for instance, miss some of the largest
