@@ -17,8 +17,10 @@ svdr(x, k, it = 3, extra = 10, center = NULL, Q = NULL)
 \item{extra}{number of extra vectors of dimension \code{ncol(x)}, large values generally improve accuracy and performance.}
 
 \item{center}{optional column centering vector whose values are subtracted from each
-  column of \code{A} or, optionally, use \code{center=TRUE} as shorthand for \code{center=colMeans(x)}.
-  Used for efficient principal components computation.
+column of \code{A} or, optionally, use \code{center=TRUE} as shorthand for \code{center=colMeans(x)}.
+Used for efficient principal components computation.}
+
+\item{Q}{optiona initial random matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
 entries sampled from a normal random distribution.}
 }
 \value{
