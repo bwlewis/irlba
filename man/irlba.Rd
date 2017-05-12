@@ -41,7 +41,7 @@ to restart the algorithm from where it left off (see the notes).}
 (\code{TRUE}) or both sets of vectors (\code{FALSE}). The right_only option can be
 cheaper to compute and use much less memory when \code{nrow(A) >> ncol(A)} but note
 that \code{right_only = TRUE} sets \code{fastpath = FALSE} (only use this option
-for really large problems that run out of memory).}
+for really large problems that run out of memory and when \code{nrow(A) >> ncol(A)}).}
 
 \item{verbose}{logical value that when \code{TRUE} prints status messages during the computation.}
 
