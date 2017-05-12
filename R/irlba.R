@@ -247,7 +247,7 @@ function(A,                     # data matrix
   if (k > min(m - 1, n - 1)) stop("max(nu, nv) must be strictly less than min(nrow(A), ncol(A))")
   if (k >= 0.5 * min(m, n))
   {
-    stop("You're computing too large a percentage of total singular values. Use a standard svd.")
+    warning("You're computing too large a percentage of total singular values, use a standard svd instead.")
   }
   if (work <= 1) stop("work must be greater than 1")
   if (tol < 0) stop("tol must be non-negative")
