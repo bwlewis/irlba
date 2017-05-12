@@ -43,7 +43,7 @@ orthog (double *X, double *Y, double *T, int xm, int xn, int yn)
 {
   double a = 1, b = 1;
   int inc = 1;
-  memset(T, 0, xn * yn * sizeof(double));
+  memset (T, 0, xn * yn * sizeof (double));
   // T = t(X) * Y
   F77_NAME (dgemv) ("t", &xm, &xn, &a, X, &xm, Y, &inc, &b, T, &inc);
   // Y = Y - X * T
@@ -56,25 +56,27 @@ orthog (double *X, double *Y, double *T, int xm, int xn, int yn)
 /*
  * Convergence tests
  * Input parameters
- * Bsz            Number of rows of the bidiagonal matrix B (scalar)
+ * Bsz            number of rows of the bidiagonal matrix B (scalar)
  * tol            convergence tolerance (scalar)
- * n              Requested number of singular values
- * Smax           Largest singular value of B
+ * svtol          max change in each singular value tolerance (scalar)
+ * n              requested number of singular values
+ * Smax           largest singular value of B
+ * svratio        vector of abs(current - previous) / current singular value ratios
  * residuals      vector of residual values
  * k              number of estimated signular values (scalar)
  *
  * Output
  * converged      0 = FALSE, 1 = TRUE (all converged)
- * k              Adjusted subspace size.
+ * k              adjusted subspace size.
  */
 void
-convtests (int Bsz, int n, double tol, double Smax,
-           double *residuals, int *k, int *converged)
+convtests (int Bsz, int n, double tol, double svtol, double Smax,
+           double *svratio, double *residuals, int *k, int *converged)
 {
   int j, Len_res = 0;
   for (j = 0; j < Bsz; ++j)
     {
-      if (fabs(residuals[j]) < tol * Smax)
+      if ((fabs (residuals[j]) < tol * Smax) && (svratio[j] < svtol))
         Len_res++;
     }
   if (Len_res >= n)

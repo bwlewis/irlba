@@ -11,7 +11,9 @@ void
 convtests (int Bsz,           // Number of rows of bidiagonal matrix B
            int n,             // requested number of singular values
            double tol,        // convergence tolerance
+           double svtol,      // max change each singular value tolerane
            double Smax,       // largest singular value of B
+           double *svratio,   // vector of relative singular value ratio compared to last iteration
            double *residuals, // vector of residual values
            int *k,            // number of estimated singular values (INPUT)
                               // adjusted subspace size (OUTPUT)
@@ -62,4 +64,6 @@ irlb(void *A,       // Input data matrix
      double *BS,    // working storage  work
      double *BW,    // working storage  lwork * lwork
      double *res,   // working storage  work
-     double *T);    // working storage lwork
+     double *T,     // working storage lwork
+     double svtol,  // svtol tolerance on maximum ratio change per singular value per iteration
+     double *SVRATIO);  // working storage nu

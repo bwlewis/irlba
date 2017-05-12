@@ -38,7 +38,7 @@
 #' @param shift optional shift value (square matrices only, see notes).
 #' @param mult DEPRECATED optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
 #' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.
-#' @param svtol additional stopping tolerance on minimum allowd percent change in each estimated singular value between iterations,
+#' @param svtol additional stopping tolerance on maximum allowed percent change in each estimated singular value between iterations,
 #' the default value of this parameter is to set it to \code{tol}. You can set \code{svtol=Inf} to
 #' effectively disable this stopping criterion. Setting \code{svtol=Inf} allows the method to
 #' terminate on the first Lanczos iteration if it finds an invariant subspace, but with less certainty
@@ -174,7 +174,7 @@
 #' @export
 irlba <-
 function(A,                     # data matrix
-          nv=5, nu,              # number of singular vectors to estimate
+          nv=5, nu=nv,           # number of singular vectors to estimate
           maxit=1000,            # maximum number of iterations
           work=nv + 7,           # working subspace size
           reorth=TRUE,           # TRUE=full reorthogonalization
@@ -182,10 +182,10 @@ function(A,                     # data matrix
           v=NULL,                # optional starting vector or restart
           right_only=FALSE,      # TRUE=only return V
           verbose=FALSE,         # display status messages
-          scale,                 # optional column scaling
-          center,                # optional column centering
-          shift,                 # optional shift for square matrices
-          mult,                  # optional custom matrix multiplication func.
+          scale=NULL,            # optional column scaling
+          center=NULL,           # optional column centering
+          shift=NULL,            # optional shift for square matrices
+          mult=NULL,             # optional custom matrix multiplication func.
           fastpath=TRUE,         # use the faster C implementation if possible
           svtol=tol,             # stopping tolerance percent change in estimated svs
           ...)                   # optional arguments (really just to support old removed args)
@@ -218,7 +218,7 @@ function(A,                     # data matrix
     if (!is.null(dim(du))) du <- du[, 1]
     if (!is.null(dim(dv))) dv <- dv[, 1]
   } else stop("all three du ds dv parameters must be specified for deflation")
-  if (!missing(center))
+  if (!is.null(center))
   {
     if (deflate) stop("the center parameter can't be specified together with deflation parameters")
     if (length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
@@ -231,10 +231,10 @@ function(A,                     # data matrix
   iscomplex <- is.complex(A)
   m <- nrow(A)
   n <- ncol(A)
-  if (missing(nu)) nu <- nv
-  if (!missing(mult) && deflate) stop("the mult parameter can't be specified together with deflation parameters")
+  if (is.null(nu)) nu <- nv
+  if (!is.null(mult) && deflate) stop("the mult parameter can't be specified together with deflation parameters")
   missingmult <- FALSE
-  if (missing(mult))
+  if (is.null(mult))
   {
     missingmult <- TRUE
     mult <- `%*%`
@@ -276,8 +276,8 @@ function(A,                     # data matrix
   if (min(m, n) < 6)
   {
     if (verbose) message("Tiny problem detected, using standard `svd` function.")
-    if (!missing(scale)) A <- A / scale
-    if (!missing(shift)) A <- A + diag(shift)
+    if (!is.null(scale)) A <- A / scale
+    if (!is.null(shift)) A <- A + diag(shift)
     if (deflate)
     {
       if (is.null(du)) du <- rep(1, nrow(A))
@@ -318,12 +318,12 @@ function(A,                     # data matrix
     SCALE <- NULL
     SHIFT <- NULL
     CENTER <- NULL
-    if (!missing(scale))
+    if (!is.null(scale))
     {
       if (length(scale) != ncol(A)) stop("scale length must mactch number of matrix columns")
       SCALE <- as.double(scale)
     }
-    if (!missing(shift))
+    if (!is.null(shift))
     {
       if (length(shift) != 1) stop("shift length must be 1")
       SHIFT <- as.double(shift)
@@ -335,7 +335,7 @@ function(A,                     # data matrix
     }
     ans <- .Call("IRLB", A, as.integer(k), as.double(v), as.integer(work),
                  as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP),
-                 RESTART, RV, RW, RS, SCALE, SHIFT, CENTER, PACKAGE="irlba")
+                 RESTART, RV, RW, RS, SCALE, SHIFT, CENTER, svtol, PACKAGE="irlba")
     if (ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
@@ -439,7 +439,7 @@ function(A,                     # data matrix
 #   Compute W=AV
 #   Optionally apply scale
     VJ <- V[, j]
-    if (!missing(scale))
+    if (!is.null(scale))
     {
       VJ <- VJ / scale
     }
@@ -454,7 +454,7 @@ function(A,                     # data matrix
     mprod <- mprod + 1
 
 #   Optionally apply shift
-    if (!missing(shift))
+    if (!is.null(shift))
     {
       W[, j_w] <- W[, j_w] + shift * VJ
     }
@@ -494,8 +494,8 @@ function(A,                     # data matrix
       }
       else F <- t(drop(mult(drop(W[, j_w]), A)))
 #     Optionally apply shift and scale
-      if (!missing(shift)) F <- F + shift * W[, j_w]
-      if (!missing(scale)) F <- F / scale
+      if (!is.null(shift)) F <- F + shift * W[, j_w]
+      if (!is.null(scale)) F <- F / scale
       mprod <- mprod + 1
       F <- drop(F - S * V[, j])
 #     Orthogonalize
@@ -523,7 +523,7 @@ function(A,                     # data matrix
 
 #       Optionally apply scale
         VJP1 <- V[, j + 1]
-        if (!missing(scale))
+        if (!is.null(scale))
         {
           VJP1 <- VJP1 / scale
         }
@@ -531,7 +531,7 @@ function(A,                     # data matrix
         mprod <- mprod + 1
 
 #       Optionally apply shift
-        if (!missing(shift))
+        if (!is.null(shift))
         {
           W[, jp1_w] <- W[, jp1_w] + shift * VJP1
         }
