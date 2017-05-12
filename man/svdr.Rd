@@ -55,19 +55,22 @@ irlba(A, 3)$d
 
 \dontrun{
 # A problem with clustered large singular values where svdr out-performns irlba.
- tprolate <- function(n, w=0.25)
- {
-   a <- rep(0, n)
-   a[1] <- 2 * w
-   a[2:n] <- sin( 2 * pi * w * (1:(n-1)) ) / ( pi * (1:(n-1)) )
-   toeplitz(a)
- }
+tprolate <- function(n, w=0.25)
+{
+  a <- rep(0, n)
+  a[1] <- 2 * w
+  a[2:n] <- sin( 2 * pi * w * (1:(n-1)) ) / ( pi * (1:(n-1)) )
+  toeplitz(a)
+}
 
- x <- tprolate(512)
- set.seed(1)
- L <- irlba(x, 20)
- R <- svdr(x, 20)
- S <- svd(x)
+x <- tprolate(512)
+set.seed(1)
+tL <- system.time(L <- irlba(x, 20))
+tR <- system.time(R <- svdr(x, 20))
+S <- svd(x)
+data.frame(time=c(tL[3], tR[3]),
+           error=sqrt(c(crossprod(L$d - S$d[1:20]), crossprod(R$d - S$d[1:20]))),
+           row.names=c("IRLBA", "Randomized SVD"))
 
 }
 }

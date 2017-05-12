@@ -3,6 +3,7 @@
 export(irlba)
 export(partial_eigen)
 export(prcomp_irlba)
+export(svdr)
 import(Matrix)
 importFrom(methods,slot)
 importFrom(methods,slotNames)

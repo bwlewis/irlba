@@ -6,13 +6,13 @@ for Augmented, <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos
 <b>B</b>idiagonalization <b>A</b>lgorithm. The package provides the following
 functions (see help on each for details and examples).
 
-* `irlba` main partial SVD function
-* `prcomp_irlba`  principal components function similar to the `prcomp` function in stats package for computing the first few principal components of large matrices
-* `partial_eigen` a very limited partial eigenvalue decomposition for symmetric matrices (see the [RSpectra](https://cran.r-project.org/package=RSpectra) package for more comprehensive truncated eigenvalue decomposition)
+* `irlba()` partial SVD function
+* `svdr()` alternate partial SVD function based on randomized SVD
+* `prcomp_irlba()`  principal components function similar to the `prcomp` function in stats package for computing the first few principal components of large matrices
+* `partial_eigen()` a very limited partial eigenvalue decomposition for symmetric matrices (see the [RSpectra](https://cran.r-project.org/package=RSpectra) package for more comprehensive truncated eigenvalue decomposition)
 
-Help documentation for each function includes examples. Also see the package
-vignette, `vignette("irlba", package="irlba")`, and demo,
-`demo("custom_matrix_multiply", package="irlba")`.
+Help documentation for each function includes extensive documentation and
+examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
 ## What's new?
 
@@ -21,6 +21,12 @@ associated with that. The new approach helps guarantee more accurate solutions
 for some difficult problems. The tradeoff is that the default behavior is a
 little slower than before because at least two Lanczos iterations are always
 run. The new convergence behavior can be disabled with `svtol=Inf`.
+
+Version 2.2.0 also includes a new function, svdr()--another state of the art
+truncated SVD method based on the superb randomized SVD algorithm of Gunnar
+Martinsson and others. Both irlba() and svdr() work well. Svdr uses a block
+method and exhibits better convergence in problems where the largest singular
+values are clustered. See the documentation and examples in the package.
 
 ## Deprecated features
 
