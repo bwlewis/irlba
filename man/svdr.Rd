@@ -80,3 +80,4 @@ data.frame(time=c(tL[3], tR[3]),
 Finding structure with randomness: Stochastic algorithms for constructing
 approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 2009.
 }
+

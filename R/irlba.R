@@ -46,7 +46,7 @@
 #' terminate on the first Lanczos iteration if it finds an invariant subspace, but with less certainty
 #' that the converged subspace is the desired one. (It may, for instance, miss some of the largest
 #' singular values in difficult problems.)
-#' @param ... optional additional arguments used to support experimental features.
+#' @param ... optional additional arguments used to support experimental and deprecated features.
 #'
 #' @return
 #' Returns a list with entries:
@@ -178,21 +178,21 @@
 #' @export
 irlba <-
 function(A,                     # data matrix
-          nv=5, nu=nv,           # number of singular vectors to estimate
-          maxit=1000,            # maximum number of iterations
-          work=nv + 7,           # working subspace size
-          reorth=TRUE,           # TRUE=full reorthogonalization
-          tol=1e-5,              # stopping tolerance
-          v=NULL,                # optional starting vector or restart
-          right_only=FALSE,      # TRUE=only return V
-          verbose=FALSE,         # display status messages
-          scale=NULL,            # optional column scaling
-          center=NULL,           # optional column centering
-          shift=NULL,            # optional shift for square matrices
-          mult=NULL,             # optional custom matrix multiplication func.
-          fastpath=TRUE,         # use the faster C implementation if possible
-          svtol=tol,             # stopping tolerance percent change in estimated svs
-          ...)                   # optional arguments (really just to support old removed args)
+         nv=5, nu=nv,           # number of singular vectors to estimate
+         maxit=1000,            # maximum number of iterations
+         work=nv + 7,           # working subspace size
+         reorth=TRUE,           # TRUE=full reorthogonalization
+         tol=1e-5,              # stopping tolerance
+         v=NULL,                # optional starting vector or restart
+         right_only=FALSE,      # TRUE=only return V
+         verbose=FALSE,         # display status messages
+         scale=NULL,            # optional column scaling
+         center=NULL,           # optional column centering
+         shift=NULL,            # optional shift for square matrices
+         mult=NULL,             # optional custom matrix multiplication func.
+         fastpath=TRUE,         # use the faster C implementation if possible
+         svtol=tol,             # stopping tolerance percent change in estimated svs
+         ...)                   # optional arguments (really just to support old removed args)
 {
 # ---------------------------------------------------------------------
 # Check input parameters

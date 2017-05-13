@@ -56,7 +56,8 @@ not be used together with the deflation options below (see notes).}
 
 \item{mult}{DEPRECATED optional custom matrix multiplication function (default is \code{\%*\%}, see notes).}
 
-\item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the reference R implementation. See notes.}
+\item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the
+reference R implementation. See the notes for more details.}
 
 \item{svtol}{additional stopping tolerance on maximum allowed absolute relative change across each
 estimated singular value between iterations.
@@ -66,7 +67,7 @@ terminate on the first Lanczos iteration if it finds an invariant subspace, but 
 that the converged subspace is the desired one. (It may, for instance, miss some of the largest
 singular values in difficult problems.)}
 
-\item{...}{optional additional arguments used to support experimental features.}
+\item{...}{optional additional arguments used to support experimental and deprecated features.}
 }
 \value{
 Returns a list with entries:
@@ -200,3 +201,4 @@ Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and
 \seealso{
 \code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}
 }
+

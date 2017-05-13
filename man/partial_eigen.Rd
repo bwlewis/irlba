@@ -12,7 +12,8 @@ partial_eigen(x, n = 5, symmetric = TRUE, ...)
 \item{n}{number of largest eigenvalues and corresponding eigenvectors to compute.}
 
 \item{symmetric}{\code{TRUE} indicates \code{x} is a symmetric matrix (the default);
-specify \code{symmetric=FALSE} to compute the largest eigenvalues and corresponding eigenvectors of \code{t(x) \%*\% x} instead.}
+specify \code{symmetric=FALSE} to compute the largest eigenvalues and corresponding
+eigenvectors of \code{t(x) \%*\% x} instead.}
 
 \item{...}{optional additional parameters passed to the \code{irlba} function.}
 }
@@ -62,3 +63,4 @@ Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and
 \seealso{
 \code{\link{eigen}}, \code{\link{irlba}}
 }
+

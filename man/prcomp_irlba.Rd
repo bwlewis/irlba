@@ -73,3 +73,4 @@ summary(p2)
 \seealso{
 \code{\link{prcomp}}
 }
+
