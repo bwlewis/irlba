@@ -5,10 +5,10 @@
 \title{Find a few approximate largest singular values and corresponding
 singular vectors of a matrix.}
 \usage{
-irlba(A, nv = 5, nu = nv, maxit = 1000, work = nv + 7, reorth = TRUE,
+irlba(A, nv = 5, nu = nv, maxit = 100, work = nv + 7, reorth = TRUE,
   tol = 1e-05, v = NULL, right_only = FALSE, verbose = FALSE,
   scale = NULL, center = NULL, shift = NULL, mult = NULL,
-  fastpath = TRUE, svtol = tol, ...)
+  fastpath = TRUE, svtol = tol, smallest = FALSE, ...)
 }
 \arguments{
 \item{A}{numeric real- or complex-valued matrix or real-valued sparse matrix.}
@@ -66,6 +66,10 @@ effectively disable this stopping criterion. Setting \code{svtol=Inf} allows the
 terminate on the first Lanczos iteration if it finds an invariant subspace, but with less certainty
 that the converged subspace is the desired one. (It may, for instance, miss some of the largest
 singular values in difficult problems.)}
+
+\item{smallest}{set \code{smallest=TRUE} to estimate the smallest singular values and associated
+singular vectors. WARNING: this option is somewhat experimental, and may produce poor
+estimates for ill-conditioned matrices.}
 
 \item{...}{optional additional arguments used to support experimental and deprecated features.}
 }
@@ -157,6 +161,12 @@ svd(A)$d[1:3]
 # Restart the algorithm to compute more singular values
 # (starting with an existing solution S)
 S1 <- irlba(A, 5, v=S)
+
+# Estimate smallest singular values
+irlba(A, 3, smallest=TRUE)
+
+#Compare with
+tail(svd(A)$d, 3)
 
 # Principal components (see also prcomp_irlba)
 P <- irlba(A, nv=1, center=colMeans(A))

@@ -162,3 +162,21 @@ for (FAST in c(FALSE, TRUE))
     stop("Failed tprolate test fastpath=", FAST)
   }
 }
+
+# smallest=TRUE, m > n  (fastpath always FALSE in this case)
+x <- matrix(rnorm(5000), 100)
+set.seed(1)
+L <- irlba(x, nv=5, smallest=TRUE)
+if (!isTRUE(all.equal(L$d, tail(svd(x)$d, 5))))
+{
+  stop("Failed smallest svd test")
+}
+
+# smallest=TRUE, n > m
+x <- matrix(rnorm(5000), 50)
+set.seed(1)
+L <- irlba(x, nv=5, smallest=TRUE)
+if (!isTRUE(all.equal(L$d, tail(svd(x)$d, 5))))
+{
+  stop("Failed smallest svd test")
+}

@@ -46,6 +46,9 @@
 #' terminate on the first Lanczos iteration if it finds an invariant subspace, but with less certainty
 #' that the converged subspace is the desired one. (It may, for instance, miss some of the largest
 #' singular values in difficult problems.)
+#' @param smallest set \code{smallest=TRUE} to estimate the smallest singular values and associated
+#' singular vectors. WARNING: this option is somewhat experimental, and may produce poor
+#' estimates for ill-conditioned matrices.
 #' @param ... optional additional arguments used to support experimental and deprecated features.
 #'
 #' @return
@@ -134,6 +137,12 @@
 #' # (starting with an existing solution S)
 #' S1 <- irlba(A, 5, v=S)
 #'
+#' # Estimate smallest singular values
+#' irlba(A, 3, smallest=TRUE)
+#'
+#' #Compare with
+#' tail(svd(A)$d, 3)
+#'
 #' # Principal components (see also prcomp_irlba)
 #' P <- irlba(A, nv=1, center=colMeans(A))
 #'
@@ -179,7 +188,7 @@
 irlba <-
 function(A,                     # data matrix
          nv=5, nu=nv,           # number of singular vectors to estimate
-         maxit=1000,            # maximum number of iterations
+         maxit=100,             # maximum number of iterations
          work=nv + 7,           # working subspace size
          reorth=TRUE,           # TRUE=full reorthogonalization
          tol=1e-5,              # stopping tolerance
@@ -192,6 +201,7 @@ function(A,                     # data matrix
          mult=NULL,             # optional custom matrix multiplication func.
          fastpath=TRUE,         # use the faster C implementation if possible
          svtol=tol,             # stopping tolerance percent change in estimated svs
+         smallest=FALSE,        # set to TRUE to estimate subspaces associated w/smallest singular values
          ...)                   # optional arguments (really just to support old removed args)
 {
 # ---------------------------------------------------------------------
@@ -199,6 +209,7 @@ function(A,                     # data matrix
 # ---------------------------------------------------------------------
   ropts <- options(warn=1) # immediately show warnings
   on.exit(options(ropts))  # reset on exit
+  interchange <- FALSE
   eps <- .Machine$double.eps
   # hidden support for old, removed (previously deprecated) parameters
   # this is here as a convenience to keep old code working without change
@@ -211,6 +222,7 @@ function(A,                     # data matrix
   dv <- mcall[["dv"]]
   ds <- mcall[["ds"]]
   deflate <- is.null(du) + is.null(ds) + is.null(dv)
+  if(smallest) fastpath <- FALSE
   if (deflate == 3)
   {
     deflate <- FALSE
@@ -271,6 +283,15 @@ function(A,                     # data matrix
     work <- min(min(m, n), work + 20) # typically need this to help convergence
     fastpath <- FALSE
   }
+  if(n > m && smallest)
+  {
+    # Interchange dimensions m,n so that dim(A'A) = min(m,n) when seeking the
+    # smallest singular values; avoids finding zero-valued smallest singular values.
+    interchange <- TRUE
+    temp <- m
+    m <- n
+    n <- temp
+  }
 
   if (verbose)
   {
@@ -288,6 +309,11 @@ function(A,                     # data matrix
       A <- A - (ds * du) %*% t(dv)
     }
     s <- svd(A)
+    if(smallest)
+    {
+      return(list(d=tail(s$d, k), u=s$u[, tail(seq(ncol(s$u)), k), drop=FALSE],
+              v=s$v[, tail(seq(ncol(s$v, k))), drop=FALSE], iter=0, mprod=0))
+    }
     return(list(d=s$d[1:k], u=s$u[, 1:nu, drop=FALSE],
               v=s$v[, 1:nv, drop=FALSE], iter=0, mprod=0))
   }
@@ -447,8 +473,9 @@ function(A,                     # data matrix
     {
       VJ <- VJ / scale
     }
+    if(interchange) avj <- mult(VJ, A)
+    else avj <- mult(A, VJ)
 #   Handle sparse products.
-    avj <- mult(A, VJ)
     if ("Matrix" %in% attributes(class(avj)) && "x" %in% slotNames(avj))
     {
       if (length(avj@x) == nrow(W)) avj <- slot(avj, "x")
@@ -494,9 +521,14 @@ function(A,                     # data matrix
       j_w <- ifelse(w_dim > 1, j, 1)
       if (iscomplex)
       {
-        F <- Conj(t(drop(mult(Conj(drop(W[, j_w])), A))))
+        if(interchange) F <- Conj(t(drop(mult(A, Conj(drop(W[, j_w]))))))
+        else F <- Conj(t(drop(mult(Conj(drop(W[, j_w])), A))))
       }
-      else F <- t(drop(mult(drop(W[, j_w]), A)))
+      else
+      {
+        if(interchange) F <- t(drop(mult(A, drop(W[, j_w]))))
+        else F <- t(drop(mult(drop(W[, j_w]), A)))
+      }
 #     Optionally apply shift and scale
       if (!is.null(shift)) F <- F + shift * W[, j_w]
       if (!is.null(scale)) F <- F / scale
@@ -531,7 +563,8 @@ function(A,                     # data matrix
         {
           VJP1 <- VJP1 / scale
         }
-        W[, jp1_w] <- drop(mult(A, drop(VJP1)))
+        if(interchange) W[, jp1_w] <- drop(mult(drop(VJP1), A))
+        else W[, jp1_w] <- drop(mult(A, drop(VJP1)))
         mprod <- mprod + 1
 
 #       Optionally apply shift
@@ -595,10 +628,17 @@ function(A,                     # data matrix
       Smin <- min(Smin, Bsvd$d[Bsz])
     }
     Smax <- max(eps23, Smax)
-    if (Smin / Smax < sqrteps && !reorth)
+    if (! reorth && Smin / Smax < sqrteps)
     {
       warning("The matrix is ill-conditioned. Basis will be reorthogonalized.")
       reorth <- TRUE
+    }
+    if(smallest)
+    {
+      jj <- seq (ncol (Bsvd$u), 1, by = -1)
+      Bsvd$u <- Bsvd$u[, jj]
+      Bsvd$d <- Bsvd$d[jj]
+      Bsvd$v <- Bsvd$v[, jj]
     }
 
 #   Compute the residuals
@@ -609,7 +649,7 @@ function(A,                     # data matrix
     {
       message("iter= ", iter,
               ", mprod= ", mprod,
-              ", smallest sv=", sprintf("%.2e", Bsvd$d[k_org]),
+              ", sv[", k_org, "]=", sprintf("%.2e", Bsvd$d[k_org]),
               ", %change=", sprintf("%.2e", (Bsvd$d[k_org] - lastsv[k_org])/Bsvd$d[k_org]),
               ", k=", ct$k)
     }
@@ -620,10 +660,39 @@ function(A,                     # data matrix
     if (ct$converged) break
     if (iter >= maxit) break
 
-#   Compute the starting vectors and first block of B[1:k, 1:(k+1), drop=FALSE]
+#   Compute the starting vectors and first block of B
+    if(smallest && (Smin / Smax > sqrteps))
+    {
+#     Update the SVD of B to be the svd of [B ||F||E_m]
+      Bsvd2.d <- Bsvd$d
+      Bsvd2.d <- diag(Bsvd2.d, nrow=length(Bsvd2.d))
+      Bsvd2 <- svd (cbind (Bsvd2.d, t(R)))
+      jj <- seq (ncol (Bsvd2$u), 1, by=-1)
+      Bsvd2$u <- Bsvd2$u[, jj]
+      Bsvd2$d <- Bsvd2$d[jj]
+      Bsvd2$v <- Bsvd2$v[, jj]
+
+      Bsvd$d <- Bsvd2$d
+      Bsvd$u <- Bsvd$u %*% Bsvd2$u
+      Bsvd$v <- cbind (rbind (Bsvd$v, rep (0, Bsz)), c (rep (0, Bsz), 1)) %*% Bsvd2$v
+      V_B_last <- Bsvd$v[Bsz + 1, 1:k]
+      s <- R_F * solve(B, cbind (c (rep(0, Bsz - 1), 1)))
+      Bsvd$v <- Bsvd$v[1:Bsz, ,drop=FALSE] + s %*% Bsvd$v[Bsz + 1, ]
+
+      qrv <- qr(cbind(rbind(Bsvd$v[, 1:k], 0), rbind (-s, 1)))
+      Bsvd$v <- qr.Q(qrv)
+      R <- qr.R(qrv)
+      V[, 1:(k + 1)] <- cbind(V, F) %*% Bsvd$v
+
+#  Update and compute the k by k+1 part of B
+      UT <- t(R[1:(k + 1), 1:k] + R[,k + 1] %*% rbind(V_B_last))
+      B <- diag(Bsvd$d[1:k], nrow=k) %*% (UT*upper.tri(UT,diag=TRUE))[1:k, 1:(k+1)]
+    } else
+    {
 #   using the Ritz vectors
       V[, 1:(k + dim(F)[2])] <- cbind(V[, 1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[, 1:k], F)
       B <- cbind(diag(Bsvd$d[1:k], nrow=k), R[1:k])
+    }
 
 #   Update the left approximate singular vectors
     if (w_dim > 1)
@@ -644,6 +713,13 @@ function(A,                     # data matrix
     u <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[, 1:k_org, drop=FALSE]
   }
   v <- V[, 1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[, 1:k_org, drop=FALSE]
+  if(smallest)
+  {
+    reverse <- seq(length(d), 1)
+    d <- d[reverse]
+    if(!right_only) u <- u[, reverse]
+    v <- v[, reverse]
+  }
   if (tol * d[1] < eps) warning("convergence criterion below machine epsilon")
   if (right_only)
     return(list(d=d, v=v[, 1:nv, drop=FALSE], iter=iter, mprod=mprod))

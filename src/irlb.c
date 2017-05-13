@@ -61,7 +61,8 @@ RNORM (int n)
   return ans;
 }
 
-/* irlb C implementation wrapper
+/* irlb C implementation wrapper for R
+ *
  * X double precision input matrix
  * NU integer number of singular values/vectors to compute must be > 3
  * INIT double precision starting vector length(INIT) must equal ncol(X)
@@ -433,6 +434,7 @@ irlb (void *A,                  // Input data matrix
 /* Force termination after encountering linear dependence */
       if (R_F < 2 * eps)
         R_F = 0;
+
       Smax = 0;
       for (jj = 0; jj < j; ++jj)
         {
