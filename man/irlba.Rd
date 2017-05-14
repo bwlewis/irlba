@@ -113,7 +113,11 @@ This option may be used to efficiently compute principal components without
 explicitly forming the centered matrix (which can, importantly, preserve
 sparsity in the matrix). See the examples.
 
-Specify an optional alternative matrix multiplication operator in the
+The optional \code{shift} argument applies only to square matrices, use it
+to estimate the partial svd of \code{A - diag(shift)}
+(without explicitly forming the shifted matrix).
+
+(Deprecated) Specify an optional alternative matrix multiplication operator in the
 \code{mult} parameter. \code{mult} must be a function of two arguments,
 and must handle both cases where one argument is a vector and the other
 a matrix. This option is deprecated and will be removed in a future version.
