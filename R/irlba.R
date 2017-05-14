@@ -1,8 +1,9 @@
-#' Find a few approximate largest singular values and corresponding
+#' Find a few approximate singular values and corresponding
 #' singular vectors of a matrix.
 #'
 #' The augmented implicitly restarted Lanczos bidiagonalization algorithm
-#' (IRLBA) finds a few approximate largest singular values and corresponding
+#' (IRLBA) finds a few approximate largest (or, optionally, smallest) singular
+#' values and corresponding
 #' singular vectors of a sparse or dense matrix using a method of Baglama and
 #' Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
 #'

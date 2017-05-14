@@ -2,7 +2,7 @@
 % Please edit documentation in R/irlba.R
 \name{irlba}
 \alias{irlba}
-\title{Find a few approximate largest singular values and corresponding
+\title{Find a few approximate singular values and corresponding
 singular vectors of a matrix.}
 \usage{
 irlba(A, nv = 5, nu = nv, maxit = 100, work = nv + 7, reorth = TRUE,
@@ -85,7 +85,8 @@ Returns a list with entries:
 }
 \description{
 The augmented implicitly restarted Lanczos bidiagonalization algorithm
-(IRLBA) finds a few approximate largest singular values and corresponding
+(IRLBA) finds a few approximate largest (or, optionally, smallest) singular
+values and corresponding
 singular vectors of a sparse or dense matrix using a method of Baglama and
 Reichel.  It is a fast and memory-efficient way to compute a partial SVD.
 }
