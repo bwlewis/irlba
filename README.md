@@ -110,6 +110,6 @@ products for very large problems with amazingly little code.
 <a href="https://codecov.io/gh/bwlewis/irlba">
   <img src="https://codecov.io/gh/bwlewis/irlba/branch/master/graph/badge.svg" alt="Codecov" />
 </a>
-<a hreg="http://cran.rstudio.com/web/packages/irlba/index.html">
+<a href="https://www.r-pkg.org/pkg/irlba">
   <img src="http://cranlogs.r-pkg.org/badges/irlba" />
 </a>
