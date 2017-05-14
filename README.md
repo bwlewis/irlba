@@ -87,7 +87,7 @@ irlba(a, 3)$d
 
 We have learned that using R's existing S4 system is simpler, easier, and more
 flexible than using custom arguments with idiosyncratic syntax and behavior.
-We've used the new approach to even implement distributed parallel matrix
+We've even used the new approach to implement distributed parallel matrix
 products for very large problems with amazingly little code.
 
 ## Wishlist
