@@ -14,28 +14,36 @@ functions (see help on each for details and examples).
 Help documentation for each function includes extensive documentation and
 examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
-## What's new?
+## What's new in Version 2.2.0?
 
-Version 2.2.0 includes stronger convergence criteria and a new argument `svtol`
-associated with that. The new approach helps guarantee more accurate solutions
-for some difficult problems. The tradeoff is that the default behavior is a
-little slower than before because at least two Lanczos iterations are always
-run. The new convergence behavior can be disabled with `svtol=Inf`.
+We include stronger convergence criteria and a new argument `svtol` associated
+for that. The new approach helps guarantee more accurate solutions for some
+difficult problems. The tradeoff is that the default behavior is a little
+slower than before because at least two Lanczos iterations are always run. The
+new convergence behavior can be disabled with `svtol=Inf`.
 
-Version 2.2.0 also includes a new function, svdr()--another state of the art
-truncated SVD method based on the superb randomized SVD algorithm of Gunnar
+The new package version includes a new function, svdr()--another state of the
+art truncated SVD method based on the randomized SVD algorithm of Gunnar
 Martinsson and others. Both irlba() and svdr() work well. Svdr uses a block
-method and often exhibits better convergence in problems where the largest
+method and may exhibit better convergence in problems where the largest
 singular values are clustered. See the documentation and examples in the
-package. (Block versions of irlba exists, but are not yet implemented by
-this R package--something coming in the future.)
+package. (Block versions of irlba exists, but are not yet implemented by this R
+package--something coming in the future.)
+
+We re-introduced a solver for estimating the smallest singular values of a
+matrix and associated singular vector spaces. The solver is based on the
+oringial Harmonic Ritz vector augmentation method of Baglama and Reichel.
+Beware that this method is somewhat experimental and may fail to converge, or
+may converge poorly, to estimated singular values for very ill-conditioned
+matrices. Along with block methods for irlba, this is an active area of
+work--feel free to contribute!
+
 
 ## Deprecated features
 
 The `mult` argument is deprecated and will be removed in a future version. We
 now recommend simply defining a custom class with a custom multiplcation
-operator.  The example below illustrates the old and new approaches, as well as
-a few other equivalent approaches.
+operator.  The example below illustrates the old and new approaches.
 
 ```{r}
 library(irlba)
@@ -77,14 +85,22 @@ irlba(a, 3)$d
 ## [1] 1.820227 1.622988 1.067185
 ```
 
+We have learned that using R's existing S4 system is simpler, easier, and more
+flexible than using custom arguments with idiosyncratic syntax and behavior.
+We've used the new approach to even implement distributed parallel matrix
+products for very large problems with amazingly little code.
+
 ## Wishlist
 
 - Optional block implementation for some use cases
-- Re-introduce a solver for smallest singular values
+- More Matrix classes supported in the fast code path
+- Help improving the solver for smallest singular values in tricky cases (basically, for ill-conditioned problems)
 
 ## References
 
 * Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005. (http://www.math.uri.edu/~jbaglama/papers/paper14.pdf)
+* Finding structure with randomness: Stochastic algorithms for constructing approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 2009.
+
 
 
 ## Status
