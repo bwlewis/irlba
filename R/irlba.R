@@ -179,7 +179,7 @@
 #' a <- new("scaled_matrix", A, scale=col_scale)
 #' irlba(a, 3)$d
 #'
-#' @seealso \code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}
+#' @seealso \code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}, \code{\link{svdr}}
 #' @import Matrix
 #' @importFrom stats rnorm
 #' @importFrom methods slotNames

@@ -209,6 +209,6 @@ irlba(a, 3)$d
 Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
 }
 \seealso{
-\code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}
+\code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}, \code{\link{svdr}}
 }
 

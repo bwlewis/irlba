@@ -28,6 +28,7 @@
 #'   \item{v:}{ k approximate right singular vectors}
 #'   \item{mprod:}{ The total number of matrix vector products carried out}
 #' }
+#' @seealso \code{\link{irlba}}, \code{\link{svd}}
 #' @references
 #' Finding structure with randomness: Stochastic algorithms for constructing
 #' approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 2009.
@@ -58,10 +59,25 @@
 #' tL <- system.time(L <- irlba(x, 20))
 #' tR <- system.time(R <- svdr(x, 20))
 #' S <- svd(x)
+#' plot(S$d)
 #' data.frame(time=c(tL[3], tR[3]),
 #'            error=sqrt(c(crossprod(L$d - S$d[1:20]), crossprod(R$d - S$d[1:20]))),
 #'            row.names=c("IRLBA", "Randomized SVD"))
 #'
+#' # But, here is a similar problem with clustered singular values where svdr
+#' # doesn't out-perform irlba as easily...clusters of singular values are,
+#' # in general, very hard to deal with!
+#' # (This example based on https://github.com/bwlewis/irlba/issues/16.)
+#' set.seed(1)
+#' s <- svd(matrix(rnorm(200 * 200), 200))
+#' x <- s$u %*% (c(exp(-(1:100)^0.3) * 1e-12 + 1, rep(0.5, 100)) * t(s$v))
+#' tL <- system.time(L <- irlba(x, 5))
+#' tR <- system.time(R <- svdr(x, 5))
+#' S <- svd(x)
+#' plot(S$d)
+#' data.frame(time=c(tL[3], tR[3]),
+#'            error=sqrt(c(crossprod(L$d - S$d[1:5]), crossprod(R$d - S$d[1:5]))),
+#'            row.names=c("IRLBA", "Randomized SVD"))
 #' }
 #' @export
 svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL)
