@@ -16,7 +16,7 @@ examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
 ## What's new in Version 2.2.0?
 
-We include stronger convergence criteria and a new argument `svtol` associated
+We include stronger convergence criteria and a new argument `svtol`
 for that. The new approach helps guarantee more accurate solutions for some
 difficult problems. The tradeoff is that the default behavior is a little
 slower than before because at least two Lanczos iterations are always run. The
