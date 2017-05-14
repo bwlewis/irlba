@@ -38,6 +38,13 @@ test <- function()
   S <- svd(A, nu=1, nv=1)
   stopifnot(isTRUE(all.equal(L$d, S$d[1])))
 
+  loc <<- "svdr center only, sparse"
+  A <- Matrix(matrix(rnorm(100), 10))
+  m <- colMeans(A)
+  L <- svdr(A, 3, center=m)
+  S <- svd(scale(A, center=TRUE, scale=FALSE))
+  stopifnot(!isTRUE(all.equal(L$d, S$d[1:3])))
+
   on.exit()
 }
 

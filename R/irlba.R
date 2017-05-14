@@ -316,7 +316,7 @@ function(A,                     # data matrix
     if(smallest)
     {
       return(list(d=tail(s$d, k), u=s$u[, tail(seq(ncol(s$u)), k), drop=FALSE],
-              v=s$v[, tail(seq(ncol(s$v, k))), drop=FALSE], iter=0, mprod=0))
+              v=s$v[, tail(seq(ncol(s$v), k)), drop=FALSE], iter=0, mprod=0))
     }
     return(list(d=s$d[1:k], u=s$u[, 1:nu, drop=FALSE],
               v=s$v[, 1:nv, drop=FALSE], iter=0, mprod=0))
