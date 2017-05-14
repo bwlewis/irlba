@@ -43,7 +43,7 @@ test <- function()
   m <- colMeans(A)
   L <- svdr(A, 3, center=m)
   S <- svd(scale(A, center=TRUE, scale=FALSE))
-  stopifnot(!isTRUE(all.equal(L$d, S$d[1:3])))
+  stopifnot(isTRUE(all.equal(L$d, S$d[1:3])))
 
   on.exit()
 }
