@@ -113,8 +113,8 @@ This option may be used to efficiently compute principal components without
 explicitly forming the centered matrix (which can, importantly, preserve
 sparsity in the matrix). See the examples.
 
-The optional \code{shift} argument applies only to square matrices, use it
-to estimate the partial svd of \code{A - diag(shift)}
+The optional \code{shift} scalar valued argument applies only to square matrices; use it
+to estimate the partial svd of \code{A + diag(shift, nrow(A), nrow(A))}
 (without explicitly forming the shifted matrix).
 
 (Deprecated) Specify an optional alternative matrix multiplication operator in the

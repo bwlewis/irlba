@@ -85,8 +85,8 @@
 #' explicitly forming the centered matrix (which can, importantly, preserve
 #' sparsity in the matrix). See the examples.
 #'
-#' The optional \code{shift} argument applies only to square matrices, use it
-#' to estimate the partial svd of \code{A - diag(shift)}
+#' The optional \code{shift} scalar valued argument applies only to square matrices; use it
+#' to estimate the partial svd of \code{A + diag(shift, nrow(A), nrow(A))}
 #' (without explicitly forming the shifted matrix).
 #'
 #' (Deprecated) Specify an optional alternative matrix multiplication operator in the
@@ -306,7 +306,7 @@ function(A,                     # data matrix
   {
     if (verbose) message("Tiny problem detected, using standard `svd` function.")
     if (!is.null(scale)) A <- A / scale
-    if (!is.null(shift)) A <- A + diag(shift)
+    if (!is.null(shift)) A <- A + diag(shift, nrow(A), ncol(A))
     if (deflate)
     {
       if (is.null(du)) du <- rep(1, nrow(A))
