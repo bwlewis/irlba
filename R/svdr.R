@@ -13,12 +13,14 @@
 #'
 #' @param x numeric real- or complex-valued matrix or real-valued sparse matrix.
 #' @param k dimension of subspace to estimate (number of approximate singular values to compute).
-#' @param it number of algorithm iterations
-#' @param extra number of extra vectors of dimension \code{ncol(x)}, large values generally improve accuracy and performance.
-#' @param center optional column centering vector whose values are subtracted from each
-#'   column of \code{A} or, optionally, use \code{center=TRUE} as shorthand for \code{center=colMeans(x)}.
-#'   Used for efficient principal components computation.
-#' @param Q optiona initial random matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
+#' @param it fixed number of algorithm iterations, larger values improve accuracy.
+#' @param extra number of extra vectors of dimension \code{ncol(x)}, larger values generally improve accuracy (with increased
+#' computational cost).
+#' @param center optional column centering vector whose values are implicitly subtracted from each
+#'   column of \code{A} without explicitly forming the centered matrix (preserving sparsity).
+#'   Optionally specify \code{center=TRUE} as shorthand for \code{center=colMeans(x)}.
+#'   Use for efficient principal components computation.
+#' @param Q optional initial random matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
 #' entries sampled from a normal random distribution.
 #' @return
 #' Returns a list with entries:

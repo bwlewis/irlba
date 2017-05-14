@@ -12,15 +12,17 @@ svdr(x, k, it = 3, extra = 10, center = NULL, Q = NULL)
 
 \item{k}{dimension of subspace to estimate (number of approximate singular values to compute).}
 
-\item{it}{number of algorithm iterations}
+\item{it}{fixed number of algorithm iterations, larger values improve accuracy.}
 
-\item{extra}{number of extra vectors of dimension \code{ncol(x)}, large values generally improve accuracy and performance.}
+\item{extra}{number of extra vectors of dimension \code{ncol(x)}, larger values generally improve accuracy (with increased
+computational cost).}
 
-\item{center}{optional column centering vector whose values are subtracted from each
-column of \code{A} or, optionally, use \code{center=TRUE} as shorthand for \code{center=colMeans(x)}.
-Used for efficient principal components computation.}
+\item{center}{optional column centering vector whose values are implicitly subtracted from each
+column of \code{A} without explicitly forming the centered matrix (preserving sparsity).
+Optionally specify \code{center=TRUE} as shorthand for \code{center=colMeans(x)}.
+Use for efficient principal components computation.}
 
-\item{Q}{optiona initial random matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
+\item{Q}{optional initial random matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
 entries sampled from a normal random distribution.}
 }
 \value{
