@@ -91,5 +91,9 @@ irlba(a, 3)$d
 <a href="https://travis-ci.org/bwlewis/irlba">
 <img src="https://travis-ci.org/bwlewis/irlba.svg?branch=master" alt="Travis CI status"></img>
 </a>
-[![codecov](https://codecov.io/gh/bwlewis/irlba/branch/master/graph/badge.svg)](https://codecov.io/gh/bwlewis/irlba)
-[![](http://cranlogs.r-pkg.org/badges/irlba)](http://cran.rstudio.com/web/packages/irlba/index.html)
+<a href="https://codecov.io/gh/bwlewis/irlba">
+  <img src="https://codecov.io/gh/bwlewis/irlba/branch/master/graph/badge.svg" alt="Codecov" />
+</a>
+<a hreg="http://cran.rstudio.com/web/packages/irlba/index.html">
+  <img src="http://cranlogs.r-pkg.org/badges/irlba" />
+</a>
