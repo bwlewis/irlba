@@ -126,7 +126,7 @@ The new preferred method simply uses R itself to define a custom matrix class
 with your user-defined matrix multiplication operator. See the examples.
 
 Use the \code{v} option to supply a starting vector for the iterative
-method. A random vector is used by default (precede with \code{set.seed()} to
+method. A random vector is used by default (precede with \code{set.seed()}
 for reproducibility). Optionally set \code{v} to
 the output of a previous run of \code{irlba} to restart the method, adding
 additional singular values/vectors without recomputing the solution
@@ -168,7 +168,7 @@ svd(A)$d[1:3]
 S1 <- irlba(A, 5, v=S)
 
 # Estimate smallest singular values
-irlba(A, 3, smallest=TRUE)
+irlba(A, 3, smallest=TRUE)$d
 
 #Compare with
 tail(svd(A)$d, 3)
