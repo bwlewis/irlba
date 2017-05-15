@@ -558,8 +558,6 @@ dsdmult (char transpose, int m, int n, void *a, double *b, double *c)
   chc.x = (void *) c;
   chc.z = (void *) NULL;
 
-  double one[] = { 1, 0 }, zero[] =
-  {
-  0, 0};
+  double one[] = { 1, 0 }, zero[] = { 0, 0};
   sdmult (cha, t, one, zero, &chb, &chc, &chol_c);
 }
