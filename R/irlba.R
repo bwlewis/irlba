@@ -329,7 +329,7 @@ function(A,                     # data matrix
   fastpath <- fastpath && (("Matrix" %in% attributes(class(A)) && ("dgCMatrix" %in% class(A))) || "matrix" %in% class(A))
   if (fastpath && missingmult && !iscomplex && !right_only)
   {
-    RESTART <- 0
+    RESTART <- 0L
     RV <- RW <- RS <- NULL
     if (is.null(v))
     {
@@ -369,8 +369,8 @@ function(A,                     # data matrix
       CENTER <- as.double(center)
     }
     ans <- .Call(C_IRLB, A, as.integer(k), as.double(v), as.integer(work),
-                 as.integer(maxit), as.double(tol), .Machine$double.eps, as.integer(SP),
-                 RESTART, RV, RW, RS, SCALE, SHIFT, CENTER, svtol)
+                 as.integer(maxit), as.double(tol), as.double(.Machine$double.eps), as.integer(SP),
+                 as.integer(RESTART), RV, RW, RS, SCALE, SHIFT, CENTER, as.double(svtol))
     if (ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")

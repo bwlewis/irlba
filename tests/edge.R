@@ -67,13 +67,14 @@ test <- function()
   # test for issue #9
   loc <<- "issue 9"
   set.seed(2)
-  s1 <- irlba(diag(c(1, 2, 3, 4, 5, 0, 0, 0, 0)), 4)
+  s1 <- irlba(diag(c(1, 2, 3, 4, 5, 0, 0, 0, 0)), 4, fastpath=FALSE)
   set.seed(2)
-  s2 <- irlba(diag(c(1, 2, 3, 4, 5, 0, 0, 0, 0)), 4, fastpath=FALSE)
-  if (!isTRUE(all.equal(s1$d, s2$d)))
-  {
-    stop("Failed fastpath invariant subspace detection")
-  }
+  s2 <- irlba(diag(c(1, 2, 3, 4, 5, 0, 0, 0, 0)), 4, fastpath=TRUE)
+  stopifnot(all.equal(s1$d, s2$d))
+  # Repeat this test with different seed
+  set.seed(3)
+  s2 <- irlba(diag(c(1, 2, 3, 4, 5, 0, 0, 0, 0)), 4, fastpath=TRUE)
+  stopifnot(all.equal(s1$d, s2$d))
   on.exit()
 }
 

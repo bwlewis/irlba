@@ -17,7 +17,8 @@ convtests (int Bsz,           // Number of rows of bidiagonal matrix B
            double *residuals, // vector of residual values
            int *k,            // number of estimated singular values (INPUT)
                               // adjusted subspace size (OUTPUT)
-           int *converged);   // 0 = FALSE, 1 = TRUE
+           int *converged,    // 0 = FALSE, 1 = TRUE
+           double S);         // If S == 0 then invariant subspace found.
 
 /*
  * Simple cholmod double-precision sparse matrix times dense vector multiplication interface
@@ -29,14 +30,14 @@ void
 dsdmult(char transpose, // 't' -> op(a) = t(a), non-transposed a otherwise 
         int m,          // number of rows of a
         int n,          // number of columns of a
-        void * a,       // double precision valued sparse matrix
+        void *a,        // double precision valued sparse matrix
         double *b,      // double precision dense vector
         double *c);     // output
 
 /* IRLB function for sparse or dense double-precision valued matrices */
 int
 irlb(double *A,     // input data matrix (dense case)
-     void * AS,     // input data matrix (sparse case)
+     void *AS,      // input data matrix (sparse case)
      int mult,      // 0 -> A is double *, 1-> A is sparse double *
      int m,         // data matrix number of rows
      int n,         // data matrix number of columns

@@ -99,7 +99,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   R_xlen_t m, n;
 
   int mult = INTEGER (MULT)[0];
-  void * AS = NULL;
+  void *AS = NULL;
   double *A = NULL;
   switch (mult)
     {
@@ -110,7 +110,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
       n = dims[1];
       break;
     default:
-      A = (double *) REAL (X);
+      A = REAL (X);
       m = nrows (X);
       n = ncols (X);
     }
@@ -447,7 +447,7 @@ irlb (double *A,                // Input data matrix (double case)
       for (kk = 0; kk < j; ++kk)
         res[kk] = R_F * BU[kk * work + (j - 1)];
 /* Update k to be the number of converged singular values. */
-      convtests (j, nu, tol, svtol, Smax, svratio, res, &k, &converged);
+      convtests (j, nu, tol, svtol, Smax, svratio, res, &k, &converged, S);
       if (converged == 1)
         {
           iter++;

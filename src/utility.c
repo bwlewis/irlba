@@ -64,6 +64,7 @@ orthog (double *X, double *Y, double *T, int xm, int xn, int yn)
  * svratio        vector of abs(current - previous) / current singular value ratios
  * residuals      vector of residual values
  * k              number of estimated signular values (scalar)
+ * S              check for invariant subspace when S == 0
  *
  * Output
  * converged      0 = FALSE, 1 = TRUE (all converged)
@@ -71,7 +72,7 @@ orthog (double *X, double *Y, double *T, int xm, int xn, int yn)
  */
 void
 convtests (int Bsz, int n, double tol, double svtol, double Smax,
-           double *svratio, double *residuals, int *k, int *converged)
+           double *svratio, double *residuals, int *k, int *converged, double S)
 {
   int j, Len_res = 0;
   for (j = 0; j < Bsz; ++j)
@@ -79,7 +80,7 @@ convtests (int Bsz, int n, double tol, double svtol, double Smax,
       if ((fabs (residuals[j]) < tol * Smax) && (svratio[j] < svtol))
         Len_res++;
     }
-  if (Len_res >= n)
+  if (Len_res >= n || S == 0)
     {
       *converged = 1;
       return;
