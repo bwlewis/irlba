@@ -2,8 +2,8 @@ Package: irlba
 Type: Package
 Title: Fast Truncated SVD, PCA and Symmetric Eigendecomposition for Large Dense
     and Sparse Matrices
-Version: 2.2.0
-Date: 2017-05-11
+Version: 2.2.1
+Date: 2017-05-16
 Authors@R: c(
     person("Jim", "Baglama", rol=c("aut", "cph"), email="jbaglama@uri.edu"),
     person("Lothar", "Reichel", role=c("aut", "cph"), email="reichel@math.kent.edu"),
