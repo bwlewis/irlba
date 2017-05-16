@@ -12,7 +12,7 @@ test <- function()
   L <- svdr(A, 1)
   S <- svd(A, nu=1, nv=1)
   stopifnot(isTRUE(all.equal(L$d, S$d[1])))
-  
+
   loc <<- "svdr dense m > n"
   A <- matrix(rnorm(50 * 40), 50)
   L <- svdr(A, 5, 10, extra=15)
@@ -47,5 +47,4 @@ test <- function()
 
   on.exit()
 }
-
 test()

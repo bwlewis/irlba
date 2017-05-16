@@ -21,7 +21,7 @@ for (FAST in c(FALSE, TRUE))
 
   # unequal nu, nv
   L <- irlba(A, nv=2, nu=3, fastpath=FAST)
-  if(!isTRUE(ncol(L$v) == 2 && ncol(L$u) == 3))
+  if (!isTRUE(ncol(L$v) == 2 && ncol(L$u) == 3))
   {
     stop("Failed unequal nu,nv", " fastpath=", FAST)
   }

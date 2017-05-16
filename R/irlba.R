@@ -227,7 +227,7 @@ function(A,                     # data matrix
   dv <- mcall[["dv"]]
   ds <- mcall[["ds"]]
   deflate <- is.null(du) + is.null(ds) + is.null(dv)
-  if(smallest) fastpath <- FALSE
+  if (smallest) fastpath <- FALSE
   if (deflate == 3)
   {
     deflate <- FALSE
@@ -288,7 +288,7 @@ function(A,                     # data matrix
     work <- min(min(m, n), work + 20) # typically need this to help convergence
     fastpath <- FALSE
   }
-  if(n > m && smallest)
+  if (n > m && smallest)
   {
     # Interchange dimensions m,n so that dim(A'A) = min(m,n) when seeking the
     # smallest singular values; avoids finding zero-valued smallest singular values.
@@ -314,7 +314,7 @@ function(A,                     # data matrix
       A <- A - (ds * du) %*% t(dv)
     }
     s <- svd(A)
-    if(smallest)
+    if (smallest)
     {
       return(list(d=tail(s$d, k), u=s$u[, tail(seq(ncol(s$u)), k), drop=FALSE],
               v=s$v[, tail(seq(ncol(s$v), k)), drop=FALSE], iter=0, mprod=0))
@@ -478,7 +478,7 @@ function(A,                     # data matrix
     {
       VJ <- VJ / scale
     }
-    if(interchange) avj <- mult(VJ, A)
+    if (interchange) avj <- mult(VJ, A)
     else avj <- mult(A, VJ)
 #   Handle sparse products.
     if ("Matrix" %in% attributes(class(avj)) && "x" %in% slotNames(avj))
@@ -526,12 +526,12 @@ function(A,                     # data matrix
       j_w <- ifelse(w_dim > 1, j, 1)
       if (iscomplex)
       {
-        if(interchange) F <- Conj(t(drop(mult(A, Conj(drop(W[, j_w]))))))
+        if (interchange) F <- Conj(t(drop(mult(A, Conj(drop(W[, j_w]))))))
         else F <- Conj(t(drop(mult(Conj(drop(W[, j_w])), A))))
       }
       else
       {
-        if(interchange) F <- t(drop(mult(A, drop(W[, j_w]))))
+        if (interchange) F <- t(drop(mult(A, drop(W[, j_w]))))
         else F <- t(drop(mult(drop(W[, j_w]), A)))
       }
 #     Optionally apply shift and scale
@@ -568,7 +568,7 @@ function(A,                     # data matrix
         {
           VJP1 <- VJP1 / scale
         }
-        if(interchange) W[, jp1_w] <- drop(mult(drop(VJP1), A))
+        if (interchange) W[, jp1_w] <- drop(mult(drop(VJP1), A))
         else W[, jp1_w] <- drop(mult(A, drop(VJP1)))
         mprod <- mprod + 1
 
@@ -638,9 +638,9 @@ function(A,                     # data matrix
       warning("The matrix is ill-conditioned. Basis will be reorthogonalized.")
       reorth <- TRUE
     }
-    if(smallest)
+    if (smallest)
     {
-      jj <- seq (ncol (Bsvd$u), 1, by = -1)
+      jj <- seq(ncol(Bsvd$u), 1, by = -1)
       Bsvd$u <- Bsvd$u[, jj]
       Bsvd$d <- Bsvd$d[jj]
       Bsvd$v <- Bsvd$v[, jj]
@@ -666,32 +666,32 @@ function(A,                     # data matrix
     if (iter >= maxit) break
 
 #   Compute the starting vectors and first block of B
-    if(smallest && (Smin / Smax > sqrteps))
+    if (smallest && (Smin / Smax > sqrteps))
     {
 #     Update the SVD of B to be the svd of [B ||F||E_m]
       Bsvd2.d <- Bsvd$d
       Bsvd2.d <- diag(Bsvd2.d, nrow=length(Bsvd2.d))
-      Bsvd2 <- svd (cbind (Bsvd2.d, t(R)))
-      jj <- seq (ncol (Bsvd2$u), 1, by=-1)
+      Bsvd2 <- svd(cbind(Bsvd2.d, t(R)))
+      jj <- seq(ncol(Bsvd2$u), 1, by=-1)
       Bsvd2$u <- Bsvd2$u[, jj]
       Bsvd2$d <- Bsvd2$d[jj]
       Bsvd2$v <- Bsvd2$v[, jj]
 
       Bsvd$d <- Bsvd2$d
       Bsvd$u <- Bsvd$u %*% Bsvd2$u
-      Bsvd$v <- cbind (rbind (Bsvd$v, rep (0, Bsz)), c (rep (0, Bsz), 1)) %*% Bsvd2$v
+      Bsvd$v <- cbind(rbind(Bsvd$v, rep(0, Bsz)), c(rep(0, Bsz), 1)) %*% Bsvd2$v
       V_B_last <- Bsvd$v[Bsz + 1, 1:k]
-      s <- R_F * solve(B, cbind (c (rep(0, Bsz - 1), 1)))
-      Bsvd$v <- Bsvd$v[1:Bsz, ,drop=FALSE] + s %*% Bsvd$v[Bsz + 1, ]
+      s <- R_F * solve(B, cbind(c(rep(0, Bsz - 1), 1)))
+      Bsvd$v <- Bsvd$v[1:Bsz, , drop=FALSE] + s %*% Bsvd$v[Bsz + 1, ]
 
-      qrv <- qr(cbind(rbind(Bsvd$v[, 1:k], 0), rbind (-s, 1)))
+      qrv <- qr(cbind(rbind(Bsvd$v[, 1:k], 0), rbind(-s, 1)))
       Bsvd$v <- qr.Q(qrv)
       R <- qr.R(qrv)
       V[, 1:(k + 1)] <- cbind(V, F) %*% Bsvd$v
 
 #  Update and compute the k by k+1 part of B
-      UT <- t(R[1:(k + 1), 1:k] + R[,k + 1] %*% rbind(V_B_last))
-      B <- diag(Bsvd$d[1:k], nrow=k) %*% (UT*upper.tri(UT,diag=TRUE))[1:k, 1:(k+1)]
+      UT <- t(R[1:(k + 1), 1:k] + R[, k + 1] %*% rbind(V_B_last))
+      B <- diag(Bsvd$d[1:k], nrow=k) %*% (UT * upper.tri(UT, diag=TRUE))[1:k, 1:(k+1)]
     } else
     {
 #   using the Ritz vectors
@@ -718,11 +718,11 @@ function(A,                     # data matrix
     u <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[, 1:k_org, drop=FALSE]
   }
   v <- V[, 1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[, 1:k_org, drop=FALSE]
-  if(smallest)
+  if (smallest)
   {
     reverse <- seq(length(d), 1)
     d <- d[reverse]
-    if(!right_only) u <- u[, reverse]
+    if (!right_only) u <- u[, reverse]
     v <- v[, reverse]
   }
   if (tol * d[1] < eps) warning("convergence criterion below machine epsilon")

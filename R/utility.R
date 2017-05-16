@@ -50,7 +50,7 @@ convtests <- function(Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, 
 # Converged singular triplets
   subspace_converged <- residuals[1:k_org] < tol * Smax
 # Converged fixed point triplets
-  if(is.null(lastsv)) lastsv <- 0 * Bsvd$d
+  if (is.null(lastsv)) lastsv <- 0 * Bsvd$d
   delta_converged <- (abs(Bsvd$d[1:k_org] - lastsv[1:k_org]) / Bsvd$d[1:k_org])  < svtol
   len_res <- sum(subspace_converged & delta_converged) # both
   if (is.na(len_res)) len_res <- 0
