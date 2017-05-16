@@ -8,9 +8,8 @@ Authors@R: c(
     person("Jim", "Baglama", rol=c("aut", "cph"), email="jbaglama@uri.edu"),
     person("Lothar", "Reichel", role=c("aut", "cph"), email="reichel@math.kent.edu"),
     person("B. W.", "Lewis", role=c("aut","cre","cph"), email="blewis@illposed.net"))
-Description: Fast and memory efficient methods for truncated singular and
-    eigenvalue decompositions and principal component analysis of large sparse or
-    dense matrices.
+Description: Fast and memory efficient methods for truncated singular value
+    decomposition and principal components analysis of large sparse or dense matrices.
 Depends:
     Matrix
 LinkingTo: Matrix
