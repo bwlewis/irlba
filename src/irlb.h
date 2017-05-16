@@ -29,13 +29,14 @@ void
 dsdmult(char transpose, // 't' -> op(a) = t(a), non-transposed a otherwise 
         int m,          // number of rows of a
         int n,          // number of columns of a
-        void *a,        // double precision valued sparse matrix
+        void * a,       // double precision valued sparse matrix
         double *b,      // double precision dense vector
         double *c);     // output
 
 /* IRLB function for sparse or dense double-precision valued matrices */
 int
-irlb(void *A,       // Input data matrix
+irlb(double *A,     // input data matrix (dense case)
+     void * AS,     // input data matrix (sparse case)
      int mult,      // 0 -> A is double *, 1-> A is sparse double *
      int m,         // data matrix number of rows
      int n,         // data matrix number of columns

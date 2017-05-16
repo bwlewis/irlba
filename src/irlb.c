@@ -99,17 +99,18 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
   R_xlen_t m, n;
 
   int mult = INTEGER (MULT)[0];
-  void *A;
+  void * AS = NULL;
+  double *A = NULL;
   switch (mult)
     {
     case 1:
-      A = (void *) AS_CHM_SP (X);
+      AS = (void *) AS_CHM_SP (X);
       int *dims = INTEGER (GET_SLOT (X, install ("Dim")));
       m = dims[0];
       n = dims[1];
       break;
     default:
-      A = (void *) REAL (X);
+      A = (double *) REAL (X);
       m = nrows (X);
       n = ncols (X);
     }
@@ -168,7 +169,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
         B[i + work * i] = REAL (RS)[i];
     }
   ret =
-    irlb (A, mult, m, n, nu, work, maxit, restart, tol, scale, shift, center,
+    irlb (A, AS, mult, m, n, nu, work, maxit, restart, tol, scale, shift, center,
           REAL (S), REAL (U), REAL (V), &iter, &mprod, eps, lwork, V1, U1, W,
           F, B, BU, BV, BS, BW, res, T, svtol, SVRATIO);
   SET_VECTOR_ELT (ANS, 0, S);
@@ -192,8 +193,9 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
  * all data must be allocated by caller, required sizes listed below
  */
 int
-irlb (void *A,                  // Input data matrix
-      int mult,                 // 0 -> A is double *, 1 -> A is cholmod
+irlb (double *A,                // Input data matrix (double case)
+      void * AS,                // input data matrix (sparse case)
+      int mult,                 // 0 -> use double *A, 1 -> use AS
       int m,                    // data matrix number of rows, must be > 3.
       int n,                    // data matrix number of columns, must be > 3.
       int nu,                   // dimension of solution
@@ -272,7 +274,7 @@ irlb (void *A,                  // Input data matrix
       switch (mult)
         {
         case 1:
-          dsdmult ('n', m, n, (CHM_SP) A, x, W + j * m);
+          dsdmult ('n', m, n, AS, x, W + j * m);
           break;
         default:
           alpha = 1;
@@ -313,7 +315,7 @@ irlb (void *A,                  // Input data matrix
           switch (mult)
             {
             case 1:
-              dsdmult ('t', m, n, (CHM_SP) A, W + j * m, F);
+              dsdmult ('t', m, n, AS, W + j * m, F);
               break;
             default:
               alpha = 1.0;
@@ -369,7 +371,7 @@ irlb (void *A,                  // Input data matrix
               switch (mult)
                 {
                 case 1:
-                  dsdmult ('n', m, n, (CHM_SP) A, x, W + (j + 1) * m);
+                  dsdmult ('n', m, n, AS, x, W + (j + 1) * m);
                   break;
                 default:
                   alpha = 1.0;
@@ -532,7 +534,7 @@ R_unload_irlba (DllInfo * dll)
 
 
 void
-dsdmult (char transpose, int m, int n, void *a, double *b, double *c)
+dsdmult (char transpose, int m, int n, void * a, double *b, double *c)
 {
   DL_FUNC sdmult = R_GetCCallable ("Matrix", "cholmod_sdmult");
   int t = transpose == 't' ? 1 : 0;
