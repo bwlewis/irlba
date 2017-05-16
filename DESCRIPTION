@@ -1,6 +1,6 @@
 Package: irlba
 Type: Package
-Title: Fast Truncated SVD, PCA and Symmetric Eigendecomposition for Large Dense
+Title: Fast Truncated Singular Value Decomposition and Principal Components Analysis for Large Dense
     and Sparse Matrices
 Version: 2.2.1
 Date: 2017-05-16
