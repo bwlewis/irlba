@@ -24,6 +24,20 @@ components, and some specialized partial eigenvalue decompositions.  I
 introduced Baglama and Reichel's irlba algorithm to the R world in a talk at
 the useR! conference in Dortmund way back in 2008.
 
+## References
+
+For your reading pleasure...
+
+- Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
+- Finding structure with randomness: Stochastic algorithms for constructing approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 2009.
+
+And, some interesting related recent work by Musco and colleagues:
+
+- Jin, Chi, et al. "Robust shift-and-invert preconditioning: Faster and more sample efficient algorithms for eigenvector computation." arXiv preprint arXiv:1510.08896 (2015).
+- Musco, Cameron, and Christopher Musco. "Randomized block krylov methods for stronger and faster approximate singular value decomposition." Advances in Neural Information Processing Systems. 2015.
+
+
+
 # What's new in version 2.2.1 (May, 2017)
 
 - IRLBA-based functions include stronger convergence criteria and a new argument called svtol for that. The new approach helps guarantee more accurate solutions for some difficult problems. The tradeoff is that the default behavior is a little slower than before because at least two Lanczos iterations are always run. The new convergence behavior can be disabled with svtol=Inf.
