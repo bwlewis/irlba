@@ -14,6 +14,8 @@ functions (see help on each for details and examples).
 Help documentation for each function includes extensive documentation and
 examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
+An overview web page is here: https://bwlewis.github.io/irlba/.
+
 ## What's new in Version 2.2.1?
 
 We include stronger convergence criteria and a new argument `svtol`
