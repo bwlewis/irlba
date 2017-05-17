@@ -101,8 +101,6 @@ products for very large problems with amazingly little code.
 * Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005. (http://www.math.uri.edu/~jbaglama/papers/paper14.pdf)
 * Finding structure with randomness: Stochastic algorithms for constructing approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 2009.
 
-
-
 ## Status
 <a href="https://travis-ci.org/bwlewis/irlba">
 <img src="https://travis-ci.org/bwlewis/irlba.svg?branch=master" alt="Travis CI status"></img>
@@ -112,4 +110,7 @@ products for very large problems with amazingly little code.
 </a>
 <a href="https://www.r-pkg.org/pkg/irlba">
   <img src="http://cranlogs.r-pkg.org/badges/irlba" />
+</a>
+<a href="https://cran.r-project.org/package=irlba">
+  <img src="https://www.r-pkg.org/badges/version/irlba" />
 </a>
