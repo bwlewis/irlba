@@ -161,6 +161,17 @@ for (FAST in c(FALSE, TRUE))
   {
     stop("Failed tprolate test fastpath=", FAST)
   }
+
+  # test for issue #7 and issue #14
+  mx <- matrix(sample(1:100, 100 * 100, replace=TRUE), nrow=100)
+  set.seed(1)
+  l <- irlba(mx, nv=30, center=colMeans(mx))
+  s <- svd(scale(mx, center=TRUE, scale=FALSE))
+  if (isTRUE(max(abs(l$d - s$d[1:30])) > 1e-3))
+  {
+    stop("Failed integer matrix test fastpath=", FAST)
+  }
+
 }
 
 # smallest=TRUE, m > n  (fastpath always FALSE in this case)
