@@ -106,10 +106,11 @@
 #'
 #' The function may generate the following warnings:
 #' \itemize{
-#'   \item{"did not converge--results might be invalid!; try increasing maxit or fastpath=FALSE" means that the algorithm didn't
+#'   \item{"did not converge--results might be invalid!; try increasing work or maxit"
+#'   means that the algorithm didn't
 #'   converge -- this is potentially a serious problem and the returned results may not be valid. \code{irlba}
 #'   reports a warning here instead of an error so that you can inspect whatever is returned. If this
-#'   happens, carefully heed the warning and inspect the result.}
+#'   happens, carefully heed the warning and inspect the result. You may also try setting \code{fastpath=FALSE}.}
 #'   \item{"You're computing a large percentage of total singular values, standard svd might work better!"
 #'     \code{irlba} is designed to efficiently compute a few of the largest singular values and associated
 #'      singular vectors of a matrix. The standard \code{svd} function will be more efficient for computing
@@ -249,6 +250,7 @@ function(A,                     # data matrix
     dv <- center
     deflate <- TRUE
   }
+  if("integer" == typeof(A)) A <- A + 0.0
   iscomplex <- is.complex(A)
   m <- nrow(A)
   n <- ncol(A)
@@ -377,7 +379,7 @@ function(A,                     # data matrix
       ans$u <- matrix(head(ans$u, m * nu), nrow=m, ncol=nu)
       ans$v <- matrix(head(ans$v, n * nv), nrow=n, ncol=nv)
       if (tol * ans$d[1] < eps) warning("convergence criterion below machine epsilon")
-      if (ans[[6]] == -2) warning("did not converge--results might be invlaid!; try increasing maxit or fastpath=FALSE")
+      if (ans[[6]] == -2) warning("did not converge--results might be invlaid!; try increasing work or maxit")
       return(ans[-6])
     }
     errors <- c("invalid dimensions",
