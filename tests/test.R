@@ -165,13 +165,27 @@ for (FAST in c(FALSE, TRUE))
   # test for issue #7 and issue #14
   mx <- matrix(sample(1:100, 100 * 100, replace=TRUE), nrow=100)
   set.seed(1)
-  l <- irlba(mx, nv=30, center=colMeans(mx))
+  l <- irlba(mx, nv=30, center=colMeans(mx), fastpath=FAST)
   s <- svd(scale(mx, center=TRUE, scale=FALSE))
   if (isTRUE(max(abs(l$d - s$d[1:30])) > 1e-3))
   {
     stop("Failed integer matrix test fastpath=", FAST)
   }
 
+  # test for https://github.com/bwlewis/irlba/issues/22
+  set.seed(1000)
+  ncells <- 50
+  ngenes <- 1000
+  counts <- matrix(as.double(rpois(ncells*ngenes, lambda=100)), nrow=ncells)
+  centers <- colMeans(counts)
+  set.seed(1)
+  out <- irlba(scale(counts, scale=FALSE, center=centers), nu=10, nv=10)
+  set.seed(1)
+  l <- irlba(counts, center=centers, nu=10, nv=10, fastpath=FAST)
+  if (isTRUE(max(abs(out$d - l$d)) > 1e-3))
+  {
+    stop("Failed centering test (n > m) fastpath=", FAST)
+  }
 }
 
 # smallest=TRUE, m > n  (fastpath always FALSE in this case)

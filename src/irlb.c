@@ -194,7 +194,7 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
  */
 int
 irlb (double *A,                // Input data matrix (double case)
-      void * AS,                // input data matrix (sparse case)
+      void *AS,                 // input data matrix (sparse case)
       int mult,                 // 0 -> use double *A, 1 -> use AS
       int m,                    // data matrix number of rows, must be > 3.
       int n,                    // data matrix number of columns, must be > 3.
@@ -325,9 +325,10 @@ irlb (double *A,                // Input data matrix (double case)
             }
           mprod++;
           R_CheckUserInterrupt ();
-/* optionally apply shift and scale */
+/* optionally apply shift, scale, center */
           if (shift)
             {
+              // Note, not a bug because shift only applies to square matrices
               for (kk = 0; kk < m; ++kk)
                 F[kk] = F[kk] + shift[0] * W[j * m + kk];
             }
@@ -335,6 +336,13 @@ irlb (double *A,                // Input data matrix (double case)
             {
               for (kk = 0; kk < n; ++kk)
                 F[kk] = F[kk] / scale[kk];
+            }
+          if (center)
+            {
+              beta = 0;
+              for (kk = 0; kk < m; ++kk) beta += W[j *m + kk];
+              for (kk = 0; kk < n; ++kk)
+                F[kk] = F[kk] - beta * center[kk]; // XXX XXX XXX
             }
           SS = -S;
           F77_NAME (daxpy) (&n, &SS, V + j * n, &inc, F, &inc);

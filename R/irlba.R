@@ -228,7 +228,7 @@ function(A,                     # data matrix
   dv <- mcall[["dv"]]
   ds <- mcall[["ds"]]
   deflate <- is.null(du) + is.null(ds) + is.null(dv)
-  if (smallest) fastpath <- FALSE
+  if (smallest) fastpath <- FALSE  # for now anyway
   if (deflate == 3)
   {
     deflate <- FALSE
@@ -536,9 +536,10 @@ function(A,                     # data matrix
         if (interchange) F <- t(drop(mult(A, drop(W[, j_w]))))
         else F <- t(drop(mult(drop(W[, j_w]), A)))
       }
-#     Optionally apply shift and scale
+#     Optionally apply shift, scale, deflate
       if (!is.null(shift)) F <- F + shift * W[, j_w]
       if (!is.null(scale)) F <- F / scale
+      if (deflate) F <- F - sum(W[, j_w]) * dv
       mprod <- mprod + 1
       F <- drop(F - S * V[, j])
 #     Orthogonalize
