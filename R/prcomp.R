@@ -13,6 +13,15 @@
 #'          scaled to have unit variance before the analysis takes place.
 #'          The default is \code{FALSE} for consistency with S, but scaling is often advisable.
 #'          Alternatively, a vector of length equal the number of columns of \code{x} can be supplied.
+#'
+#'          The value of \code{scale} determines how column scaling is performed
+#'          (after centering).  If \code{scale} is a numeric vector with length
+#'          equal to the number of columns of \code{x}, then each column of \code{x} is
+#'          divided by the corresponding value from \code{scale}.  If \code{scale} is
+#'          \code{TRUE} then scaling is done by dividing the (centered) columns of
+#'          \code{x} by their standard deviations if \code{center=TRUE}, and the
+#'          root mean square otherwise.  If \code{scale} is \code{FALSE}, no scaling is done.
+#'          See \code{\link{scale}} for more details.
 #' @param n integer number of principal component vectors to return, must be less than
 #' \code{min(dim(x))}.
 #' @param ... additional arguments passed to \code{\link{irlba}}.
@@ -77,7 +86,15 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
   } else args$center <- center
   if (is.logical(scale.))
   {
-    if (scale.) args$scale <- apply(x, 2, sd)
+    if (scale.)
+    {
+      if (is.numeric(args$center))
+      {
+        f <- function(i) sqrt(sum((x[, i] - center[i]) ^ 2) / (nrow(x) - 1L))
+        scale. <- vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE)
+      } else scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
+      args$scale <- scale.
+    }
   } else args$scale <- scale.
   if (!missing(...)) args <- c(args, list(...))
 

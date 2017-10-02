@@ -20,9 +20,18 @@ shifted to be zero centered. Alternately, a centering vector of length
 equal the number of columns of \code{x} can be supplied.}
 
 \item{scale.}{a logical value indicating whether the variables should be
-scaled to have unit variance before the analysis takes place.
-The default is \code{FALSE} for consistency with S, but scaling is often advisable.
-Alternatively, a vector of length equal the number of columns of \code{x} can be supplied.}
+         scaled to have unit variance before the analysis takes place.
+         The default is \code{FALSE} for consistency with S, but scaling is often advisable.
+         Alternatively, a vector of length equal the number of columns of \code{x} can be supplied.
+
+         The value of \code{scale} determines how column scaling is performed
+         (after centering).  If \code{scale} is a numeric vector with length
+         equal to the number of columns of \code{x}, then each column of \code{x} is
+         divided by the corresponding value from \code{scale}.  If \code{scale} is
+         \code{TRUE} then scaling is done by dividing the (centered) columns of
+         \code{x} by their standard deviations if \code{center=TRUE}, and the
+         root mean square otherwise.  If \code{scale} is \code{FALSE}, no scaling is done.
+         See \code{\link{scale}} for more details.}
 
 \item{...}{additional arguments passed to \code{\link{irlba}}.}
 }

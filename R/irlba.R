@@ -228,6 +228,9 @@ function(A,                     # data matrix
   dv <- mcall[["dv"]]
   ds <- mcall[["ds"]]
   deflate <- is.null(du) + is.null(ds) + is.null(dv)
+  if (is.logical(scale) && ! scale) scale <- NULL
+  if (is.logical(shift) && ! shift) shift <- NULL
+  if (is.logical(center) && ! center) center <- NULL
   if (smallest) fastpath <- FALSE  # for now anyway
   if (deflate == 3)
   {
@@ -242,6 +245,7 @@ function(A,                     # data matrix
   } else stop("all three du ds dv parameters must be specified for deflation")
   if (!is.null(center))
   {
+    if (is.logical(center) && center) center <- colMeans(A)
     if (deflate) stop("the center parameter can't be specified together with deflation parameters")
     if (length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
     if (fastpath && ! right_only) du <- NULL
@@ -357,7 +361,7 @@ function(A,                     # data matrix
     CENTER <- NULL
     if (!is.null(scale))
     {
-      if (length(scale) != ncol(A)) stop("scale length must mactch number of matrix columns")
+      if (length(scale) != ncol(A)) stop("scale length must match number of matrix columns")
       SCALE <- as.double(scale)
     }
     if (!is.null(shift))

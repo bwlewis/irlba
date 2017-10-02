@@ -115,15 +115,6 @@ for (FAST in c(FALSE, TRUE))
     stop("Failed reorthogonalization test", " fastpath=", FAST)
   }
 
-  # prcomp convenience function
-  x  <- matrix(rnorm(200), nrow=20)
-  p1 <- prcomp_irlba(x, n=3, fastpath=FAST)
-  p2 <- prcomp(x, tol=0.7)
-  if (!isTRUE(all.equal(p1$sdev[1:2], p2$sdev[1:2])))
-  {
-    stop("Failed prcomp test", " fastpath=", FAST)
-  }
-
   # very non-square dense matrices
   set.seed(1)
   A <- matrix(rnorm(2000), 20)
