@@ -101,7 +101,7 @@ svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL, return.Q=FALSE)
       Q <- qr.Q(qr(t(crossprod(Q, x) - tcrossprod(crossprod(Q, rep(1, nrow(x))), center))))
     }
   }
-  if(return.Q) Q1 <- Q
+  if (return.Q) Q1 <- Q
   if (is.null(center))
   {
     Q <- qr.Q(qr(x %*% Q))
@@ -117,6 +117,6 @@ svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL, return.Q=FALSE)
   s$d <- s$d[1:k]
   s$v <- s$v[, 1:k]
   s$mprod <- 2 * it + 1
-  if(return.Q) s$Q <- Q1
+  if (return.Q) s$Q <- Q1
   s
 }

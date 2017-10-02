@@ -42,15 +42,15 @@ pca <- prcomp(X, center=centered, scale.=scaled)
 sv <- svd(X)
 svir <- irlba(X, nv=M, nu=M)
 pcair <- prcomp_irlba(X, n=M, center=centered, scale.=scaled)
-Xpca <- predict(pca)[,1:M]
-Xsvl <- sv$u[,1:M] %*% diag(sv$d[1:M])
-Xsvr <- X %*% sv$v[,1:M]
+Xpca <- predict(pca)[, 1:M]
+Xsvl <- sv$u[, 1:M] %*% diag(sv$d[1:M])
+Xsvr <- X %*% sv$v[, 1:M]
 Xsvirl <- svir$u %*% diag(svir$d)
 Xsvirr <- X %*% svir$v
 Xpcair <- predict(pcair)
 Xpcair2 <- X %*% pcair$rotation
 
-if(! isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
+if (! isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
      isTRUE(all.equal_pca(Xpca, Xsvl)) &&
      isTRUE(all.equal_pca(Xsvirl, Xsvirr)) &&
      isTRUE(all.equal_pca(Xpca, Xsvirl)) &&
@@ -69,15 +69,15 @@ sv <- svd(Xrms)
 svir <- irlba(X, nv=M, nu=M, scale=rms)
 pcair <- prcomp_irlba(X, n=M, center=centered, scale.=scaled)
 
-Xpca <- predict(pca)[,1:M]
-Xsvl <- sv$u[,1:M] %*% diag(sv$d[1:M])
-Xsvr <- Xrms %*% sv$v[,1:M]
+Xpca <- predict(pca)[, 1:M]
+Xsvl <- sv$u[, 1:M] %*% diag(sv$d[1:M])
+Xsvr <- Xrms %*% sv$v[, 1:M]
 Xsvirl <- svir$u %*% diag(svir$d)
 Xsvirr <- Xrms %*% svir$v
 Xpcair <- predict(pcair)
 Xpcair2 <- Xrms %*% pcair$rotation
 
-if(!  isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
+if (!  isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
       isTRUE(all.equal_pca(Xpca, Xsvl)) &&
       isTRUE(all.equal_pca(Xsvirl, Xsvirr)) &&
       isTRUE(all.equal_pca(Xpca, Xsvirl)) &&

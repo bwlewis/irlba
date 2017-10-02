@@ -254,7 +254,7 @@ function(A,                     # data matrix
     dv <- center
     deflate <- TRUE
   }
-  if("integer" == typeof(A)) A <- A + 0.0
+  if ("integer" == typeof(A)) A <- A + 0.0
   iscomplex <- is.complex(A)
   m <- nrow(A)
   n <- ncol(A)
