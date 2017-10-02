@@ -30,7 +30,7 @@
 #'   \item{u:}{ k approximate left singular vectors}
 #'   \item{v:}{ k approximate right singular vectors}
 #'   \item{mprod:}{ total number of matrix products carried out}
-#'   \item{Q:}{ optional subspace matrix (when \code{return.Q=TRUE}}
+#'   \item{Q:}{ optional subspace matrix (when \code{return.Q=TRUE})}
 #' }
 #' @seealso \code{\link{irlba}}, \code{\link{svd}}
 #' @references
