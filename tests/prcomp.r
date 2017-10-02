@@ -10,45 +10,45 @@ if (!isTRUE(all.equal(p1$sdev[1:2], p2$sdev[1:2])))
 }
 
 # scaling bug identified in issue #21
-normalize_signs = function(X, Y) {
+normalize_signs <- function(X, Y) {
   for (i in 1:ncol(X)) {
     if (sign(X[1, i]) != sign(Y[1, i])) {
-      Y[, i] = -Y[, i]
+      Y[, i] <- -Y[, i]
     }
   }
   return(Y)
 }
 
-all.equal_pca = function(X, Y) {
-  Y = normalize_signs(X, Y)
+all.equal_pca <- function(X, Y) {
+  Y <- normalize_signs(X, Y)
   return(all.equal(X, Y, check.attributes=F, tolerance=1e-4))
 }
 
 set.seed(1)
-X = matrix(rnorm(2000), ncol=40)
-M = 5 # number of PCA components
-centers = colMeans(X)
-sds = apply(X, 2, sd)
-rms = apply(X, 2, function(x) sqrt(sum(x^2) / (length(x) - 1)))
-Xc = sweep(X, 2, centers, `-`)
-Xs = sweep(X, 2, sds, `/`)
-Xcs = sweep(Xc, 2, sds, `/`)
-Xrms = sweep(X, 2, rms, `/`)
+X <- matrix(rnorm(2000), ncol=40)
+M <- 5 # number of PCA components
+centers <- colMeans(X)
+sds <- apply(X, 2, sd)
+rms <- apply(X, 2, function(x) sqrt(sum(x^2) / (length(x) - 1)))
+Xc <- sweep(X, 2, centers, `-`)
+Xs <- sweep(X, 2, sds, `/`)
+Xcs <- sweep(Xc, 2, sds, `/`)
+Xrms <- sweep(X, 2, rms, `/`)
 
 # unscaled
-scaled=F
-centered=F
-pca = prcomp(X, center=centered, scale.=scaled)
-sv = svd(X)
-svir = irlba(X, nv=M, nu=M)
-pcair = prcomp_irlba(X, n=M, center=centered, scale.=scaled)
-Xpca = predict(pca)[,1:M]
-Xsvl = sv$u[,1:M] %*% diag(sv$d[1:M])
-Xsvr = X %*% sv$v[,1:M]
-Xsvirl = svir$u %*% diag(svir$d)
-Xsvirr = X %*% svir$v
-Xpcair = predict(pcair)
-Xpcair2 = X %*% pcair$rotation
+scaled <- FALSE
+centered <- FALSE
+pca <- prcomp(X, center=centered, scale.=scaled)
+sv <- svd(X)
+svir <- irlba(X, nv=M, nu=M)
+pcair <- prcomp_irlba(X, n=M, center=centered, scale.=scaled)
+Xpca <- predict(pca)[,1:M]
+Xsvl <- sv$u[,1:M] %*% diag(sv$d[1:M])
+Xsvr <- X %*% sv$v[,1:M]
+Xsvirl <- svir$u %*% diag(svir$d)
+Xsvirr <- X %*% svir$v
+Xpcair <- predict(pcair)
+Xpcair2 <- X %*% pcair$rotation
 
 if(! isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
      isTRUE(all.equal_pca(Xpca, Xsvl)) &&
@@ -62,20 +62,20 @@ if(! isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
 }
 
 # scaled, uncentered
-scaled=T
-centered=F
-pca = prcomp(X, center=centered, scale.=scaled)
-sv = svd(Xrms)
-svir = irlba(X, nv=M, nu=M, scale=rms)
-pcair = prcomp_irlba(X, n=M, center=centered, scale.=scaled)
+scaled <- TRUE
+centered <- FALSE
+pca <- prcomp(X, center=centered, scale.=scaled)
+sv <- svd(Xrms)
+svir <- irlba(X, nv=M, nu=M, scale=rms)
+pcair <- prcomp_irlba(X, n=M, center=centered, scale.=scaled)
 
-Xpca = predict(pca)[,1:M]
-Xsvl = sv$u[,1:M] %*% diag(sv$d[1:M])
-Xsvr = Xrms %*% sv$v[,1:M]
-Xsvirl = svir$u %*% diag(svir$d)
-Xsvirr = Xrms %*% svir$v
-Xpcair = predict(pcair)
-Xpcair2 = Xrms %*% pcair$rotation
+Xpca <- predict(pca)[,1:M]
+Xsvl <- sv$u[,1:M] %*% diag(sv$d[1:M])
+Xsvr <- Xrms %*% sv$v[,1:M]
+Xsvirl <- svir$u %*% diag(svir$d)
+Xsvirr <- Xrms %*% svir$v
+Xpcair <- predict(pcair)
+Xpcair2 <- Xrms %*% pcair$rotation
 
 if(!  isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
       isTRUE(all.equal_pca(Xpca, Xsvl)) &&
