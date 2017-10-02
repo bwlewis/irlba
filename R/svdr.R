@@ -22,13 +22,15 @@
 #'   Use for efficient principal components computation.
 #' @param Q optional initial random matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
 #' entries sampled from a normal random distribution.
+#' @param return.Q if \code{TRUE} return the \code{Q} matrix for restarting
 #' @return
 #' Returns a list with entries:
 #' \describe{
 #'   \item{d:}{ k approximate singular values}
 #'   \item{u:}{ k approximate left singular vectors}
 #'   \item{v:}{ k approximate right singular vectors}
-#'   \item{mprod:}{ The total number of matrix vector products carried out}
+#'   \item{mprod:}{ total number of matrix products carried out}
+#'   \item{Q:}{ optional subspace matrix (when \code{return.Q=TRUE}}
 #' }
 #' @seealso \code{\link{irlba}}, \code{\link{svd}}
 #' @references
@@ -82,7 +84,7 @@
 #'            row.names=c("IRLBA", "Randomized SVD"))
 #' }
 #' @export
-svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL)
+svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL, return.Q=FALSE)
 {
   n <- min(ncol(x), k + extra)
   if (isTRUE(center)) center <- colMeans(x)
@@ -99,6 +101,7 @@ svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL)
       Q <- qr.Q(qr(t(crossprod(Q, x) - tcrossprod(crossprod(Q, rep(1, nrow(x))), center))))
     }
   }
+  if(return.Q) Q1 <- Q
   if (is.null(center))
   {
     Q <- qr.Q(qr(x %*% Q))
@@ -114,5 +117,6 @@ svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL)
   s$d <- s$d[1:k]
   s$v <- s$v[, 1:k]
   s$mprod <- 2 * it + 1
+  if(return.Q) s$Q <- Q1
   s
 }
