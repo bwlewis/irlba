@@ -55,6 +55,10 @@
 #' argument \code{tol} is used, which is interpreted differently between
 #' the two functions.
 #'
+#' Because \code{prcomp_irlba} only computes a \strong{truncated} principal components
+#' decomposition (unlike \code{prcomp}), most summary functions can't fully match
+#' those of \code{prcomp}. See below for an example of this.
+#'
 #' @examples
 #' set.seed(1)
 #' x  <- matrix(rnorm(200), nrow=20)
@@ -64,6 +68,16 @@
 #' # Compare with
 #' p2 <- prcomp(x, tol=0.7)
 #' summary(p2)
+#'
+#' # Note that their fully summaries can't match because p1 does not know
+#' # all the singular values.
+#' summary(p1)
+#' summary(p2)
+#' # Instead, p1 only has data on the 1st three components. You can
+#' # see how that affects the summary by:
+#' p2$sdev <- p2$sdev[1:3]
+#' summary(p2)
+#'
 #'
 #' @seealso \code{\link{prcomp}}
 #' @import Matrix
