@@ -55,10 +55,6 @@
 #' argument \code{tol} is used, which is interpreted differently between
 #' the two functions.
 #'
-#' Because \code{prcomp_irlba} only computes a \strong{truncated} principal components
-#' decomposition (unlike \code{prcomp}), most summary functions can't fully match
-#' those of \code{prcomp}. See below for an example of this.
-#'
 #' @examples
 #' set.seed(1)
 #' x  <- matrix(rnorm(200), nrow=20)
