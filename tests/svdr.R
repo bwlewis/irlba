@@ -15,13 +15,13 @@ test <- function()
 
   loc <<- "svdr dense m > n"
   A <- matrix(rnorm(50 * 40), 50)
-  L <- svdr(A, 5, 10, extra=15)
+  L <- svdr(A, 5, extra=15)
   S <- svd(A, nu=5, nv=5)
   stopifnot(isTRUE(all.equal(L$d, S$d[1:5])))
 
   loc <<- "svdr dense m < n"
   A <- matrix(rnorm(50 * 40), 40)
-  L <- svdr(A, 5, 10, extra=15)
+  L <- svdr(A, 5, extra=15)
   S <- svd(A, nu=5, nv=5)
   stopifnot(isTRUE(all.equal(L$d, S$d[1:5])))
 

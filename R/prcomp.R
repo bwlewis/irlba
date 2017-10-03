@@ -81,7 +81,7 @@
 #'
 #' @seealso \code{\link{prcomp}}
 #' @import Matrix
-#' @importFrom stats rnorm prcomp sd
+#' @importFrom stats rnorm prcomp sd var
 #' @importFrom methods slotNames slot
 #' @export
 prcomp_irlba <- function(x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, ...)
@@ -111,6 +111,7 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
     }
   } else args$scale <- scale.
   if (!missing(...)) args <- c(args, list(...))
+  sigma <- sum(apply(Re(A), 2, var))
 
   s <- do.call(irlba, args=args)
   ans <- list(sdev=s$d / sqrt(max(1, nrow(x) - 1)), rotation=s$v)
