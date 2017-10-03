@@ -65,15 +65,6 @@
 #' p2 <- prcomp(x, tol=0.7)
 #' summary(p2)
 #'
-#' # Note that their fully summaries can't match because p1 does not know
-#' # all the singular values.
-#' summary(p1)
-#' summary(p2)
-#' # Instead, p1 only has data on the 1st three components. You can
-#' # see how that affects the summary by:
-#' p2$sdev <- p2$sdev[1:3]
-#' summary(p2)
-#'
 #'
 #' @seealso \code{\link{prcomp}}
 #' @import Matrix
@@ -123,6 +114,8 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
   ans
 }
 
+#' @describeIn prcomp_irlba Summary method for truncated pca objects computed by \code{prcomp_irlba}.
+#' @param object An object returned by \code{prcomp_irlba}.
 #' @export
 summary.irlba_prcomp <- function(object, ...)
 {
