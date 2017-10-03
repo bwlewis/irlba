@@ -2,12 +2,9 @@
 % Please edit documentation in R/prcomp.R
 \name{prcomp_irlba}
 \alias{prcomp_irlba}
-\alias{summary.irlba_prcomp}
 \title{Principal Components Analysis}
 \usage{
 prcomp_irlba(x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, ...)
-
-summary.irlba_prcomp(object, ...)
 }
 \arguments{
 \item{x}{a numeric or complex matrix (or data frame) which provides
@@ -37,8 +34,6 @@ equal the number of columns of \code{x} can be supplied.}
          See \code{\link{scale}} for more details.}
 
 \item{...}{additional arguments passed to \code{\link{irlba}}.}
-
-\item{object}{An object returned by \code{prcomp_irlba}.}
 }
 \value{
 A list with class "prcomp" containing the following components:
@@ -60,10 +55,6 @@ A list with class "prcomp" containing the following components:
 Efficient computation of a truncated principal components analysis of a given data matrix
 using an implicitly restarted Lanczos method from the \code{\link{irlba}} package.
 }
-\section{Functions}{
-\itemize{
-\item \code{summary.irlba_prcomp}: Summary method for truncated pca objects computed by \code{prcomp_irlba}.
-}}
 \note{
 The signs of the columns of the rotation matrix are arbitrary, and
 so may differ between different programs for PCA, and even between

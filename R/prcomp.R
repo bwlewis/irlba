@@ -114,8 +114,10 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
   ans
 }
 
-#' @describeIn prcomp_irlba Summary method for truncated pca objects computed by \code{prcomp_irlba}.
+#' Summary method for truncated pca objects computed by \code{prcomp_irlba}.
 #' @param object An object returned by \code{prcomp_irlba}.
+#' @param ... Optional arguments passed to \code{summary}.
+#' @method summary irlba_prcomp
 #' @export
 summary.irlba_prcomp <- function(object, ...)
 {
