@@ -139,7 +139,6 @@ summary.irlba_prcomp <- function(object, ...)
   k <- ncol(object$rotation)
   colnames(importance) <- c(colnames(object$rotation), rep("", length(vars) - k))
   object$importance <- importance
-  class(object) <- "summary.irlba_prcomp"
+  class(object) <- "summary.prcomp"
   object
 }
-
