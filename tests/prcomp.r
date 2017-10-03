@@ -9,6 +9,8 @@ if (!isTRUE(all.equal(p1$sdev[1:2], p2$sdev[1:2])))
   stop("Failed basic prcomp test")
 }
 
+s <- summary(p1)
+
 # scaling bug identified in issue #21
 normalize_signs <- function(X, Y) {
   for (i in 1:ncol(X)) {
