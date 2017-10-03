@@ -5,15 +5,18 @@
 \title{Find a few approximate largest singular values and corresponding
 singular vectors of a matrix.}
 \usage{
-svdr(x, k, it = 3, extra = 10, center = NULL, Q = NULL,
-  return.Q = FALSE)
+svdr(x, k, tol = 1e-05, it = 100L, extra = min(10L, dim(x) - k),
+  center = NULL, Q = NULL, return.Q = FALSE)
 }
 \arguments{
 \item{x}{numeric real- or complex-valued matrix or real-valued sparse matrix.}
 
 \item{k}{dimension of subspace to estimate (number of approximate singular values to compute).}
 
-\item{it}{fixed number of algorithm iterations, larger values improve accuracy.}
+\item{tol}{stop iteration when the largest absolute relative change in estimated singular
+values falls below the specified tolerance.}
+
+\item{it}{maximum number of algorithm iterations.}
 
 \item{extra}{number of extra vectors of dimension \code{ncol(x)}, larger values generally improve accuracy (with increased
 computational cost).}
@@ -26,7 +29,7 @@ Use for efficient principal components computation.}
 \item{Q}{optional initial random matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
 entries sampled from a normal random distribution.}
 
-\item{return.Q}{if \code{TRUE} return the \code{Q} matrix for restarting}
+\item{return.Q}{if \code{TRUE} return the \code{Q} matrix for restarting (see examples).}
 }
 \value{
 Returns a list with entries:

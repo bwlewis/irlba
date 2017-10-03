@@ -13,7 +13,9 @@
 #'
 #' @param x numeric real- or complex-valued matrix or real-valued sparse matrix.
 #' @param k dimension of subspace to estimate (number of approximate singular values to compute).
-#' @param it fixed number of algorithm iterations, larger values improve accuracy.
+#' @param tol stop iteration when the largest absolute relative change in estimated singular
+#'   values falls below the specified tolerance.
+#' @param it maximum number of algorithm iterations.
 #' @param extra number of extra vectors of dimension \code{ncol(x)}, larger values generally improve accuracy (with increased
 #' computational cost).
 #' @param center optional column centering vector whose values are implicitly subtracted from each
@@ -22,7 +24,7 @@
 #'   Use for efficient principal components computation.
 #' @param Q optional initial random matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
 #' entries sampled from a normal random distribution.
-#' @param return.Q if \code{TRUE} return the \code{Q} matrix for restarting
+#' @param return.Q if \code{TRUE} return the \code{Q} matrix for restarting (see examples).
 #' @return
 #' Returns a list with entries:
 #' \describe{
@@ -84,28 +86,34 @@
 #'            row.names=c("IRLBA", "Randomized SVD"))
 #' }
 #' @export
-svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL, return.Q=FALSE)
+svdr <- function(x, k, tol=1e-5, it=100L, extra=min(10L, dim(x) - k), center=NULL, Q=NULL, return.Q=FALSE)
 {
   n <- min(ncol(x), k + extra)
   if (isTRUE(center)) center <- colMeans(x)
   if (is.null(Q)) Q <-  matrix(rnorm(ncol(x) * n), ncol(x))
+  d <- rep(0, k)
   for (j in 1:it)
   {
     if (is.null(center))
     {
       Q <- qr.Q(qr(x %*% Q))
-      Q <- qr.Q(qr(t(crossprod(Q, x))))   # a.k.a. Q <- qr.Q(qr(t(x) %*% Q)), but avoiding t(x)
+      B <- crossprod(x, Q)
+      Q <- qr.Q(qr(B))
     } else
     {
       Q <- qr.Q(qr(x %*% Q - rep(1, nrow(x)) %*% crossprod(center, Q)))
-      Q <- qr.Q(qr(t(crossprod(Q, x) - tcrossprod(crossprod(Q, rep(1, nrow(x))), center))))
+      B <- crossprod(Q, x) - tcrossprod(crossprod(Q, rep(1, nrow(x))), center)
+      Q <- qr.Q(qr(t(B)))
     }
+    d1 <- svd(B, nu=0, nv=0)$d[1:k]
+    if(max(abs((d1 - d) / d)) < tol) break
+    d <- d1
   }
   if (return.Q) Q1 <- Q
   if (is.null(center))
   {
     Q <- qr.Q(qr(x %*% Q))
-    B <- t(Q) %*% x
+    B <- crossprod(Q, x)
   } else
   {
     Q <- qr.Q(qr(x %*% Q - rep(1, nrow(x)) %*% crossprod(center, Q)))
@@ -116,7 +124,7 @@ svdr <- function(x, k, it=3, extra=10, center=NULL, Q=NULL, return.Q=FALSE)
   s$u <- s$u[, 1:k]
   s$d <- s$d[1:k]
   s$v <- s$v[, 1:k]
-  s$mprod <- 2 * it + 1
+  s$mprod <- 2 * j + 1
   if (return.Q) s$Q <- Q1
   s
 }
