@@ -111,7 +111,6 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
     }
   } else args$scale <- scale.
   if (!missing(...)) args <- c(args, list(...))
-  sigma <- sum(apply(Re(A), 2, var))
 
   s <- do.call(irlba, args=args)
   ans <- list(sdev=s$d / sqrt(max(1, nrow(x) - 1)), rotation=s$v)
@@ -123,6 +122,24 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
     ans <- c(ans, list(x = sweep(s$u, 2, s$d, FUN=`*`)))
     colnames(ans$x) <- paste("PC", seq(1, ncol(ans$rotation)), sep="")
   }
-  class(ans) <- "prcomp"
+  ans$totalvar <- sum(apply(x, 2, var))
+  class(ans) <- c("irlba_prcomp", "prcomp")
   ans
 }
+
+#' @export
+summary.irlba_prcomp <- function(object, ...)
+{
+  chkDots(...)
+  vars <- object$sdev ^ 2
+  vars <- vars / object$totalvar
+  importance <- rbind("Standard deviation" = object$sdev,
+                      "Proportion of Variance" = round(vars, 5),
+                      "Cumulative Proportion" = round(cumsum(vars), 5))
+  k <- ncol(object$rotation)
+  colnames(importance) <- c(colnames(object$rotation), rep("", length(vars) - k))
+  object$importance <- importance
+  class(object) <- "summary.irlba_prcomp"
+  object
+}
+
