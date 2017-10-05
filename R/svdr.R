@@ -11,6 +11,9 @@
 #' the examples). In other problems, \code{irlba} may exhibit faster
 #' convergence.
 #'
+#' Also see an alternate implementation of this method by N. Benjamin Erichson
+#' in the https://cran.r-project.org/package=rsvd package.
+#'
 #' @param x numeric real- or complex-valued matrix or real-valued sparse matrix.
 #' @param k dimension of subspace to estimate (number of approximate singular values to compute).
 #' @param tol stop iteration when the largest absolute relative change in estimated singular

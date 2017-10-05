@@ -52,6 +52,10 @@ less work for problems with clustered large singular values (see
 the examples). In other problems, \code{irlba} may exhibit faster
 convergence.
 }
+\details{
+Also see an alternate implementation of this method by N. Benjamin Erichson
+in the https://cran.r-project.org/package=rsvd package.
+}
 \examples{
 set.seed(1)
 
