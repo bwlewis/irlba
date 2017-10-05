@@ -63,4 +63,3 @@ Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and
 \seealso{
 \code{\link{eigen}}, \code{\link{irlba}}
 }
-

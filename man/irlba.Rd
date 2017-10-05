@@ -184,24 +184,7 @@ cbind(P$v,
 
 # A custom matrix multiplication function that scales the columns of A
 # (cf the scale option). This function scales the columns of A to unit norm.
-# This approach is deprecated (see below for a bettwe way to do this).
 col_scale <- sqrt(apply(A, 2, crossprod))
-mult <- function(x, y)
-        {
-          # check if x is a  vector
-          if (is.vector(x))
-          {
-            return((x \%*\% y) / col_scale)
-          }
-          # else x is the matrix
-          x \%*\% (y / col_scale)
-        }
-irlba(A, 3, mult=mult)$d
-
-# Compare with:
-svd(sweep(A, 2, col_scale, FUN=`/`))$d[1:3]
-
-# Compare with the new recommended approach:
 setClass("scaled_matrix", contains="matrix", slots=c(scale="numeric"))
 setMethod("\%*\%", signature(x="scaled_matrix", y="numeric"),
    function(x ,y) x@.Data \%*\% (y / x@scale))
@@ -210,6 +193,10 @@ setMethod("\%*\%", signature(x="numeric", y="scaled_matrix"),
 a <- new("scaled_matrix", A, scale=col_scale)
 irlba(a, 3)$d
 
+# Compare with:
+svd(sweep(A, 2, col_scale, FUN=`/`))$d[1:3]
+
+
 }
 \references{
 Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
@@ -217,4 +204,3 @@ Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and
 \seealso{
 \code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}, \code{\link{svdr}}
 }
-

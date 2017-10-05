@@ -18,4 +18,4 @@ Imports:
     methods
 License: GPL-3
 BugReports: https://github.com/bwlewis/irlba/issues
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
