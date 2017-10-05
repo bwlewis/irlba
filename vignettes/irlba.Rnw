@@ -189,10 +189,15 @@ in the estimated singular values:
 
 \subsection{Convergence tolerance}
 
-IRLBA is an iterative method that estimates a few largest singular values
+IRLBA is an iterative method that estimates a few singular values
 and associated singular vectors. A sketch of the algorithm is outlined
-in Section \ref{sketch} below. The R {\tt tol} argument controls when the algorithm converges.
-Convergence occurs when
+in Section \ref{sketch} below. The R {\tt tol} and {\tt svtol} arguments control
+when the algorithm converges with {\tt tol} specifying
+subspace convergence, and {\tt svtol} specifying convergence of estimated
+singular values.
+
+Subspace convergence occurs when the algorithm iterations find
+estimated singular vectors that satisfy
 \[
 \|AV_k - US_k\| < \mbox{tol} \cdot \|A\|,
 \]
@@ -205,9 +210,22 @@ the algorithm stops when
 L <- irlba(A, k, tol)
 svd(A %*% L$v - L$u %*% diag(L$d))$d[1] < tol * L$d[1]
 \end{lstlisting}
-It's possible, but unlikely, to encounter problems that fail to converge before
+It's possible to encounter problems that fail to converge before
 the maximum number of algorithm iterations specified by the {\tt maxit}
 argument.
+
+When the largest singular values are clustered together it can be hard to
+detect subspace convergence. More recent versions of the IRLBA implementation
+include the {\tt svtol} argument that specifies a maximum for the relative
+change in each estimated singular value from one iteration to the next.
+
+The convergence tolerance values together help improve correct subspace
+detection in difficult settings when the singular values are clustered.
+But in the worst cases, block methods can perform better as shown in
+the documentation for the {\tt svdr} method.
+
+Also see the related {\tt rsvd} function by N. Benjamin Erichson,
+\href{https://cran.r-project.org/package=rsvd}{https://cran.r-project.org/package=rsvd}.
 
 
 \subsection{Differences with {\tt svd}}
@@ -260,20 +278,20 @@ are only unique up to sign!
 >      x  <- matrix(rnorm(200), nrow=20)
 >      p1 <- prcomp_irlba(x, n=3)
 >      summary(p1)
-Importance of components:
-                         PC1    PC2    PC3
-Standard deviation     1.541 1.2513 1.1916
-Proportion of Variance 0.443 0.2921 0.2649
-Cumulative Proportion  0.443 0.7351 1.0000
+Importance of components%s:
+                          PC1    PC2    PC3
+Standard deviation     1.5411 1.2513 1.1916
+Proportion of Variance 0.2806 0.1850 0.1678
+Cumulative Proportion  0.2806 0.4656 0.6334
 
 >      # Compare with
 >      p2 <- prcomp(x, tol=0.7)
 >      summary(p2)
 Importance of components:
-                         PC1    PC2    PC3
-Standard deviation     1.541 1.2513 1.1916
-Proportion of Variance 0.443 0.2921 0.2649
-Cumulative Proportion  0.443 0.7351 1.0000
+                          PC1    PC2    PC3
+Standard deviation     1.5411 1.2513 1.1916
+Proportion of Variance 0.2806 0.1850 0.1678
+Cumulative Proportion  0.2806 0.4656 0.6334
 \end{lstlisting}
 Alternatively, you can compute principal components directly using the
 singular value decomposition and the {\tt center} option:
@@ -289,10 +307,7 @@ singular value decomposition and the {\tt center} option:
              [,1]
 [1,] 1.652423e-12
 \end{lstlisting}
-The implementation of the {\tt center} function argument takes advantage of
-computational efficiencies in the IRLB algorithm that result in a modest
-savings of a few vector inner products per iteration compared to a naive
-implementation using a custom matrix vector product to center the matrix.
+
 
 \subsection{Truncated symmetric eigenvalue decomposition}
 
@@ -302,59 +317,43 @@ sparse real-valued matrix. The function is particularly well-suited to
 estimating the largest eigenvalues and corresponding eigenvectors of symmetric
 positive semi-definite matrices of the form $A^T A$.
 
+
+
 \subsection{User-Defined Matrix Multiplication}
 
-The {\tt irlba} function includes options for specifying a custom matrix
-multiplication function. Custom matrix multiplication functions can be used,
-for example, with the {\tt big.matrix} class from the {\tt bigmemory}/{\tt
-bigalgebra} packages, or to compute the partial SVD of matrix-free linear
-operators.
+The {\tt irlba} function only uses matrix vector products with the input data
+matrix to compute its solution. It's easy to use R's native object model to
+define custom matrix classes with user-defined matrix multiplication functions.
+Such functions can be used to support special matrix objects, out of core
+computation of large problems, or matrix-free operators.
 
-User-defined matrix operations may specified using the optional {\tt mult}
-parameter. If defined, it must be a function of two arguments that computes
-matrix vector products. Either argument can be a vector, and the {\tt mult}
-function must deal with that. The following example illustrates a simple
-custom matrix function that scales the columns of the matrix, and then
-compares it with other ways of doing the same thing.
+Here is a simple example that defines a matrix product that scales the
+columns of the matrix to have unit norm (cf the {\tt scale} option).
+
 \begin{lstlisting}
-> set.seed(1)
-> A <- matrix(runif(200), nrow=20)
-> col_scale <- 1:10
-> mult <- function(x,y)
-+         {
-+           # check if x is a plain vector
-+           if(is.vector(x))
-+           {
-+             return((x %*% y)/col_scale)
-+           }
-+           # else x is the matrix
-+           x %*% (y/col_scale)
-+         }
+> A <- matrix(runif(400), nrow=20)
+> col_scale <- sqrt(apply(A, 2, crossprod))
+> setClass("scaled_matrix", contains="matrix", slots=c(scale="numeric"))
+> setMethod("%*%", signature(x="scaled_matrix", y="numeric"),
++       function(x ,y) x@.Data %*% (y / x@scale))
+> setMethod("%*%", signature(x="numeric", y="scaled_matrix"),
++       function(x ,y) (x %*% y@.Data) / y@scale)
+> a <- new("scaled_matrix", A, scale=col_scale)
+> irlba(a, 3)$d
 
-> irlba(A, 3, mult=mult)$d
-[1] 3.1384503 0.9477628 0.4313855
+[1] 3.9298391 0.9565016 0.8266859
 
-> # Compare with:
-> irlba(A, 3, scale=col_scale)$d
-[1] 3.1384503 0.9477628 0.4313855
+# Compare with
+> svd(sweep(A, 2, col_scale, FUN=`/`))$d[1:3]
 
-> # Compare with:
-> svd(scale(A, scale=col_scale, center=FALSE))$d[1:3]
-[1] 3.1384503 0.9477628 0.4313855
+[1] 3.9298391 0.9565016 0.8266859
 \end{lstlisting}
-Alternatively, simply use R's operator overloading methods to define
-customized matrix vector products. This is the approach taken in
-the
-\\
-\href{https://bwlewis.github.io/1000_genomes_examples/PCA_whole_genome.html}{http://bwlewis.github.io/1000\_genomes\_examples/PCA\_whole\_genome.html}
-vignette to work with large out of core genomics data.
-I prefer the simple operator overloading approach and may consider
-retiring the {\tt mult} function argument in some future package version.
 
-NOTE! When a user-defined matrix multiplication function is used, either using
-the {\tt mult} argument or through operator overloading, the R reference IRLBA
-implementation is used instead of the faster C code path in newer package
-versions.
+See the following link for an example that uses large-scale out of core computation:
+\href{https://bwlewis.github.io/1000_genomes_examples/PCA_whole_genome.html}{http://bwlewis.github.io/1000\_genomes\_examples/PCA\_whole\_genome.html}
+
+NOTE! The reference R algorithm implementation is used whenever user-defined
+matrix multiplication is specified (instead of the faster C code path).
 
 
 \section{A Quick Summary of the IRLBA Method}\label{sketch}
