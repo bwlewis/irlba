@@ -278,7 +278,8 @@ function(A,                     # data matrix
   if (right_only)
   {
     w_dim <- 1
-    work <- min(min(m, n), work + 20) # typically need this to help convergence
+    # typically need to increase working dimensions to help convergence
+    if(! ("work" %in% names(as.list(match.call())))) work <- min(min(m, n), work + 20)
     fastpath <- FALSE
   }
   if (n > m && smallest)
