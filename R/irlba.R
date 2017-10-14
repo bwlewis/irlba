@@ -127,7 +127,7 @@
 #' R implementation.
 #'
 #' @references
-#' Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.
+#' Baglama, James, and Lothar Reichel. "Augmented implicitly restarted Lanczos bidiagonalization methods." SIAM Journal on Scientific Computing 27.1 (2005): 19-42.
 #'
 #' @examples
 #' set.seed(1)

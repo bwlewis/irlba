@@ -109,7 +109,7 @@ svdr <- function(x, k, tol=1e-5, it=100L, extra=min(10L, dim(x) - k), center=NUL
       Q <- qr.Q(qr(t(B)))
     }
     d1 <- svd(B, nu=0, nv=0)$d[1:k]
-    if(max(abs((d1 - d) / d)) < tol) break
+    if (max(abs((d1 - d) / d)) < tol) break
     d <- d1
   }
   if (return.Q) Q1 <- Q
