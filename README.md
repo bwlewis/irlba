@@ -16,29 +16,13 @@ examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
 An overview web page is here: https://bwlewis.github.io/irlba/.
 
-## What's new in Version 2.2.1?
+## What's new in Version 2.2.2?
 
-We include stronger convergence criteria and a new argument `svtol`
-for that. The new approach helps guarantee more accurate solutions for some
-difficult problems. The tradeoff is that the default behavior is a little
-slower than before because at least two Lanczos iterations are always run. The
-new convergence behavior can be disabled with `svtol=Inf`.
-
-The new package version includes a new function, svdr()--another state of the
-art truncated SVD method based on the randomized SVD algorithm of Gunnar
-Martinsson and others. Both irlba() and svdr() work well. Svdr uses a block
-method and may exhibit better convergence in problems where the largest
-singular values are clustered. See the documentation and examples in the
-package. (Block versions of irlba exists, but are not yet implemented by this R
-package--something coming in the future.)
-
-We re-introduced a solver for estimating the smallest singular values of a
-matrix and associated singular vector spaces. The solver is based on the
-oringial Harmonic Ritz vector augmentation method of Baglama and Reichel.
-Beware that this method is somewhat experimental and may fail to converge, or
-may converge poorly, to estimated singular values for very ill-conditioned
-matrices. Along with block methods for irlba, this is an active area of
-work--feel free to contribute!
+- Fixed an `irlba` bug associated with centering (PCA), see https://github.com/bwlewis/irlba/issues/21.
+- Fixed `irlba` scaling to conform to `scale`, see https://github.com/bwlewis/irlba/issues/22.
+- Improved `prcomp_irlba` from a suggestion by N. Benjamin Erichson, see https://github.com/bwlewis/irlba/issues/23.
+- Significanty changed/improved `svdr` convergence criterion.
+- Added a version of Shen and Huang's Sparse PCA/SVD L1-penalized matrix decomposition (`ssvd`).
 
 
 ## Deprecated features
@@ -100,8 +84,10 @@ products for very large problems with amazingly little code.
 
 ## References
 
-* Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005. (http://www.math.uri.edu/~jbaglama/papers/paper14.pdf)
-* Finding structure with randomness: Stochastic algorithms for constructing approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 2009.
+* Baglama, James, and Lothar Reichel. "Augmented implicitly restarted Lanczos bidiagonalization methods." SIAM Journal on Scientific Computing 27.1 (2005): 19-42.
+* Halko, Nathan, Per-Gunnar Martinsson, and Joel A. Tropp. "Finding structure with randomness: Stochastic algorithms for constructing approximate matrix decompositions." (2009).
+* Shen, Haipeng, and Jianhua Z. Huang. "Sparse principal component analysis via regularized low rank matrix approximation." Journal of multivariate analysis 99.6 (2008): 1015-1034.
+* Witten, Daniela M., Robert Tibshirani, and Trevor Hastie. "A penalized matrix decomposition, with applications to sparse principal components and canonical correlation analysis." Biostatistics 10.3 (2009): 515-534.
 
 ## Status
 <a href="https://travis-ci.org/bwlewis/irlba">
