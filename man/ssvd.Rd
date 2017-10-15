@@ -72,7 +72,7 @@ The algorithm in the rank 1 case finds vectors \eqn{u, w}{u, w} that minimize
 such that \eqn{\|u\| = 1}{||u|| = 1},
 and then sets \eqn{v = w / \|w\|}{v = w / || w ||} and
 \eqn{d = u^T x v}{d = u^T x v};
-see the referenced paper for details. The penalty \equn{\lambda}{lambda} is
+see the referenced paper for details. The penalty \eqn{\lambda}{lambda} is
 implicitly determined from the specified desired number of nonzero values \code{p}.
 Higher rank output is determined similarly
 but using a sequence of \eqn{\lambda}{lambda} values determined to maintain the desired number
@@ -98,6 +98,12 @@ Our \code{ssvd} implementation of the Shen-Huang method makes the following choi
       in the PCA case, via the singular value decomposition of \code{d}.}
 }
 
+What if you have no idea for values of the argument \code{p} (the desired sparsity)?
+The reference describes a cross-validation and an ad-hoc approach; neither of which are
+in the package yet. Both are prohibitively computationally expensive for matrices with a huge
+number of columns. A future version of this package will include a revised approach to
+automatically selecting a reasonable sparsity constraint.
+
 Compare with the similar but more general function \code{PMD} in the \code{PMA} package
 by Daniela M. Witten, Robert Tibshirani, Sam Gross, and Balasubramanian Narasimhan.
 The more general \code{PMD} method can compute low-rank regularized matrix decompositions with sparsity penalties
@@ -117,10 +123,10 @@ x <- u \%*\% t(v) + 0.001 * matrix(rnorm(200*300), ncol=300)
 s <- ssvd(x, p=50)
 table(actual=v[, 1] != 0, estimated=s$v[, 1] != 0)
 par(mfrow=c(2, 1))
-plot(u, cex=2, lwd=2, main="u (black circles), Estimated u (red discs)")
-points(s$u, pch=19, col=2)
-plot(v, cex=2, lwd=2, main="v (black circles), Estimated v (red discs)")
-points(s$v, pch=19, col=2)
+plot(u, cex=2, main="u (black circles), Estimated u (blue discs)")
+points(s$u, pch=19, col=4)
+plot(v, cex=2, main="v (black circles), Estimated v (blue discs)")
+points(s$v, pch=19, col=4)
 
 # Compare with PMD, regularizing only the v vector and choosing
 # the regularization constraint `sum(abs(s$v))` computed above by ssvd
@@ -129,12 +135,12 @@ if (requireNamespace("PMA", quietly = TRUE)) {
   p <- PMA::PMD(x, sumabsu=sqrt(nrow(x)), sumabsv=sum(abs(s$v)), center=FALSE)
   table(actual=v[, 1] != 0, estimated=p$v[, 1] != 0)
   # compare optimized values
-  c(s$d, p$d)
+  c(ssvd=s$d, PMD=p$d)
 
   # Same example, but computing a "sparse PCA":
   sp <- ssvd(x, p=50, center=TRUE)
   pp <- PMA::PMD(x, sumabsu=sqrt(nrow(x)), sumabsv=sum(abs(sp$v)), center=TRUE)
-  c(sp$d, pp$d)
+  c(ssvd=sp$d, PMD=pp$d)
 }
 
 
@@ -154,10 +160,10 @@ s <- ssvd(x, k=2, p=c(15, sum(v[, 2] != 0)))
 table(actual=v[, 1] != 0, estimated=s$v[, 1] != 0)
 table(actual=v[, 2] != 0, estimated=s$v[, 2] != 0)
 par(mfrow=c(2, 1))
-plot(v[, 1], cex=2, lwd=2, main="True v1 (black circles), Estimated v1 (red discs)")
-points(s$v[, 1], pch=19, col=2)
-plot(v[, 2], cex=2, lwd=2, main="True v2 (black circles), Estimated v2 (red discs)")
-points(s$v[, 2], pch=19, col=2)
+plot(v[, 1], cex=2, main="True v1 (black circles), Estimated v1 (blue discs)")
+points(s$v[, 1], pch=19, col=4)
+plot(v[, 2], cex=2, main="True v2 (black circles), Estimated v2 (blue discs)")
+points(s$v[, 2], pch=19, col=4)
 
 }
 \references{
