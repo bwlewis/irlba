@@ -137,12 +137,12 @@ if (requireNamespace("PMA", quietly = TRUE)) {
   p <- PMA::PMD(x, sumabsu=sqrt(nrow(x)), sumabsv=sum(abs(s$v)), center=FALSE)
   table(actual=v[, 1] != 0, estimated=p$v[, 1] != 0)
   # compare optimized values
-  c(ssvd=s$d, PMD=p$d)
+  print(c(ssvd=s$d, PMD=p$d))
 
   # Same example, but computing a "sparse PCA":
   sp <- ssvd(x, n=50, center=TRUE)
   pp <- PMA::PMD(x, sumabsu=sqrt(nrow(x)), sumabsv=sum(abs(sp$v)), center=TRUE)
-  c(ssvd=sp$d, PMD=pp$d)
+  print(c(ssvd=sp$d, PMD=pp$d))
 }
 
 
