@@ -6,8 +6,8 @@
 #' sPCA-rSVD algorithm of Haipeng Shen and Jianhua Huang.
 #' @param x A numeric real- or complex-valued matrix or real-valued sparse matrix.
 #' @param k Matrix rank of the computed decomposition (see the Details section below).
-#' @param p Number of nonzero components in the right singular vectors. If \code{k > 1},
-#'        then a single value of \code{p} specifies the number of nonzero components
+#' @param n Number of nonzero components in the right singular vectors. If \code{k > 1},
+#'        then a single value of \code{n} specifies the number of nonzero components
 #'        in each regularized right singular vector. Or, specify a vector of length
 #'        \code{k} indicating the number of desired nonzero components in each
 #'        returned vector. See the examples.
@@ -42,10 +42,10 @@
 #' and then sets \eqn{v = w / \|w\|}{v = w / || w ||} and
 #' \eqn{d = u^T x v}{d = u^T x v};
 #' see the referenced paper for details. The penalty \eqn{\lambda}{lambda} is
-#' implicitly determined from the specified desired number of nonzero values \code{p}.
+#' implicitly determined from the specified desired number of nonzero values \code{n}.
 #' Higher rank output is determined similarly
 #' but using a sequence of \eqn{\lambda}{lambda} values determined to maintain the desired number
-#' of nonzero elements in each column of \code{v} specified by \code{p}.
+#' of nonzero elements in each column of \code{v} specified by \code{n}.
 #' Unlike standard SVD or PCA, the columns of the returned \code{v} when \code{k > 1} may not be orthogonal.
 #'
 #' @return
@@ -57,11 +57,13 @@
 #'    \item{center, scale} {the centering and scaling used, if any}
 #'    \item{lambda} {the per-column regularization parameter found to obtain the desired sparsity}
 #'    \item{iter} {number of soft thresholding iterations}
+#'    \item{n} {value of input parameter \code{n}}
+#'    \item{alpha} {value of input parameter \code{alpha}}
 #' }
 #' @note
 #' Our \code{ssvd} implementation of the Shen-Huang method makes the following choices:
 #' \enumerate{
-#' \item{The Lasso l1 penalty is the only available penalty function.}
+#' \item{The l1 penalty is the only available penalty function. Other penalties may appear in the future.}
 #' \item{Given a desired number of nonzero elements in \code{v}, value(s) for the \eqn{\lambda}{lambda}
 #'       penalty are determined to achieve the sparsity goal subject to the parameter \code{alpha}.}
 #' \item{An experimental block implementation is used for results with rank greater than 1 (when \code{k > 1})
@@ -77,7 +79,7 @@
 #'       in the PCA case, via the singular value decomposition of \code{d}.}
 #' }
 #'
-#' What if you have no idea for values of the argument \code{p} (the desired sparsity)?
+#' What if you have no idea for values of the argument \code{n} (the desired sparsity)?
 #' The reference describes a cross-validation and an ad-hoc approach; neither of which are
 #' in the package yet. Both are prohibitively computationally expensive for matrices with a huge
 #' number of columns. A future version of this package will include a revised approach to
@@ -104,7 +106,7 @@
 #' u <- u / drop(sqrt(crossprod(u)))
 #' v <- v / drop(sqrt(crossprod(v)))
 #' x <- u %*% t(v) + 0.001 * matrix(rnorm(200*300), ncol=300)
-#' s <- ssvd(x, p=50)
+#' s <- ssvd(x, n=50)
 #' table(actual=v[, 1] != 0, estimated=s$v[, 1] != 0)
 #' par(mfrow=c(2, 1))
 #' plot(u, cex=2, main="u (black circles), Estimated u (blue discs)")
@@ -122,7 +124,7 @@
 #'   c(ssvd=s$d, PMD=p$d)
 #'
 #'   # Same example, but computing a "sparse PCA":
-#'   sp <- ssvd(x, p=50, center=TRUE)
+#'   sp <- ssvd(x, n=50, center=TRUE)
 #'   pp <- PMA::PMD(x, sumabsu=sqrt(nrow(x)), sumabsv=sum(abs(sp$v)), center=TRUE)
 #'   c(ssvd=sp$d, PMD=pp$d)
 #' }
@@ -138,7 +140,7 @@
 #' v[sample(300, 50), 2] <- runif(50, min=0.1)
 #' v <- qr.Q(qr(v))
 #' x <- u %*% (c(2, 1) * t(v)) + .01 * matrix(rnorm(200 * 300), 200)
-#' s <- ssvd(x, k=2, p=c(15, sum(v[, 2] != 0)))
+#' s <- ssvd(x, k=2, n=c(15, sum(v[, 2] != 0)))
 #'
 #' # Compare actual and estimated vectors:
 #' table(actual=v[, 1] != 0, estimated=s$v[, 1] != 0)
@@ -150,7 +152,7 @@
 #' points(s$v[, 2], pch=19, col=4)
 #'
 #' @export
-ssvd <- function(x, k=1, p=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, alpha=0, tsvd=NULL, ...)
+ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, alpha=0, tsvd=NULL, ...)
 {
   if (alpha < 0  || alpha >= 1) stop("0 <= alpha < 1")
   if (is.logical(center) && center) center <- colMeans(x)
@@ -165,13 +167,13 @@ ssvd <- function(x, k=1, p=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
       } else scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
     }
   }
-  if (all(p > nrow(x) - 1))
+  if (all(n > nrow(x) - 1))
   {
     warning("no sparsity constraints specified")
     return(irlba(x, k, ...))
   }
-  p <- ncol(x) - p
-  if (length(p) != k) p <- rep(p, length.out=k) # warn?
+  n <- ncol(x) - n
+  if (length(n) != k) n <- rep(n, length.out=k) # warn?
   s <- tsvd
   if (is.null(tsvd)) s <- irlba(x, k, scale=scale., center=center, ...)
   lambda <- c()
@@ -192,7 +194,7 @@ ssvd <- function(x, k=1, p=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
   while(delta_u > tol && iter < maxit)
   {
     u <- s$u
-    s$v <- soft(x, s$u, p)
+    s$v <- soft(x, s$u, n)
     if (is.numeric(scale.)) s$v <- s$v / scale.
     if (is.numeric(center)) s$u <- qr.Q(qr(x %*% s$v - drop(crossprod(center, s$v))))
     else s$u <- qr.Q(qr(x %*% s$v))
@@ -206,5 +208,5 @@ ssvd <- function(x, k=1, p=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
   d1 <- x %*% d
   if (is.numeric(center)) d1 <- d1 - drop(crossprod(center, d))
   d <- crossprod(s$u, d1)
-  list(u = s$u, v = s$v, d = d, iter = iter, lambda = lambda, center=center, scale=scale.)
+  list(u = s$u, v = s$v, d = d, iter = iter, lambda = lambda, center=center, scale=scale., n=n, alpha=alpha)
 }
