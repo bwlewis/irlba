@@ -167,7 +167,7 @@ ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
       } else scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
     }
   }
-  if (all(n > nrow(x) - 1))
+  if (all(n > ncol(x) - 1))
   {
     warning("no sparsity constraints specified")
     return(irlba(x, k, ...))
