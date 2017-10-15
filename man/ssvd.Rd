@@ -92,12 +92,14 @@ Our \code{ssvd} implementation of the Shen-Huang method makes the following choi
 \item{The choice of a penalty lambda associated with a given number of desired nonzero
       components is not unique. The \code{alpha} parameter, a scalar between zero and one,
       selects any possible value of lambda that produces the desired number of
-      nonzero entries.}
+      nonzero entries. The default \code{alpha = 0} selects a penalized solution with
+      largest corresponding value of \code{d} in the 1-d case. Think of \code{alpha} as
+      fine-tuning of the penalty.}
 \item{Our method returns an upper-triangular matrix \code{d} when \code{k > 1} so
       that \code{x \%*\% v == u \%*\% d}. Non-zero
       elements above the diagonal result from non-orthogonality of the \code{v} matrix,
       providing a simple interpretation of cumulative information, or explained variance
-      in the PCA case, via the singular value decomposition of \code{d}.}
+      in the PCA case, via the singular value decomposition of \code{d \%*\% t(v)}.}
 }
 
 What if you have no idea for values of the argument \code{n} (the desired sparsity)?
