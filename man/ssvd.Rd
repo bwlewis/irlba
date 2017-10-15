@@ -72,7 +72,7 @@ sparsity in the loading vectors by solving a penalized least squares problem.
 The algorithm in the rank 1 case finds vectors \eqn{u, w}{u, w} that minimize
 \deqn{\|x - u w^T\|_F^2 + \lambda \|w\|_1}{||x - u w^T||_F^2 + lambda||w||_1}
 such that \eqn{\|u\| = 1}{||u|| = 1},
-and then sets \eqn{v = w / \|w\|}{v = w / || w ||} and
+and then sets \eqn{v = w / \|w\|}{v = w / ||w||} and
 \eqn{d = u^T x v}{d = u^T x v};
 see the referenced paper for details. The penalty \eqn{\lambda}{lambda} is
 implicitly determined from the specified desired number of nonzero values \code{n}.
@@ -124,7 +124,7 @@ v <- v / drop(sqrt(crossprod(v)))
 x <- u \%*\% t(v) + 0.001 * matrix(rnorm(200*300), ncol=300)
 s <- ssvd(x, n=50)
 table(actual=v[, 1] != 0, estimated=s$v[, 1] != 0)
-par(mfrow=c(2, 1))
+oldpar <- par(mfrow=c(2, 1))
 plot(u, cex=2, main="u (black circles), Estimated u (blue discs)")
 points(s$u, pch=19, col=4)
 plot(v, cex=2, main="v (black circles), Estimated v (blue discs)")
@@ -132,14 +132,14 @@ points(s$v, pch=19, col=4)
 
 # Compare with PMD, regularizing only the v vector and choosing
 # the regularization constraint `sum(abs(s$v))` computed above by ssvd
-# (they find the same solution in this "sparse SVD" (not PCA) case):
+# (they find the about same solution in this "sparse SVD" case):
 if (requireNamespace("PMA", quietly = TRUE)) {
   p <- PMA::PMD(x, sumabsu=sqrt(nrow(x)), sumabsv=sum(abs(s$v)), center=FALSE)
   table(actual=v[, 1] != 0, estimated=p$v[, 1] != 0)
   # compare optimized values
   print(c(ssvd=s$d, PMD=p$d))
 
-  # Same example, but computing a "sparse PCA":
+  # Same example, but computing a "sparse PCA", again about the same results:
   sp <- ssvd(x, n=50, center=TRUE)
   pp <- PMA::PMD(x, sumabsu=sqrt(nrow(x)), sumabsv=sum(abs(sp$v)), center=TRUE)
   print(c(ssvd=sp$d, PMD=pp$d))
@@ -161,11 +161,11 @@ s <- ssvd(x, k=2, n=c(15, sum(v[, 2] != 0)))
 # Compare actual and estimated vectors:
 table(actual=v[, 1] != 0, estimated=s$v[, 1] != 0)
 table(actual=v[, 2] != 0, estimated=s$v[, 2] != 0)
-par(mfrow=c(2, 1))
 plot(v[, 1], cex=2, main="True v1 (black circles), Estimated v1 (blue discs)")
 points(s$v[, 1], pch=19, col=4)
 plot(v[, 2], cex=2, main="True v2 (black circles), Estimated v2 (blue discs)")
 points(s$v[, 2], pch=19, col=4)
+par(oldpar)
 
 }
 \references{
