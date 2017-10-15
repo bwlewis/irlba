@@ -12,8 +12,6 @@ Description: Fast and memory efficient methods for truncated singular value
     decomposition and principal components analysis of large sparse and dense matrices.
 Depends:
     Matrix
-Suggests:
-    PMA
 LinkingTo: Matrix
 Imports:
     stats,
