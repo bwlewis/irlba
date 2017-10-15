@@ -106,11 +106,12 @@ in the package yet. Both are prohibitively computationally expensive for matrice
 number of columns. A future version of this package will include a revised approach to
 automatically selecting a reasonable sparsity constraint.
 
-Compare with the similar but more general function \code{PMD} in the \code{PMA} package
+Compare with the similar but more general functions \code{SPC} and \code{PMD} in the \code{PMA} package
 by Daniela M. Witten, Robert Tibshirani, Sam Gross, and Balasubramanian Narasimhan.
-The more general \code{PMD} method can compute low-rank regularized matrix decompositions with sparsity penalties
+The \code{PMD} function can compute low-rank regularized matrix decompositions with sparsity penalties
 on both the \code{u} and \code{v} vectors. The \code{ssvd} function is
-similar to the PMD(*, L1) method. Although less general than \code{PMD},
+similar to the PMD(*, L1) method invocation of \code{PMD} or alternatively the \code{SPC} function.
+Although less general than \code{PMD},
 the \code{ssvd} function can be faster and more memory efficient for the problems
 that it can solve. See the examples below for more information.
 }
@@ -130,19 +131,19 @@ points(s$u, pch=19, col=4)
 plot(v, cex=2, main="v (black circles), Estimated v (blue discs)")
 points(s$v, pch=19, col=4)
 
-# Compare with PMD, regularizing only the v vector and choosing
+# Compare with SPC from the PMA package, regularizing only the v vector and choosing
 # the regularization constraint `sum(abs(s$v))` computed above by ssvd
 # (they find the about same solution in this "sparse SVD" case):
 if (requireNamespace("PMA", quietly = TRUE)) {
-  p <- PMA::PMD(x, sumabsu=sqrt(nrow(x)), sumabsv=sum(abs(s$v)), center=FALSE)
+  p <- PMA::SPC(x, sumabsv=sum(abs(s$v)), center=FALSE)
   table(actual=v[, 1] != 0, estimated=p$v[, 1] != 0)
   # compare optimized values
-  print(c(ssvd=s$d, PMD=p$d))
+  print(c(ssvd=s$d, SPC=p$d))
 
   # Same example, but computing a "sparse PCA", again about the same results:
   sp <- ssvd(x, n=50, center=TRUE)
-  pp <- PMA::PMD(x, sumabsu=sqrt(nrow(x)), sumabsv=sum(abs(sp$v)), center=TRUE)
-  print(c(ssvd=sp$d, PMD=pp$d))
+  pp <- PMA::SPC(x, sumabsv=sum(abs(sp$v)), center=TRUE)
+  print(c(ssvd=sp$d, SPC=pp$d))
 }
 
 
