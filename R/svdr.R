@@ -11,7 +11,7 @@
 #' the examples). In other problems, \code{irlba} may exhibit faster
 #' convergence.
 #'
-#' Also see an alternate implementation of this method by N. Benjamin Erichson
+#' Also see an alternate implementation (\code{rsvd}) of this method by N. Benjamin Erichson
 #' in the https://cran.r-project.org/package=rsvd package.
 #'
 #' @param x numeric real- or complex-valued matrix or real-valued sparse matrix.
@@ -37,7 +37,7 @@
 #'   \item{mprod:}{ total number of matrix products carried out}
 #'   \item{Q:}{ optional subspace matrix (when \code{return.Q=TRUE})}
 #' }
-#' @seealso \code{\link{irlba}}, \code{\link{svd}}
+#' @seealso \code{\link{irlba}}, \code{\link{svd}}, \code{rsvd} in the rsvd package
 #' @references
 #' Finding structure with randomness: Stochastic algorithms for constructing
 #' approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 2009.

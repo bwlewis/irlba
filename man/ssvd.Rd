@@ -151,15 +151,16 @@ if (requireNamespace("PMA", quietly = TRUE)) {
 
 # Let's consider a trivial rank-2 example (k=2) with noise. Like the
 # last example, we know the exact number of nonzero elements in each
-# solution vector of the noise-free matrix.
+# solution vector of the noise-free matrix. Note the application of
+# different sparsity constraints on each column of the estimated v.
 set.seed(1)
 u <- qr.Q(qr(matrix(rnorm(400), ncol=2)))
 v <- matrix(0, ncol=2, nrow=300)
 v[sample(300, 15), 1] <- runif(15, min=0.1)
 v[sample(300, 50), 2] <- runif(50, min=0.1)
 v <- qr.Q(qr(v))
-x <- u \%*\% (c(2, 1) * t(v)) + .01 * matrix(rnorm(200 * 300), 200)
-s <- ssvd(x, k=2, n=c(15, sum(v[, 2] != 0)))
+x <- u \%*\% (c(2, 1) * t(v)) + .001 * matrix(rnorm(200 * 300), 200)
+s <- ssvd(x, k=2, n=colSums(v != 0))
 
 # Compare actual and estimated vectors:
 table(actual=v[, 1] != 0, estimated=s$v[, 1] != 0)

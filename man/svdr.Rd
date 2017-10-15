@@ -53,7 +53,7 @@ the examples). In other problems, \code{irlba} may exhibit faster
 convergence.
 }
 \details{
-Also see an alternate implementation of this method by N. Benjamin Erichson
+Also see an alternate implementation (\code{rsvd}) of this method by N. Benjamin Erichson
 in the https://cran.r-project.org/package=rsvd package.
 }
 \examples{
@@ -109,5 +109,5 @@ Finding structure with randomness: Stochastic algorithms for constructing
 approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 2009.
 }
 \seealso{
-\code{\link{irlba}}, \code{\link{svd}}
+\code{\link{irlba}}, \code{\link{svd}}, \code{rsvd} in the rsvd package
 }
