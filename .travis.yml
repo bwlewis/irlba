@@ -1,6 +1,9 @@
 language: r
 sudo: false
 cache: packages
+env:
+  - _R_CHECK_FORCE_SUGGESTS_=FALSE
+
 r:
   - devel
   - release
