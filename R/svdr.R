@@ -17,7 +17,7 @@
 #' @param x numeric real- or complex-valued matrix or real-valued sparse matrix.
 #' @param k dimension of subspace to estimate (number of approximate singular values to compute).
 #' @param tol stop iteration when the largest absolute relative change in estimated singular
-#'   values falls below the specified tolerance.
+#'   values from one iteration to the next falls below this value.
 #' @param it maximum number of algorithm iterations.
 #' @param extra number of extra vectors of dimension \code{ncol(x)}, larger values generally improve accuracy (with increased
 #' computational cost).

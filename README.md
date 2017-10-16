@@ -8,6 +8,7 @@ functions (see help on each for details and examples).
 
 * `irlba()` partial SVD function
 * `svdr()` alternate partial SVD function based on randomized SVD
+* `svds()` l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang's algorithm)
 * `prcomp_irlba()`  principal components function similar to the `prcomp` function in stats package for computing the first few principal components of large matrices
 * `partial_eigen()` a very limited partial eigenvalue decomposition for symmetric matrices (see the [RSpectra](https://cran.r-project.org/package=RSpectra) package for more comprehensive truncated eigenvalue decomposition)
 
@@ -18,11 +19,11 @@ An overview web page is here: https://bwlewis.github.io/irlba/.
 
 ## What's new in Version 2.2.2?
 
-- Fixed an `irlba` bug associated with centering (PCA), see https://github.com/bwlewis/irlba/issues/21.
-- Fixed `irlba` scaling to conform to `scale`, see https://github.com/bwlewis/irlba/issues/22.
-- Improved `prcomp_irlba` from a suggestion by N. Benjamin Erichson, see https://github.com/bwlewis/irlba/issues/23.
-- Significanty changed/improved `svdr` convergence criterion.
-- Added a version of Shen and Huang's Sparse PCA/SVD L1-penalized matrix decomposition (`ssvd`).
+- Fixed an `irlba()` bug associated with centering (PCA), see https://github.com/bwlewis/irlba/issues/21.
+- Fixed `irlba()` scaling to conform to `scale`, see https://github.com/bwlewis/irlba/issues/22.
+- Improved `prcomp_irlba()` from a suggestion by N. Benjamin Erichson, see https://github.com/bwlewis/irlba/issues/23.
+- Significanty changed/improved `svdr()` convergence criterion.
+- Added a version of Shen and Huang's Sparse PCA/SVD L1-penalized matrix decomposition (`ssvd()`).
 
 
 ## Deprecated features

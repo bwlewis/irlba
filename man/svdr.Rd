@@ -14,7 +14,7 @@ svdr(x, k, tol = 1e-05, it = 100L, extra = min(10L, dim(x) - k),
 \item{k}{dimension of subspace to estimate (number of approximate singular values to compute).}
 
 \item{tol}{stop iteration when the largest absolute relative change in estimated singular
-values falls below the specified tolerance.}
+values from one iteration to the next falls below this value.}
 
 \item{it}{maximum number of algorithm iterations.}
 

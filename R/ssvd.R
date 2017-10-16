@@ -92,9 +92,14 @@
 #' The \code{PMD} function can compute low-rank regularized matrix decompositions with sparsity penalties
 #' on both the \code{u} and \code{v} vectors. The \code{ssvd} function is
 #' similar to the PMD(*, L1) method invocation of \code{PMD} or alternatively the \code{SPC} function.
-#' Although less general than \code{PMD},
-#' the \code{ssvd} function can be faster and more memory efficient for the problems
-#' that it can solve. See the examples below for more information.
+#' Although less general than \code{PMD}(*),
+#' the \code{ssvd} function can be faster and more memory efficient for the
+#' basic sparse PCA problem.
+#' See the examples below for more information.
+#'
+#' (* Note that the s4vd package by Martin Sill and Sebastian Kaiser, \url{https://cran.r-project.org/package=s4vd},
+#' includes a fast optimized version of a closely related algorithm by Shen, Huang, and Marron, that penalizes
+#' both \code{u} and \code{v}.)
 #'
 #' @references
 #' \itemize{
