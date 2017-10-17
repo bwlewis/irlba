@@ -301,7 +301,8 @@ print(rbind(svd=d[1:N] - s$d[1:N], irlba=d[1:N] - l$d, svds=d[1:N] - z$d))
 We see that in this example, each algorithm does a pretty OK job of estimating
 the top three singular values. We get a warning from irlba that we're computing
 a large percentage of them. Ironically and despite the warning, `irlba`'s
-estimates are slightly more accurate than `svd` in this example.
+estimates are slightly more accurate than `svd` in this example (your results
+may vary depending on BLAS library in use).
 
 The `bdiff` function below compares the squared 2-norm errors of singular vectors
 correcting for possible sign differences (singular vectors are only unique up

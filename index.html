@@ -133,17 +133,37 @@ h2,h3,h4,h5,h6{ font-size: 24pt; }
 <p>J. Baglama and L. Reichel, SIAM J. Sci. Comput. (2005). (<a href="http://www.math.uri.edu/~jbaglama/papers/paper14.pdf" class="uri">http://www.math.uri.edu/~jbaglama/papers/paper14.pdf</a>)</p>
 </blockquote>
 <p>It is a fast and memory-efficient way to compute a partial SVD, principal components, and some specialized partial eigenvalue decompositions. I introduced Baglama and Reichel’s irlba algorithm to the R world in a talk at the useR! conference in Dortmund way back in 2008.</p>
+<p>The package provides the following functions (see help on each for details and examples).</p>
+<ul>
+<li><code>irlba()</code> partial SVD function</li>
+<li><code>svdr()</code> alternate partial SVD function based on randomized SVD</li>
+<li><code>svds()</code> l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang’s algorithm)</li>
+<li><code>prcomp_irlba()</code> principal components function similar to the <code>prcomp</code> function in stats package for computing the first few principal components of large matrices</li>
+<li><code>partial_eigen()</code> a very limited partial eigenvalue decomposition for symmetric matrices (see the <a href="https://cran.r-project.org/package=RSpectra">RSpectra</a> package for more comprehensive truncated eigenvalue decomposition)</li>
+</ul>
 <div id="references" class="section level2">
 <h2>References</h2>
 <p>For your reading pleasure…</p>
 <ul>
-<li>Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and L. Reichel, SIAM J. Sci. Comput. 2005.</li>
-<li>Finding structure with randomness: Stochastic algorithms for constructing approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 2009.</li>
+<li>Baglama, James, and Lothar Reichel. “Augmented implicitly restarted Lanczos bidiagonalization methods.” SIAM Journal on Scientific Computing 27.1 (2005): 19-42.</li>
+<li>Halko, Nathan, Per-Gunnar Martinsson, and Joel A. Tropp. “Finding structure with randomness: Stochastic algorithms for constructing approximate matrix decompositions.” (2009).</li>
+<li>Shen, Haipeng, and Jianhua Z. Huang. “Sparse principal component analysis via regularized low rank matrix approximation.” Journal of multivariate analysis 99.6 (2008): 1015-1034.</li>
+<li>Witten, Daniela M., Robert Tibshirani, and Trevor Hastie. “A penalized matrix decomposition, with applications to sparse principal components and canonical correlation analysis.” Biostatistics 10.3 (2009): 515-534.</li>
 </ul>
 <p>And, some interesting related recent work by Musco and colleagues:</p>
 <ul>
 <li>Jin, Chi, et al. “Robust shift-and-invert preconditioning: Faster and more sample efficient algorithms for eigenvector computation.” arXiv preprint arXiv:1510.08896 (2015).</li>
 <li>Musco, Cameron, and Christopher Musco. “Randomized block krylov methods for stronger and faster approximate singular value decomposition.” Advances in Neural Information Processing Systems. 2015.</li>
+</ul>
+</div>
+<div id="whats-new-in-version-2.2.2-october-2017" class="section level1">
+<h1>What’s new in Version 2.2.2 (October, 2017)?</h1>
+<ul>
+<li>Fixed an <code>irlba()</code> bug associated with centering (PCA), see <a href="https://github.com/bwlewis/irlba/issues/21" class="uri">https://github.com/bwlewis/irlba/issues/21</a>.</li>
+<li>Fixed <code>irlba()</code> scaling to conform to <code>scale</code>, see <a href="https://github.com/bwlewis/irlba/issues/22" class="uri">https://github.com/bwlewis/irlba/issues/22</a>.</li>
+<li>Improved <code>prcomp_irlba()</code> from a suggestion by N. Benjamin Erichson, see <a href="https://github.com/bwlewis/irlba/issues/23" class="uri">https://github.com/bwlewis/irlba/issues/23</a>.</li>
+<li>Significanty changed/improved <code>svdr()</code> convergence criterion.</li>
+<li>Added a version of Shen and Huang’s Sparse PCA/SVD L1-penalized matrix decomposition (<code>ssvd()</code>).</li>
 </ul>
 </div>
 <div id="whats-new-in-version-2.2.1-may-2017" class="section level1">
@@ -206,6 +226,55 @@ svd(sweep(A, 2, col_scale, FUN=`/`))$d[1:3]
 <p>Many more applications will appear here soon, check back!</p>
 </div>
 </div>
+<div id="deprecated-features" class="section level1">
+<h1>Deprecated features</h1>
+<p>The <code>mult</code> argument is deprecated and will be removed in a future version. We now recommend simply defining a custom class with a custom multiplcation operator. The example below illustrates the old and new approaches.</p>
+<pre class="r"><code>library(irlba)</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre class="r"><code>set.seed(1)
+A &lt;- matrix(rnorm(100), 10)
+
+# ------------------ old way ----------------------------------------------
+# A custom matrix multiplication function that scales the columns of A
+# (cf the scale option). This function scales the columns of A to unit norm.
+col_scale &lt;- sqrt(apply(A, 2, crossprod))
+mult &lt;- function(x, y)
+        {
+          # check if x is a  vector
+          if (is.vector(x))
+          {
+            return((x %*% y) / col_scale)
+          }
+          # else x is the matrix
+          x %*% (y / col_scale)
+        }
+irlba(A, 3, mult=mult)$d</code></pre>
+<pre><code>## [1] 1.820227 1.622988 1.067185</code></pre>
+<pre class="r"><code>## [1] 1.820227 1.622988 1.067185
+
+# Compare with:
+irlba(A, 3, scale=col_scale)$d</code></pre>
+<pre><code>## [1] 1.820227 1.622988 1.067185</code></pre>
+<pre class="r"><code>## [1] 1.820227 1.622988 1.067185
+
+# Compare with:
+svd(sweep(A, 2, col_scale, FUN=`/`))$d[1:3]</code></pre>
+<pre><code>## [1] 1.820227 1.622988 1.067185</code></pre>
+<pre class="r"><code>## [1] 1.820227 1.622988 1.067185
+
+# ------------------ new way ----------------------------------------------
+setClass(&quot;scaled_matrix&quot;, contains=&quot;matrix&quot;, slots=c(scale=&quot;numeric&quot;))
+setMethod(&quot;%*%&quot;, signature(x=&quot;scaled_matrix&quot;, y=&quot;numeric&quot;), function(x ,y) x@.Data %*% (y / x@scale))</code></pre>
+<pre><code>## [1] &quot;%*%&quot;</code></pre>
+<pre class="r"><code>setMethod(&quot;%*%&quot;, signature(x=&quot;numeric&quot;, y=&quot;scaled_matrix&quot;), function(x ,y) (x %*% y@.Data) / y@scale)</code></pre>
+<pre><code>## [1] &quot;%*%&quot;</code></pre>
+<pre class="r"><code>a &lt;- new(&quot;scaled_matrix&quot;, A, scale=col_scale)
+
+irlba(a, 3)$d</code></pre>
+<pre><code>## [1] 1.820227 1.622988 1.067185</code></pre>
+<pre class="r"><code>## [1] 1.820227 1.622988 1.067185</code></pre>
+<p>We have learned that using R’s existing S4 system is simpler, easier, and more flexible than using custom arguments with idiosyncratic syntax and behavior. We’ve even used the new approach to implement distributed parallel matrix products for very large problems with amazingly little code.</p>
+</div>
 
 
 
@@ -230,7 +299,7 @@ $(document).ready(function () {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>

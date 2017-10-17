@@ -242,7 +242,7 @@ print(rbind(svd=d[1:N] - s$d[1:N], irlba=d[1:N] - l$d, svds=d[1:N] - z$d))</code
 ## svd   4.440892e-16 -2.220446e-16  2.220446e-16
 ## irlba 2.220446e-16  0.000000e+00  1.110223e-16
 ## svds  5.122569e-13 -4.714007e-13 -4.041212e-14</code></pre>
-<p>We see that in this example, each algorithm does a pretty OK job of estimating the top three singular values. We get a warning from irlba that we’re computing a large percentage of them. Ironically and despite the warning, <code>irlba</code>’s estimates are slightly more accurate than <code>svd</code> in this example.</p>
+<p>We see that in this example, each algorithm does a pretty OK job of estimating the top three singular values. We get a warning from irlba that we’re computing a large percentage of them. Ironically and despite the warning, <code>irlba</code>’s estimates are slightly more accurate than <code>svd</code> in this example (your results may vary depending on BLAS library in use).</p>
 <p>The <code>bdiff</code> function below compares the squared 2-norm errors of singular vectors correcting for possible sign differences (singular vectors are only unique up to sign). Despite the relative accurate estimation of singular values, <code>svds</code> exhibits a near complete loss of accuracy and seriously mis-estimates the singular vectors (even though the matrix is well-conditioned).</p>
 <pre class="r"><code>bdiff = function(x, y)
 {
