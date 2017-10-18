@@ -185,7 +185,7 @@ points(s$v[, 2], pch=19, col=4, cex=0.5)
 The `ssvd()` function can outperform `SPC()` for large dense and sparse
 problems, as shown in the following very simple rank 1 5,000 &times; 10,000
 dense real matrix example.  The example was run my home PC with an AMD
-A10-7850K quad-core 3700 MHz CPU and 16 GB of DDR3 Synchronous Unbuffered 1333
+A10-7850K quad-core 3700 MHz CPU and 16 GB of DDR3 synchronous, unbuffered 1333
 MHz RAM running Ubuntu 16.04 and R version 3.4.2 linked to OpenBLAS (using
 OpenMP) r0.3.0 (`OMP_NUM_CORES` variable unset, so using all four cores when
 possible).
