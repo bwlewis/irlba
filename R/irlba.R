@@ -320,7 +320,7 @@ function(A,                     # data matrix
 # Try to use the fast C-language code path
   if (deflate) fastpath <- fastpath && is.null(du)
 # Only matrix, dgCMatrix supported by fastpath
-  fastpath <- fastpath && ( ("Matrix" %in% attributes(class(A)) && ("dgCMatrix" %in% class(A))) || "matrix" %in% class(A))
+  fastpath <- fastpath && (("Matrix" %in% attributes(class(A)) && ("dgCMatrix" %in% class(A))) || "matrix" %in% class(A))
   if (fastpath && missingmult && !iscomplex && !right_only)
   {
     RESTART <- 0L

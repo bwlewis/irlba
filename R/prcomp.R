@@ -91,7 +91,7 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
     {
       if (is.numeric(args$center))
       {
-        f <- function(i) sqrt(sum( (x[, i] - center[i]) ^ 2) / (nrow(x) - 1L))
+        f <- function(i) sqrt(sum((x[, i] - center[i]) ^ 2) / (nrow(x) - 1L))
         scale. <- vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE)
       } else scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
       args$scale <- scale.

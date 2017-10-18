@@ -1,5 +1,5 @@
 #' Sparse regularized low-rank matrix approximation.
-#' 
+#'
 #' Estimate an \eqn{{\ell}1}{l1}-penalized
 #' singular value or principal components decomposition (SVD or PCA) that introduces sparsity in the
 #' right singular vectors based on the fast and memory-efficient
