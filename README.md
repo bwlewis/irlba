@@ -17,7 +17,7 @@ examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
 An overview web page is here: https://bwlewis.github.io/irlba/.
 
-## What's new in Version 2.2.2?
+## What's new in Version 2.3.0?
 
 - Fixed an `irlba()` bug associated with centering (PCA), see https://github.com/bwlewis/irlba/issues/21.
 - Fixed `irlba()` scaling to conform to `scale`, see https://github.com/bwlewis/irlba/issues/22.
