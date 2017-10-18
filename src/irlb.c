@@ -446,6 +446,7 @@ irlb (double *A,                // Input data matrix (double case)
         R_F = 0;
 
       Smax = 0;
+      memset (svratio, 0, work * sizeof(double));
       for (jj = 0; jj < j; ++jj)
         {
           if (BS[jj] > Smax)
