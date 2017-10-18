@@ -75,7 +75,7 @@ convtests (int Bsz, int n, double tol, double svtol, double Smax,
            double *svratio, double *residuals, int *k, int *converged, double S)
 {
   int j, Len_res = 0;
-  for (j = 0; j < Bsz; ++j)
+  for (j = 0; j < Bsz; j++)
     {
       if ((fabs (residuals[j]) < tol * Smax) && (svratio[j] < svtol))
         Len_res++;
