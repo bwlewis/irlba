@@ -49,13 +49,14 @@ And, some interesting related recent work by Musco and colleagues:
 
 
 
-# What's new in Version 2.3.0 (October, 2017)?
+# What's new in Version 2.3.1 (October, 2017)?
 
 - Fixed an `irlba()` bug associated with centering (PCA), see https://github.com/bwlewis/irlba/issues/21.
 - Fixed `irlba()` scaling to conform to `scale`, see https://github.com/bwlewis/irlba/issues/22.
 - Improved `prcomp_irlba()` from a suggestion by N. Benjamin Erichson, see https://github.com/bwlewis/irlba/issues/23.
 - Significanty changed/improved `svdr()` convergence criterion.
 - Added a version of Shen and Huang's Sparse PCA/SVD L1-penalized matrix decomposition (`ssvd()`).
+- Fixed many valgrind errors inadvertently introduced in the C code a while ago.
 
 
 # What's new in version 2.2.1 (May, 2017)
