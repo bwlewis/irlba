@@ -111,7 +111,7 @@ and `v`.)
 
 ## Examples
 
-```{r, fig.height=12}
+```{r, fig.height=10}
 library(irlba)
 set.seed(1)
 u <- matrix(rnorm(200), ncol=1)
@@ -160,7 +160,7 @@ example, we know the exact number of nonzero elements in each solution vector
 of the noise-free matrix. Note the application of different sparsity
 constraints on each column of the estimated `v`.
 
-```{r, fig.height=12}
+```{r, fig.height=5}
 set.seed(1)
 u <- qr.Q(qr(matrix(rnorm(400), ncol=2)))
 v <- matrix(0, ncol=2, nrow=300)
@@ -177,5 +177,48 @@ plot(v[, 1], main="True v1 (black circles), Estimated v1 (blue discs)")
 points(s$v[, 1], pch=19, col=4, cex=0.5)
 plot(v[, 2], main="True v2 (black circles), Estimated v2 (blue discs)")
 points(s$v[, 2], pch=19, col=4, cex=0.5)
-par(oldpar)
 ```
+
+
+## Performance
+
+The `ssvd()` function can outperform `SPC()` for large dense and sparse
+problems, as shown in the following very simple rank 1 5,000 &times; 10,000
+dense real matrix example.  The example was run my home PC with an AMD
+A10-7850K quad-core 3700 MHz CPU and 16 GB of DDR3 Synchronous Unbuffered 1333
+MHz RAM running Ubuntu 16.04 and R version 3.4.2 linked to OpenBLAS (using
+OpenMP) r0.3.0 (`OMP_NUM_CORES` variable unset, so using all four cores when
+possible).
+
+The methods obtain about the same solution...
+```{r, eval=FALSE}
+library(irlba)
+set.seed(1)
+u <- matrix(rnorm(5000), ncol=1)
+v <- matrix(c(runif(50, min=0.1), rep(0,9950)), ncol=1)
+u <- u / drop(sqrt(crossprod(u)))
+v <- v / drop(sqrt(crossprod(v)))
+x <- u %*% t(v) + 0.001 * matrix(rnorm(5000 * 10000), ncol=10000)
+t1 <- system.time(s <- ssvd(x, n=50))
+
+suppressMessages(library(PMA))
+t2 <- system.time(p <- SPC(x, sumabsv=sum(abs(s$v)), center=FALSE, trace=FALSE))
+
+print(drop(sqrt(crossprod(s$v - p$v))))
+```
+```
+[1] 2.99928e-07
+```
+
+but with substantially different performance...
+```{r, eval=FALSE}
+print(rbind(ssvd=t1, SPC=t2)[, 1:3])
+```
+```
+     user.self sys.self elapsed
+ssvd     3.884    0.004   1.223
+SPC   1164.848   19.464 311.410
+```
+
+Again, `SPC()` and especially the `PMD()` function are more flexible and
+general than `ssvd()`, but `ssvd()` might be better for large-scale problems.
