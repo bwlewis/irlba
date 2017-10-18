@@ -77,8 +77,9 @@ flexible than using custom arguments with idiosyncratic syntax and behavior.
 We've even used the new approach to implement distributed parallel matrix
 products for very large problems with amazingly little code.
 
-## Wishlist
+## Wishlist / help wanted...
 
+- Help fixing valgrind report errors
 - Optional block implementation for some use cases
 - More Matrix classes supported in the fast code path
 - Help improving the solver for smallest singular values in tricky cases (basically, for ill-conditioned problems)
