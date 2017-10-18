@@ -225,7 +225,7 @@ function(A,                     # data matrix
   } else if (deflate == 0)
   {
     deflate <- TRUE
-    warning("The deflation options are deprecated and have been removed as formal arugments. Please modify your code to not use them.")
+    warning("The deflation options have been deprecated. Please modify your code to not use them.")
     if (length(ds) > 1) stop("deflation limited to one dimension")
     if (!is.null(dim(du))) du <- du[, 1]
     if (!is.null(dim(dv))) dv <- dv[, 1]
@@ -279,7 +279,7 @@ function(A,                     # data matrix
   {
     w_dim <- 1
     # typically need to increase working dimensions to help convergence
-    if(! ("work" %in% names(as.list(match.call())))) work <- min(min(m, n), work + 20)
+    if (! ("work" %in% names(as.list(match.call())))) work <- min(min(m, n), work + 20)
     fastpath <- FALSE
   }
   if (n > m && smallest)
@@ -320,7 +320,7 @@ function(A,                     # data matrix
 # Try to use the fast C-language code path
   if (deflate) fastpath <- fastpath && is.null(du)
 # Only matrix, dgCMatrix supported by fastpath
-  fastpath <- fastpath && (("Matrix" %in% attributes(class(A)) && ("dgCMatrix" %in% class(A))) || "matrix" %in% class(A))
+  fastpath <- fastpath && ( ("Matrix" %in% attributes(class(A)) && ("dgCMatrix" %in% class(A))) || "matrix" %in% class(A))
   if (fastpath && missingmult && !iscomplex && !right_only)
   {
     RESTART <- 0L
@@ -328,7 +328,8 @@ function(A,                     # data matrix
     if (is.null(v))
     {
       v <- rnorm(n)
-      if (verbose) message("Initializing starting vector v with samples from standard normal distribution.\nUse `set.seed` first for reproducibility.")
+      if (verbose) message("Initializing starting vector v with samples from standard normal distribution.
+Use `set.seed` first for reproducibility.")
     } else if (is.list(v))  # restarted case
     {
       if (is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")

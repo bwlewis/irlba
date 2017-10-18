@@ -170,8 +170,8 @@ ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
     if (scale.)
     {
       if (is.numeric(center))
-      { 
-        f <- function(i) sqrt(sum((x[, i] - center[i]) ^ 2) / (nrow(x) - 1L))
+      {
+        f <- function(i) sqrt(sum( (x[, i] - center[i]) ^ 2) / (nrow(x) - 1L))
         scale. <- vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE)
       } else scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
     }
@@ -200,7 +200,7 @@ ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
   s$v <- s$d * s$v
   iter <- 1
   delta_u <- Inf
-  while(delta_u > tol && iter < maxit)
+  while (delta_u > tol && iter < maxit)
   {
     u <- s$u
     s$v <- soft(x, s$u, n)
@@ -210,7 +210,8 @@ ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
     delta_u <- sqrt(sum(apply(u - s$u, 2, crossprod)))
     iter <- iter + 1
   }
-  if (iter >= maxit) warning("Maximum number of iterations reached before convergence: solution may not be optimal. Consider increasing 'maxit'.")
+  if (iter >= maxit)
+    warning("Maximum number of iterations reached before convergence: solution may not be optimal. Consider increasing 'maxit'.")
   s$v <- s$v %*% diag(1 / sqrt(apply(s$v, 2, crossprod)), ncol(s$v), ncol(s$v))
   d <- s$v
   if (is.numeric(scale.)) d <- d / scale.
