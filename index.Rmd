@@ -49,7 +49,7 @@ And, some interesting related recent work by Musco and colleagues:
 
 
 
-# What's new in Version 2.2.2 (October, 2017)?
+# What's new in Version 2.3.0 (October, 2017)?
 
 - Fixed an `irlba()` bug associated with centering (PCA), see https://github.com/bwlewis/irlba/issues/21.
 - Fixed `irlba()` scaling to conform to `scale`, see https://github.com/bwlewis/irlba/issues/22.
