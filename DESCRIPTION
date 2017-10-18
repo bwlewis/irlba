@@ -3,7 +3,7 @@ Type: Package
 Title: Fast Truncated Singular Value Decomposition and Principal Components Analysis for Large Dense
     and Sparse Matrices
 Version: 2.3.1
-Date: 2017-10-13
+Date: 2017-10-18
 Authors@R: c(
     person("Jim", "Baglama", rol=c("aut", "cph"), email="jbaglama@uri.edu"),
     person("Lothar", "Reichel", role=c("aut", "cph"), email="reichel@math.kent.edu"),
