@@ -79,7 +79,6 @@ products for very large problems with amazingly little code.
 
 ## Wishlist / help wanted...
 
-- Help fixing valgrind report errors
 - Optional block implementation for some use cases
 - More Matrix classes supported in the fast code path
 - Help improving the solver for smallest singular values in tricky cases (basically, for ill-conditioned problems)
