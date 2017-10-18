@@ -62,13 +62,13 @@ A list containing the following components:
 \description{
 Estimate an \eqn{{\ell}1}{l1}-penalized
 singular value or principal components decomposition (SVD or PCA) that introduces sparsity in the
-regularized right singular vectors (the PCA loading vectors), based on the fast and memory-efficient
+right singular vectors based on the fast and memory-efficient
 sPCA-rSVD algorithm of Haipeng Shen and Jianhua Huang.
 }
 \details{
 The \code{ssvd} function implements a version of an algorithm by
 Shen and Huang that computes a penalized SVD or PCA that introduces
-sparsity in the loading vectors by solving a penalized least squares problem.
+sparsity in the right singular vectors by solving a penalized least squares problem.
 The algorithm in the rank 1 case finds vectors \eqn{u, w}{u, w} that minimize
 \deqn{\|x - u w^T\|_F^2 + \lambda \|w\|_1}{||x - u w^T||_F^2 + lambda||w||_1}
 such that \eqn{\|u\| = 1}{||u|| = 1},

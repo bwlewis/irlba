@@ -34,7 +34,7 @@ test <- function()
   # Convergence
   loc <<- "convergence"
   A <- S$u %*% (c(1e-5, rep(1e-9, 9)) * t(S$v))
-  for (tol in 10 ^ - (7:12))
+  for (tol in 10 ^ - (7:11))
   {
     L <- irlba(A, 3, tol=tol, svtol=Inf)
     converged <- svd(A %*% L$v - L$u  %*% diag(L$d))$d[1] < tol * L$d[1]
