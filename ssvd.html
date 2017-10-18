@@ -165,7 +165,7 @@ $(document).ready(function () {
 <li>Given a desired number of nonzero elements in <code>v</code>, value(s) for the λ penalty are determined to achieve the sparsity goal subject to the parameter <code>alpha</code>.</li>
 <li>An experimental block implementation is used for results with rank greater than 1 (when <code>k &gt; 1</code>) instead of the deflation method described in the reference.</li>
 <li>The choice of a penalty lambda associated with a given number of desired nonzero components is not unique. The <code>alpha</code> parameter, a scalar between zero and one, selects any possible value of lambda that produces the desired number of nonzero entries. The default <code>alpha = 0</code> selects a penalized solution with largest corresponding value of <code>d</code> in the 1-d case. Think of <code>alpha</code> as fine-tuning of the penalty.</li>
-<li>Our method returns an upper-triangular matrix <code>d</code> when <code>k &gt; 1</code> so that <code>x \%*\% v == u \%*\% d</code>. Non-zero elements above the diagonal result from non-orthogonality of the <code>v</code> matrix, providing a simple interpretation of cumulative information, or explained variance in the PCA case, via the singular value decomposition of <code>d %*% t(v)</code>.</li>
+<li>Our method returns an upper-triangular matrix <code>d</code> when <code>k &gt; 1</code> so that <code>x %*% v == u %*% d</code>. Non-zero elements above the diagonal result from non-orthogonality of the <code>v</code> matrix, providing a simple interpretation of cumulative information, or explained variance in the PCA case, via the singular value decomposition of <code>d %*% t(v)</code>.</li>
 </ul>
 <p>What if you have no idea of values of the desired sparsity argument <code>n</code>? The papers[1,2] referenced below describe cross-validation and an ad-hoc approaches; neither of which are in the package yet. Both may be prohibitively computationally expensive for matrices with a huge number of columns. A future version of this package will include a revised approach to automatically selecting a reasonable sparsity constraint.</p>
 <p>Compare with the similar but much more general functions <code>SPC()</code> and <code>PMD()</code> in the PMA package by Daniela M. Witten, Robert Tibshirani, Sam Gross, and Balasubramanian Narasimhan. The <code>PMD</code> function can compute low-rank regularized matrix decompositions with sparsity penalties on both the <code>u</code> and <code>v</code> vectors. The <code>ssvd</code> function is similar to the PMD(*, L1) method invocation of <code>PMD()</code> or alternatively the <code>SPC()</code> function. Although less general than <code>PMD()</code> the <code>ssvd()</code> function can be faster and more memory efficient for the basic sparse PCA problem. See the examples below for some simple comparisons.</p>
@@ -180,9 +180,8 @@ $(document).ready(function () {
 </div>
 <div id="examples" class="section level2">
 <h2>Examples</h2>
-<pre class="r"><code>library(irlba)</code></pre>
-<pre><code>## Loading required package: Matrix</code></pre>
-<pre class="r"><code>set.seed(1)
+<pre class="r"><code>suppressMessages(library(irlba))
+set.seed(1)
 u &lt;- matrix(rnorm(200), ncol=1)
 v &lt;- matrix(c(runif(50, min=0.1), rep(0,250)), ncol=1)
 u &lt;- u / drop(sqrt(crossprod(u)))

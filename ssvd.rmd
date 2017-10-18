@@ -78,7 +78,7 @@ Our implementation of the Shen-Huang method makes the following choices:
       largest corresponding value of `d` in the 1-d case. Think of `alpha` as
       fine-tuning of the penalty.
 - Our method returns an upper-triangular matrix `d` when `k > 1` so
-      that `x \%*\% v == u \%*\% d`. Non-zero
+      that `x %*% v == u %*% d`. Non-zero
       elements above the diagonal result from non-orthogonality of the `v` matrix,
       providing a simple interpretation of cumulative information, or explained variance
       in the PCA case, via the singular value decomposition of `d %*% t(v)`.
@@ -112,7 +112,7 @@ and `v`.)
 ## Examples
 
 ```{r, fig.height=10}
-library(irlba)
+suppressMessages(library(irlba))
 set.seed(1)
 u <- matrix(rnorm(200), ncol=1)
 v <- matrix(c(runif(50, min=0.1), rep(0,250)), ncol=1)
