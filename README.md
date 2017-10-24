@@ -29,6 +29,10 @@ An overview web page is here: https://bwlewis.github.io/irlba/.
 
 ## Deprecated features
 
+I will remove `partial_eigen()` in a future version. As its documentation
+states, users are better off using the RSpectra package for eigenvalue
+computations (although not generally for singular value computations).
+
 The `mult` argument is deprecated and will be removed in a future version. We
 now recommend simply defining a custom class with a custom multiplcation
 operator.  The example below illustrates the old and new approaches.

@@ -56,7 +56,10 @@ RNORM (int n)
       error ("invalid call");
     }
   for (int i = 0; i < length (cmdexpr); i++)
-    ans = eval (VECTOR_ELT (cmdexpr, i), R_GlobalEnv);
+    {
+      ans = PROTECT (eval (VECTOR_ELT (cmdexpr, i), R_GlobalEnv));
+      UNPROTECT (1);
+    }
   UNPROTECT (2);
   return ans;
 }

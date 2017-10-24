@@ -79,7 +79,7 @@ Xsvirr <- Xrms %*% svir$v
 Xpcair <- predict(pcair)
 Xpcair2 <- Xrms %*% pcair$rotation
 
-if (!  isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
+if (! isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
       isTRUE(all.equal_pca(Xpca, Xsvl)) &&
       isTRUE(all.equal_pca(Xsvirl, Xsvirr)) &&
       isTRUE(all.equal_pca(Xpca, Xsvirl)) &&
@@ -89,3 +89,10 @@ if (!  isTRUE(all.equal_pca(Xsvl, Xsvr)) &&
 {
   stop("failed scaled, uncentered prcomp")
 }
+
+
+# issue #25 prcomp_irlba regression (error in scale. handling)
+set.seed(1)
+x <- matrix(rnorm(100),10)
+p <- prcomp_irlba(x, 3, scale.=TRUE, fastpath=FALSE)
+p <- prcomp_irlba(x, 3, scale.=TRUE, fastpath=TRUE)
