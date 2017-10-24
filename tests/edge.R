@@ -75,6 +75,19 @@ test <- function()
   set.seed(3)
   s2 <- irlba(diag(c(1, 2, 3, 4, 5, 0, 0, 0, 0)), 4, fastpath=TRUE)
   stopifnot(all.equal(s1$d, s2$d))
+
+  loc <<- "issue 26"
+  set.seed(1)
+  r <- 10
+  n <- 1000
+  X1 <- matrix(rnorm(n * r), n)
+  X2 <- matrix(rnorm(n * r), n)
+  X <- X1 %*% t(X2)
+  l <- irlba(X, 20, fastpath=TRUE)$d
+  stopifnot(all.equal(tail(l, 10), rep(0, 10)))
+  l <- irlba(X, 20, fastpath=FALSE)$d
+  stopifnot(all.equal(tail(l, 10), rep(0, 10)))
+
   on.exit()
 }
 
