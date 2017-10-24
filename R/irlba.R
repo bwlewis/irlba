@@ -209,13 +209,13 @@ function(A,                     # data matrix
   mcall <- as.list(match.call())
   # Maximum number of Ritz vectors to use in augmentation, may be less
   # depending on workspace size.
-  maxritz <- mcall[["maxritz"]] # experimental
+  maxritz <- eval(mcall[["maxritz"]]) # experimental
   if (is.null(maxritz)) maxritz <- 3
-  eps2 <- mcall[["invariant_subspace_tolerance"]]
+  eps2 <- eval(mcall[["invariant_subspace_tolerance"]])
   if (is.null(eps2)) eps2 <- eps ^ (4 / 5)
-  du <- mcall[["du"]] # deprecated
-  dv <- mcall[["dv"]] # deprecated
-  ds <- mcall[["ds"]] # deprecated
+  du <- eval(mcall[["du"]]) # deprecated
+  dv <- eval(mcall[["dv"]]) # deprecated
+  ds <- eval(mcall[["ds"]]) # deprecated
   deflate <- is.null(du) + is.null(ds) + is.null(dv)
   if (is.logical(scale) && ! scale) scale <- NULL
   if (is.logical(shift) && ! shift) shift <- NULL
