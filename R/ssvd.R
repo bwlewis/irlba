@@ -52,7 +52,7 @@
 #' A list containing the following components:
 #' \itemize{
 #'    \item{u} {regularized left singular vectors with orthonormal columns}
-#'    \item{d} {regularized upper-triangluar projection matrix so that \code{x \%*\% v == u \%*\% d}} 
+#'    \item{d} {regularized upper-triangluar projection matrix so that \code{x \%*\% v == u \%*\% d}}
 #'    \item{v} {regularized, sparse right singular vectors with columns of unit norm}
 #'    \item{center, scale} {the centering and scaling used, if any}
 #'    \item{lambda} {the per-column regularization parameter found to obtain the desired sparsity}
@@ -171,7 +171,7 @@ ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
     {
       if (is.numeric(center))
       {
-        f <- function(i) sqrt(sum( (x[, i] - center[i]) ^ 2) / (nrow(x) - 1L))
+        f <- function(i) sqrt(sum((x[, i] - center[i]) ^ 2) / (nrow(x) - 1L))
         scale. <- vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE)
       } else scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
     }
