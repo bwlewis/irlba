@@ -91,6 +91,7 @@
 #' @export
 svdr <- function(x, k, tol=1e-5, it=100L, extra=min(10L, dim(x) - k), center=NULL, Q=NULL, return.Q=FALSE)
 {
+  eps2 <- .Machine$double.eps ^ (4 / 5)
   n <- min(ncol(x), k + extra)
   if (isTRUE(center)) center <- colMeans(x)
   if (is.null(Q)) Q <-  matrix(rnorm(ncol(x) * n), ncol(x))
@@ -109,7 +110,9 @@ svdr <- function(x, k, tol=1e-5, it=100L, extra=min(10L, dim(x) - k), center=NUL
       Q <- qr.Q(qr(t(B)))
     }
     d1 <- svd(B, nu=0, nv=0)$d[1:k]
-    if (max(abs((d1 - d) / d)) < tol) break
+    idx <- d1 > eps2
+    if(all(! idx)) break
+    if (max(abs((d1[idx] - d[idx]) / d[idx])) < tol) break
     d <- d1
   }
   if (return.Q) Q1 <- Q
