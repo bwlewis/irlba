@@ -72,7 +72,7 @@ RNORM (int n)
  * WORK integer working subspace dimension must be > NU
  * MAXIT integer maximum number of iterations
  * TOL double tolerance
- * EPS double machine epsilon
+ * EPS double invariant subspace detection tolerance
  * MULT integer 0 X is a dense matrix (dgemm), 1 sparse (cholmod)
  * RESTART integer 0 no or > 0 indicates restart of dimension n
  * RV, RW, RS optional restart V W and S values of dimension RESTART
@@ -215,7 +215,7 @@ irlb (double *A,                // Input data matrix (double case)
       double *V,                // output right singular vectors n x work
       int *ITER,                // ouput number of Lanczos iterations
       int *MPROD,               // output number of matrix vector products
-      double eps,               // machine epsilon
+      double eps,               // tolerance for invariant subspace detection
       // working intermediate storage, sizes shown
       int lwork, double *V1,    // n x work
       double *U1,               // m x work
@@ -258,7 +258,7 @@ irlb (double *A,                // Input data matrix (double case)
       if (iter == 0 && restart == 0)
         {
           d = F77_NAME (dnrm2) (&n, V, &inc);
-          if (d < 2 * eps)
+          if (d < eps)
             return -1;
           d = 1 / d;
           F77_NAME (dscal) (&n, &d, V, &inc);
@@ -309,7 +309,7 @@ irlb (double *A,                // Input data matrix (double case)
       if (iter > 0)
         orthog (W, W + j * m, T, m, j, 1);
       S = F77_NAME (dnrm2) (&m, W + j * m, &inc);
-      if (S < 2 * eps && j == 0)
+      if (S < eps && j == 0)
         return -4;
       SS = 1.0 / S;
       F77_NAME (dscal) (&m, &SS, W + j * m, &inc);
@@ -357,7 +357,7 @@ irlb (double *A,                // Input data matrix (double case)
             {
               R_F = F77_NAME (dnrm2) (&n, F, &inc);
               R = 1.0 / R_F;
-              if (R_F < 2 * eps)        // near invariant subspace
+              if (R_F < eps)        // near invariant subspace
                 {
                   FOO = RNORM (n);
                   for (kk = 0; kk < n; ++kk)
@@ -417,7 +417,7 @@ irlb (double *A,                // Input data matrix (double case)
               orthog (W, W + (j + 1) * m, T, m, j + 1, 1);
               S = F77_NAME (dnrm2) (&m, W + (j + 1) * m, &inc);
               SS = 1.0 / S;
-              if (S < 2 * eps)
+              if (S < eps)
                 {
                   FOO = RNORM (m);
                   jj = (j + 1) * m;
@@ -447,7 +447,7 @@ irlb (double *A,                // Input data matrix (double case)
       R = 1.0 / R_F;
       F77_NAME (dscal) (&n, &R, F, &inc);
 /* Force termination after encountering linear dependence */
-      if (R_F < 2 * eps)
+      if (R_F < eps)
         R_F = 0;
 
       Smax = 0;

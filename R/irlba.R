@@ -195,7 +195,7 @@ function(A,                     # data matrix
          fastpath=TRUE,         # use the faster C implementation if possible
          svtol=tol,             # stopping tolerance percent change in estimated svs
          smallest=FALSE,        # set to TRUE to estimate subspaces associated w/smallest singular values
-         ...)                   # optional arguments (really just to support old removed args)
+         ...)                   # optional experimental or deprecated arguments
 {
 # ---------------------------------------------------------------------
 # Check input parameters
@@ -211,6 +211,8 @@ function(A,                     # data matrix
   # depending on workspace size.
   maxritz <- mcall[["maxritz"]] # experimental
   if (is.null(maxritz)) maxritz <- 3
+  eps2 <- mcall[["invariant_subspace_tolerance"]]
+  if (is.null(eps2)) eps2 <- eps ^ (4 / 5)
   du <- mcall[["du"]] # deprecated
   dv <- mcall[["dv"]] # deprecated
   ds <- mcall[["ds"]] # deprecated
@@ -365,7 +367,7 @@ Use `set.seed` first for reproducibility.")
       CENTER <- as.double(center)
     }
     ans <- .Call(C_IRLB, A, as.integer(k), as.double(v), as.integer(work),
-                 as.integer(maxit), as.double(tol), as.double(.Machine$double.eps), as.integer(SP),
+                 as.integer(maxit), as.double(tol), as.double(eps2), as.integer(SP),
                  as.integer(RESTART), RV, RW, RS, SCALE, SHIFT, CENTER, as.double(svtol))
     if (ans[[6]] == 0 || ans[[6]] == -2)
     {
@@ -420,7 +422,6 @@ Use `set.seed` first for reproducibility.")
   B <- NULL                  # Bidiagonal matrix
   Bsz <- NULL                # Size of B
   eps23 <- eps ^ (2 / 3)     # Used for Smax/avoids using zero
-  eps2 <- 2 * eps
   iter <- 1                  # Man loop iteration count
   mprod <- 0                 # Number of matrix-vector products
   R_F <- NULL                # 2-norm of residual vector F

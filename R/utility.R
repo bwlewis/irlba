@@ -21,7 +21,7 @@ norm2 <- function(x)
 
 # Orthogonalize vectors Y against vectors X.
 orthog <- function(Y, X)
- {
+{
   dx2 <- dim(X)[2]
   if (is.null(dx2)) dx2 <- 1
   dy2 <- dim(Y)[2]
@@ -29,7 +29,7 @@ orthog <- function(Y, X)
   if (dx2 < dy2) doty <- cross(X, Y)
   else doty <- Conj(t(cross(Y, X)))
   Y - X %*% doty
- }
+}
 
 # Convergence tests
 # Input parameters
@@ -46,7 +46,7 @@ orthog <- function(Y, X)
 # converged      TRUE/FALSE
 # k              Number of singular vectors returned
 convtests <- function(Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, maxritz, work, S)
- {
+{
 # Converged singular triplets
   subspace_converged <- residuals[1:k_org] < tol * Smax
 # Converged fixed point triplets
@@ -62,4 +62,4 @@ convtests <- function(Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, 
   augment <- min(sum(subspace_converged), maxritz)
   k <- min(max(k, k_org + augment), work - 1)
   list(converged=FALSE, k=k)
- }
+}
