@@ -63,3 +63,10 @@ convtests <- function(Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, 
   k <- min(max(k, k_org + augment), work - 1)
   list(converged=FALSE, k=k)
 }
+
+message_once <- function(..., flag)
+{
+  if(flag$flag) return()
+  flag$flag <- TRUE
+  message(...)
+}

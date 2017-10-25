@@ -201,7 +201,9 @@ function(A,                     # data matrix
 # Check input parameters
 # ---------------------------------------------------------------------
   ropts <- options(warn=1) # immediately show warnings
-  on.exit(options(ropts))  # reset on exit
+  mflag <- new.env()
+  mflag$flag <- FALSE
+  on.exit(options(ropts))
   interchange <- FALSE
   eps <- .Machine$double.eps
   # hidden support for old, removed (previously deprecated) parameters
@@ -509,7 +511,7 @@ Use `set.seed` first for reproducibility.")
     if (is.na(S) || S < eps2 && j == 1) stop("starting vector near the null space")
     if (is.na(S) || S < eps2)
     {
-      if (verbose) message("invariant subspace found")
+      if (verbose) message_once("invariant subspace found", flag=mflag)
       W[, j_w] <- rnorm(nrow(W))
       if (w_dim > 1) W[, j] <- orthog(W[, j], W[, 1:(j - 1)])
       W[, j_w] <- W[, j_w] / norm2(W[, j_w])
@@ -545,7 +547,7 @@ Use `set.seed` first for reproducibility.")
 #       Check for linear dependence
         if (R < eps2)
         {
-          if (verbose) message("invariant subspace found")
+          if (verbose) message_once("invariant subspace found", flag=mflag)
           F <- matrix(rnorm(dim(V)[1]), dim(V)[1], 1)
           F <- orthog(F, V[, 1:j, drop=FALSE])
           V[, j + 1] <- F / norm2(F)
@@ -591,7 +593,7 @@ Use `set.seed` first for reproducibility.")
 #       Check for linear dependence
         if (S < eps2)
         {
-          if (verbose) message("invariant subspace found")
+          if (verbose) message_once("invariant subspace found", flag=mflag)
           W[, jp1_w] <- rnorm(nrow(W))
           if (w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
           W[, jp1_w] <- W[, jp1_w] / norm2(W[, jp1_w])
