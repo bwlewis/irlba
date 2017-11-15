@@ -181,7 +181,7 @@
 irlba <-
 function(A,                     # data matrix
          nv=5, nu=nv,           # number of singular vectors to estimate
-         maxit=100,             # maximum number of iterations
+         maxit=1000,            # maximum number of iterations
          work=nv + 7,           # working subspace size
          reorth=TRUE,           # TRUE=full reorthogonalization
          tol=1e-5,              # stopping tolerance

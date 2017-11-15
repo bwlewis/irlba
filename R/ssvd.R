@@ -207,7 +207,8 @@ ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
     if (is.numeric(scale.)) s$v <- s$v / scale.
     if (is.numeric(center)) s$u <- qr.Q(qr(x %*% s$v - drop(crossprod(center, s$v))))
     else s$u <- qr.Q(qr(x %*% s$v))
-    delta_u <- sqrt(sum(apply(u - s$u, 2, crossprod)))
+    delta_u <- 1 - abs(crossprod(u, s$u))
+print(delta_u)
     iter <- iter + 1
   }
   if (iter >= maxit)
