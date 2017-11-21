@@ -7,8 +7,8 @@ for Augmented, <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos
 functions (see help on each for details and examples).
 
 * `irlba()` partial SVD function
-* `svdr()` alternate partial SVD function based on randomized SVD
-* `svds()` l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang's algorithm)
+* `svdr()` alternate partial SVD function based on randomized SVD (see also the [rsvd](https://cran.r-project.org/package=rsvd) package by N. Benjamin Erichson for an alternative implementation)
+* `ssvd()` l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang's algorithm)
 * `prcomp_irlba()`  principal components function similar to the `prcomp` function in stats package for computing the first few principal components of large matrices
 * `partial_eigen()` a very limited partial eigenvalue decomposition for symmetric matrices (see the [RSpectra](https://cran.r-project.org/package=RSpectra) package for more comprehensive truncated eigenvalue decomposition)
 
