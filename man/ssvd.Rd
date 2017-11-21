@@ -50,7 +50,7 @@ to perform a regularized sparse PCA.}
 A list containing the following components:
 \itemize{
    \item{u} {regularized left singular vectors with orthonormal columns}
-   \item{d} {regularized upper-triangluar projection matrix so that \code{x \%*\% v == u \%*\% d}} 
+   \item{d} {regularized upper-triangluar projection matrix so that \code{x \%*\% v == u \%*\% d}}
    \item{v} {regularized, sparse right singular vectors with columns of unit norm}
    \item{center, scale} {the centering and scaling used, if any}
    \item{lambda} {the per-column regularization parameter found to obtain the desired sparsity}
@@ -158,6 +158,8 @@ if (requireNamespace("PMA", quietly = TRUE)) {
 # last example, we know the exact number of nonzero elements in each
 # solution vector of the noise-free matrix. Note the application of
 # different sparsity constraints on each column of the estimated v.
+# Also, the decomposition is unique only up to sign, which we adjust
+# for below.
 set.seed(1)
 u <- qr.Q(qr(matrix(rnorm(400), ncol=2)))
 v <- matrix(0, ncol=2, nrow=300)
@@ -167,7 +169,11 @@ v <- qr.Q(qr(v))
 x <- u \%*\% (c(2, 1) * t(v)) + .001 * matrix(rnorm(200 * 300), 200)
 s <- ssvd(x, k=2, n=colSums(v != 0))
 
-# Compare actual and estimated vectors:
+# Compare actual and estimated vectors (adjusting for sign as required):
+s$u <- sweep(s$u, 2, apply(u, 2, function(x) sign(head(x[x!=0], 1))) /
+                     apply(s$u, 2, function(x) sign(head(x[x!=0], 1))), `*`)
+s$v <- sweep(s$v, 2, apply(v, 2, function(x) sign(head(x[x!=0], 1))) /
+                     apply(s$v, 2, function(x) sign(head(x[x!=0], 1))), `*`)
 table(actual=v[, 1] != 0, estimated=s$v[, 1] != 0)
 table(actual=v[, 2] != 0, estimated=s$v[, 2] != 0)
 plot(v[, 1], cex=2, main="True v1 (black circles), Estimated v1 (blue discs)")
