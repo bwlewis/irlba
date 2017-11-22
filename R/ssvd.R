@@ -153,11 +153,9 @@
 #' x <- u %*% (c(2, 1) * t(v)) + .001 * matrix(rnorm(200 * 300), 200)
 #' s <- ssvd(x, k=2, n=colSums(v != 0))
 #'
-#' # Compare actual and estimated vectors (adjusting for sign as required):
-#' s$u <- sweep(s$u, 2, apply(u, 2, function(x) sign(head(x[x!=0], 1))) /
-#'                      apply(s$u, 2, function(x) sign(head(x[x!=0], 1))), `*`)
-#' s$v <- sweep(s$v, 2, apply(v, 2, function(x) sign(head(x[x!=0], 1))) /
-#'                      apply(s$v, 2, function(x) sign(head(x[x!=0], 1))), `*`)
+#' # Compare actual and estimated vectors (adjusting for sign):
+#' s$u <- sign(u) * abs(s$u)
+#' s$v <- sign(v) * abs(s$v)
 #' table(actual=v[, 1] != 0, estimated=s$v[, 1] != 0)
 #' table(actual=v[, 2] != 0, estimated=s$v[, 2] != 0)
 #' plot(v[, 1], cex=2, main="True v1 (black circles), Estimated v1 (blue discs)")
