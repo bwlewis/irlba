@@ -377,7 +377,7 @@ Use `set.seed` first for reproducibility.")
       ans$u <- matrix(head(ans$u, m * nu), nrow=m, ncol=nu)
       ans$v <- matrix(head(ans$v, n * nv), nrow=n, ncol=nv)
       if (tol * ans$d[1] < eps) warning("convergence criterion below machine epsilon")
-      if (ans[[6]] == -2) warning("did not converge--results might be invlaid!; try increasing work or maxit")
+      if (ans[[6]] == -2) warning("did not converge--results might be invalid!; try increasing work or maxit")
       return(ans[-6])
     }
     errors <- c("invalid dimensions",
