@@ -17,6 +17,12 @@ examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
 An overview web page is here: https://bwlewis.github.io/irlba/.
 
+## New in 2.3.2
+
+- Fixed a regression in `prcomp_irlba()`, see https://github.com/bwlewis/irlba/issues/25.
+- Added rchk testing to pre-CRAN submission tests.
+- Fixed a sign bug in `ssvd()` found by Alex Poliakov.
+
 ## What's new in Version 2.3.1?
 
 - Fixed an `irlba()` bug associated with centering (PCA), see https://github.com/bwlewis/irlba/issues/21.
