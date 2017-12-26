@@ -19,7 +19,7 @@ An overview web page is here: https://bwlewis.github.io/irlba/.
 
 ## New in 2.3.2
 
-- Fixed a regression in `prcomp_irlba()`, see https://github.com/bwlewis/irlba/issues/25.
+- Fixed a regression in `prcomp_irlba()` discovered by Xiaojie Qiu, see https://github.com/bwlewis/irlba/issues/25.
 - Added rchk testing to pre-CRAN submission tests.
 - Fixed a sign bug in `ssvd()` found by Alex Poliakov.
 
