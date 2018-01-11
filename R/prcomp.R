@@ -74,6 +74,7 @@
 prcomp_irlba <- function(x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, ...)
 {
   a <- names(as.list(match.call()))
+  ans <- list(scale=scale.)
   if ("tol" %in% a)
     warning("The `tol` truncation argument from `prcomp` is not supported by
 `prcomp_irlba`. If specified, `tol` is passed to the `irlba` function to
@@ -87,29 +88,44 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
   } else args$center <- center
   if (is.logical(scale.))
   {
-    if (scale.)
-    {
       if (is.numeric(args$center))
       {
         f <- function(i) sqrt(sum((x[, i] - args$center[i]) ^ 2) / (nrow(x) - 1L))
         scale. <- vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE)
-      } else scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
-      args$scale <- scale.
-    }
-  } else args$scale <- scale.
+        if(ans$scale) ans$totalvar <- ncol(x)
+        else ans$totalvar <- sum(scale. ^ 2)
+      } else
+      {
+        if(ans$scale)
+        {
+          scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
+          f <- function(i) sqrt(sum((x[, i] / scale.[i]) ^ 2) / (nrow(x) - 1L))
+          ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE) ^ 2)
+        } else
+        {
+          f <- function(i) sum(x[, i] ^ 2) / (nrow(x) - 1L)
+          ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE))
+        }
+      }
+      if(ans$scale) args$scale <- scale.
+  } else
+  {
+    args$scale <- scale.
+    f <- function(i) sqrt(sum((x[, i] / scale.[i]) ^ 2) / (nrow(x) - 1L))
+    ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE))
+  }
   if (!missing(...)) args <- c(args, list(...))
 
   s <- do.call(irlba, args=args)
-  ans <- list(sdev=s$d / sqrt(max(1, nrow(x) - 1)), rotation=s$v)
+  ans$sdev <- s$d / sqrt(max(1, nrow(x) - 1))
+  ans$rotation <- s$v
   colnames(ans$rotation) <- paste("PC", seq(1, ncol(ans$rotation)), sep="")
   ans$center <- args$center
-  ans$scale <- args$scale
   if (retx)
   {
     ans <- c(ans, list(x = sweep(s$u, 2, s$d, FUN=`*`)))
     colnames(ans$x) <- paste("PC", seq(1, ncol(ans$rotation)), sep="")
   }
-  ans$totalvar <- sum(apply(x, 2, var))
   class(ans) <- c("irlba_prcomp", "prcomp")
   ans
 }

@@ -96,3 +96,42 @@ set.seed(1)
 x <- matrix(rnorm(100), 10)
 p <- prcomp_irlba(x, 3, scale.=TRUE, fastpath=FALSE)
 p <- prcomp_irlba(x, 3, scale.=TRUE, fastpath=TRUE)
+
+
+# issue #32 (and also issue #25 redux) more checks for proper
+# variance proportion computation
+library(irlba)
+set.seed(1)
+x  <- matrix(rnorm(200), nrow=20)
+n  <- 3
+s1 <- summary(prcomp_irlba(x, n=n, center=TRUE, scale.=FALSE))
+s2 <- summary(prcomp(x, tol=0.7, center=TRUE, scale.=FALSE))
+if (! isTRUE(all.equal(s1$sdev, s2$sdev[1:n]) &&
+             all.equal(s1$importance, s2$importance[, 1:n])))
+{
+  stop("center=TRUE scale.=FALSE prcomp variance computation")
+}
+
+s1 <- summary(prcomp_irlba(x, n=3, center=TRUE, scale.=TRUE))
+s2 <- summary(prcomp(x, tol=0.8, center=TRUE, scale.=TRUE))
+if (! isTRUE(all.equal(s1$sdev, s2$sdev[1:n]) &&
+             all.equal(s1$importance, s2$importance[, 1:n])))
+{
+  stop("center=TRUE scale.=TRUE prcomp variance computation")
+}
+
+s1 <- summary(prcomp_irlba(x, n=3, center=FALSE, scale.=TRUE))
+s2 <- summary(prcomp(x, tol=0.8, center=FALSE, scale.=TRUE))
+if (! isTRUE(all.equal(s1$sdev, s2$sdev[1:n]) &&
+             all.equal(s1$importance, s2$importance[, 1:n])))
+{
+  stop("center=FALSE scale.=TRUE prcomp variance computation")
+}
+
+s1 <- summary(prcomp_irlba(x, n=3, center=FALSE, scale.=FALSE))
+s2 <- summary(prcomp(x, tol=0.7, center=FALSE, scale.=FALSE))
+if (! isTRUE(all.equal(s1$sdev, s2$sdev[1:n]) &&
+             all.equal(s1$importance, s2$importance[, 1:n])))
+{
+  stop("center=FALSE, scale.=FALSE prcomp variance computation")
+}
