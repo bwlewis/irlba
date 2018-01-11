@@ -92,11 +92,11 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
       {
         f <- function(i) sqrt(sum((x[, i] - args$center[i]) ^ 2) / (nrow(x) - 1L))
         scale. <- vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE)
-        if(ans$scale) ans$totalvar <- ncol(x)
+        if (ans$scale) ans$totalvar <- ncol(x)
         else ans$totalvar <- sum(scale. ^ 2)
       } else
       {
-        if(ans$scale)
+        if (ans$scale)
         {
           scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
           f <- function(i) sqrt(sum((x[, i] / scale.[i]) ^ 2) / (nrow(x) - 1L))
@@ -107,7 +107,7 @@ control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
           ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE))
         }
       }
-      if(ans$scale) args$scale <- scale.
+      if (ans$scale) args$scale <- scale.
   } else
   {
     args$scale <- scale.

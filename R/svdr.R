@@ -111,7 +111,7 @@ svdr <- function(x, k, tol=1e-5, it=100L, extra=min(10L, dim(x) - k), center=NUL
     }
     d1 <- svd(B, nu=0, nv=0)$d[1:k]
     idx <- d1 > eps2
-    if(all(! idx)) break
+    if (all(! idx)) break
     if (max(abs((d1[idx] - d[idx]) / d[idx])) < tol) break
     d <- d1
   }

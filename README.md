@@ -1,8 +1,8 @@
 # irlba
 
-Implicitly-restarted Lanczos methods for fast truncated singular value decomposition
-of sparse and dense matrices (also referred to as partial SVD).  IRLBA stands
-for Augmented, <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos
+Implicitly-restarted Lanczos methods for fast truncated singular value
+decomposition of sparse and dense matrices (also referred to as partial SVD).
+IRLBA stands for Augmented, <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos
 <b>B</b>idiagonalization <b>A</b>lgorithm. The package provides the following
 functions (see help on each for details and examples).
 
@@ -19,7 +19,7 @@ An overview web page is here: https://bwlewis.github.io/irlba/.
 
 ## New in 2.3.2
 
-- Fixed a regression in `prcomp_irlba()` discovered by Xiaojie Qiu, see https://github.com/bwlewis/irlba/issues/25.
+- Fixed a regression in `prcomp_irlba()` discovered by Xiaojie Qiu, see https://github.com/bwlewis/irlba/issues/25, and other related problems reported in https://github.com/bwlewis/irlba/issues/32.
 - Added rchk testing to pre-CRAN submission tests.
 - Fixed a sign bug in `ssvd()` found by Alex Poliakov.
 

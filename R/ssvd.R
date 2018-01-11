@@ -213,7 +213,7 @@ ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
     {
       xsv <- x %*% s$v - drop(crossprod(center, s$v))
       s$u <- qr.Q(qr(xsv))
-    } else 
+    } else
     {
       xsv <- x %*% s$v
       s$u <- qr.Q(qr(x %*% s$v))

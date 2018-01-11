@@ -66,7 +66,7 @@ convtests <- function(Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, 
 
 message_once <- function(..., flag)
 {
-  if(flag$flag) return()
+  if (flag$flag) return()
   flag$flag <- TRUE
   message(...)
 }
