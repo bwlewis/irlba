@@ -90,9 +90,8 @@ products for very large problems with amazingly little code.
 
 ## Wishlist / help wanted...
 
-- Optional block implementation for some use cases
 - More Matrix classes supported in the fast code path
-- Help improving the solver for smallest singular values in tricky cases (basically, for ill-conditioned problems)
+- Help improving the solver for singular values in tricky cases (basically, for ill-conditioned problems and especially for the smallest singular values); in general this may require a combination of more careful convergence criteria and use of harmonic Ritz values; Dmitriy Selivanov has proposed alternative convergence criteria in https://github.com/bwlewis/irlba/issues/29 for example.
 
 ## References
 
