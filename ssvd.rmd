@@ -43,7 +43,7 @@ $$\|x - u w^T\|_F^2 + \lambda \|w\|_1$$
 such that $\|u\| = 1$, and then sets $v = w / \|w\|$ and $d = u^T x v$; see
 the paper [1] for details. The penalty &lambda; is implicitly determined from
 the specified desired number of nonzero values `n`.  Higher rank output is
-determined similarly but using a sequence of \eqn{\lambda}{lambda} values
+determined similarly but using a sequence of $\lambda$ values
 determined to maintain the desired number of nonzero elements in each column of
 `v` specified by `n`.  Unlike standard SVD or PCA, the columns of the
 returned `v` when `k > 1` may not be orthogonal.
