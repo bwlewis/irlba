@@ -136,10 +136,10 @@ h2,h3,h4,h5,h6{ font-size: 24pt; }
 <p>The package provides the following functions (see help on each for details and examples).</p>
 <ul>
 <li><code>irlba()</code> partial SVD function</li>
-<li><code>svdr()</code> alternate partial SVD function based on randomized SVD</li>
-<li><code>svds()</code> l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang’s algorithm)</li>
+<li><code>ssvd()</code> l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang’s algorithm)–see <a href="https://bwlewis.github.io/irlba/ssvd.html" class="uri">https://bwlewis.github.io/irlba/ssvd.html</a> for more details</li>
 <li><code>prcomp_irlba()</code> principal components function similar to the <code>prcomp</code> function in stats package for computing the first few principal components of large matrices</li>
-<li><code>partial_eigen()</code> a very limited partial eigenvalue decomposition for symmetric matrices (see the <a href="https://cran.r-project.org/package=RSpectra">RSpectra</a> package for more comprehensive truncated eigenvalue decomposition)</li>
+<li><code>svdr()</code> alternate partial SVD function based on randomized SVD</li>
+<li><code>partial_eigen()</code> a very limited partial eigenvalue decomposition for symmetric matrices (see the <a href="https://cran.r-project.org/package=RSpectra">RSpectra</a> package for more comprehensive truncated eigenvalue decomposition); see also <a href="https://bwlewis.github.io/irlba/comparison.html" class="uri">https://bwlewis.github.io/irlba/comparison.html</a> for more notes on RSpectra.</li>
 </ul>
 <div id="references" class="section level2">
 <h2>References</h2>
@@ -156,14 +156,23 @@ h2,h3,h4,h5,h6{ font-size: 24pt; }
 <li>Musco, Cameron, and Christopher Musco. “Randomized block krylov methods for stronger and faster approximate singular value decomposition.” Advances in Neural Information Processing Systems. 2015.</li>
 </ul>
 </div>
-<div id="whats-new-in-version-2.3.0-october-2017" class="section level1">
-<h1>What’s new in Version 2.3.0 (October, 2017)?</h1>
+<div id="new-in-2.3.2-january-2018" class="section level2">
+<h2>New in 2.3.2 (January, 2018)</h2>
+<ul>
+<li>Fixed a regression in <code>prcomp_irlba()</code> discovered by Xiaojie Qiu, see <a href="https://github.com/bwlewis/irlba/issues/25" class="uri">https://github.com/bwlewis/irlba/issues/25</a>, and other related problems reported in <a href="https://github.com/bwlewis/irlba/issues/32" class="uri">https://github.com/bwlewis/irlba/issues/32</a>.</li>
+<li>Added rchk testing to pre-CRAN submission tests.</li>
+<li>Fixed a sign bug in <code>ssvd()</code> found by Alex Poliakov.</li>
+</ul>
+</div>
+<div id="whats-new-in-version-2.3.1-october-2017" class="section level1">
+<h1>What’s new in Version 2.3.1 (October, 2017)?</h1>
 <ul>
 <li>Fixed an <code>irlba()</code> bug associated with centering (PCA), see <a href="https://github.com/bwlewis/irlba/issues/21" class="uri">https://github.com/bwlewis/irlba/issues/21</a>.</li>
 <li>Fixed <code>irlba()</code> scaling to conform to <code>scale</code>, see <a href="https://github.com/bwlewis/irlba/issues/22" class="uri">https://github.com/bwlewis/irlba/issues/22</a>.</li>
 <li>Improved <code>prcomp_irlba()</code> from a suggestion by N. Benjamin Erichson, see <a href="https://github.com/bwlewis/irlba/issues/23" class="uri">https://github.com/bwlewis/irlba/issues/23</a>.</li>
 <li>Significanty changed/improved <code>svdr()</code> convergence criterion.</li>
 <li>Added a version of Shen and Huang’s Sparse PCA/SVD L1-penalized matrix decomposition (<code>ssvd()</code>).</li>
+<li>Fixed many valgrind errors inadvertently introduced in the C code a while ago.</li>
 </ul>
 </div>
 <div id="whats-new-in-version-2.2.1-may-2017" class="section level1">

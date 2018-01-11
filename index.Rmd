@@ -28,10 +28,10 @@ The package provides the following functions (see help on each for details and
 examples).
 
 * `irlba()` partial SVD function
-* `svdr()` alternate partial SVD function based on randomized SVD
-* `svds()` l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang's algorithm)
+* `ssvd()` l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang's algorithm)--see https://bwlewis.github.io/irlba/ssvd.html  for more details
 * `prcomp_irlba()`  principal components function similar to the `prcomp` function in stats package for computing the first few principal components of large matrices
-* `partial_eigen()` a very limited partial eigenvalue decomposition for symmetric matrices (see the [RSpectra](https://cran.r-project.org/package=RSpectra) package for more comprehensive truncated eigenvalue decomposition)
+* `svdr()` alternate partial SVD function based on randomized SVD
+* `partial_eigen()` a very limited partial eigenvalue decomposition for symmetric matrices (see the [RSpectra](https://cran.r-project.org/package=RSpectra) package for more comprehensive truncated eigenvalue decomposition); see also https://bwlewis.github.io/irlba/comparison.html for more notes on RSpectra.
 
 ## References
 
@@ -47,6 +47,11 @@ And, some interesting related recent work by Musco and colleagues:
 - Jin, Chi, et al. "Robust shift-and-invert preconditioning: Faster and more sample efficient algorithms for eigenvector computation." arXiv preprint arXiv:1510.08896 (2015).
 - Musco, Cameron, and Christopher Musco. "Randomized block krylov methods for stronger and faster approximate singular value decomposition." Advances in Neural Information Processing Systems. 2015.
 
+## New in 2.3.2 (January, 2018)
+
+- Fixed a regression in `prcomp_irlba()` discovered by Xiaojie Qiu, see https://github.com/bwlewis/irlba/issues/25, and other related problems reported in https://github.com/bwlewis/irlba/issues/32.
+- Added rchk testing to pre-CRAN submission tests.
+- Fixed a sign bug in `ssvd()` found by Alex Poliakov.
 
 
 # What's new in Version 2.3.1 (October, 2017)?
