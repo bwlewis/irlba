@@ -99,17 +99,3 @@ products for very large problems with amazingly little code.
 * Halko, Nathan, Per-Gunnar Martinsson, and Joel A. Tropp. "Finding structure with randomness: Stochastic algorithms for constructing approximate matrix decompositions." (2009).
 * Shen, Haipeng, and Jianhua Z. Huang. "Sparse principal component analysis via regularized low rank matrix approximation." Journal of multivariate analysis 99.6 (2008): 1015-1034.
 * Witten, Daniela M., Robert Tibshirani, and Trevor Hastie. "A penalized matrix decomposition, with applications to sparse principal components and canonical correlation analysis." Biostatistics 10.3 (2009): 515-534.
-
-## Status
-<a href="https://travis-ci.org/bwlewis/irlba">
-<img src="https://travis-ci.org/bwlewis/irlba.svg?branch=master" alt="Travis CI status"></img>
-</a>
-<a href="https://codecov.io/gh/bwlewis/irlba">
-  <img src="https://codecov.io/gh/bwlewis/irlba/branch/master/graph/badge.svg" alt="Codecov" />
-</a>
-<a href="https://www.r-pkg.org/pkg/irlba">
-  <img src="http://cranlogs.r-pkg.org/badges/irlba" />
-</a>
-<a href="https://cran.r-project.org/package=irlba">
-  <img src="https://www.r-pkg.org/badges/version/irlba" />
-</a>
