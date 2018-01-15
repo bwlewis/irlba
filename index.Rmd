@@ -47,6 +47,7 @@ examples).
 <a href="https://cran.r-project.org/package=irlba">
   <img src="https://www.r-pkg.org/badges/version/irlba" />
 </a>
+
 ## References
 
 For your reading pleasure...
