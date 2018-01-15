@@ -194,3 +194,39 @@ flexible than using custom arguments with idiosyncratic syntax and behavior.
 We've even used the new approach to implement distributed parallel matrix
 products for very large problems with amazingly little code.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Status
+
+<a href="https://travis-ci.org/bwlewis/irlba">
+<img src="https://travis-ci.org/bwlewis/irlba.svg?branch=master" alt="Travis CI status"></img>
+</a>
+<a href="https://codecov.io/gh/bwlewis/irlba">
+  <img src="https://codecov.io/gh/bwlewis/irlba/branch/master/graph/badge.svg" alt="Codecov" />
+</a>
+<a href="https://www.r-pkg.org/pkg/irlba">
+  <img src="http://cranlogs.r-pkg.org/badges/irlba" />
+</a>
+<a href="https://cran.r-project.org/package=irlba">
+  <img src="https://www.r-pkg.org/badges/version/irlba" />
+</a>
