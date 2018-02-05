@@ -285,7 +285,6 @@ function(A,                     # data matrix
   if (right_only)
   {
     w_dim <- 1
-    if (! ("work" %in% names(as.list(match.call())))) work <- 2
     fastpath <- FALSE
   }
   if (n > m && smallest)
