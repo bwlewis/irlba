@@ -269,7 +269,8 @@ function(A,                     # data matrix
   if (work <= 1) stop("work must be greater than 1")
   if (tol < 0) stop("tol must be non-negative")
   if (maxit <= 0) stop("maxit must be positive")
-  if (work <= k) work <- k + 1 # work must be strictly larger than requested subspace dimension
+  # work must be strictly larger than requested subspace dimension, except see right_only below
+  if (work <= k && ! right_only) work <- k + 1
   if (work >= min(n, m))
   {
     work <- min(n, m)
