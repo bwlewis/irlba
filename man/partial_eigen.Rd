@@ -43,7 +43,7 @@ partial eigenvalue decomposition.
 \examples{
 set.seed(1)
 # Construct a symmetric matrix with some positive and negative eigenvalues:
-V <- qr.Q(qr(matrix(runif(100),nrow=10)))
+V <- qr.Q(qr(matrix(runif(100), nrow=10)))
 x <- V \%*\% diag(c(10, -9, 8, -7, 6, -5, 4, -3, 2, -1)) \%*\% t(V)
 partial_eigen(x, 3)$values
 
