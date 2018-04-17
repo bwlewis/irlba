@@ -209,7 +209,10 @@ function(A,                     # data matrix
   eps <- .Machine$double.eps
   # hidden support for old, removed (previously deprecated) parameters
   # this is here as a convenience to keep old code working without change
+  # also supports experimental features not yet promoted to the api
   mcall <- as.list(match.call())
+  random <- eval(mcall[["rng"]])
+  if (is.null(random)) random <- rnorm # default RNG
   # Maximum number of Ritz vectors to use in augmentation, may be less
   # depending on workspace size.
   maxritz <- eval(mcall[["maxritz"]]) # experimental
@@ -332,7 +335,7 @@ function(A,                     # data matrix
     RV <- RW <- RS <- NULL
     if (is.null(v))
     {
-      v <- rnorm(n)
+      v <- random(n)
       if (verbose) message("Initializing starting vector v with samples from standard normal distribution.
 Use `set.seed` first for reproducibility.")
     } else if (is.list(v))  # restarted case
@@ -340,7 +343,7 @@ Use `set.seed` first for reproducibility.")
       if (is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
       if (max(nu, nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
       RESTART <- as.integer(length(v$d))
-      RND <- rnorm(n)
+      RND <- random(n)
       RND <- orthog(RND, v$v)
       RV <- cbind(v$v, RND / norm2(RND))
       RW <- v$u
@@ -410,7 +413,7 @@ Use `set.seed` first for reproducibility.")
 # normally distributed random numbers.  In any case, allocate V appropriate to
 # problem size:
     V <- matrix(0.0, n, work)
-    V[, 1] <- rnorm(n)
+    V[, 1] <- random(n)
   } else
   {
 # user-supplied starting subspace
@@ -440,7 +443,7 @@ Use `set.seed` first for reproducibility.")
     B <- cbind(diag(d), 0)
     k <- length(d)
 
-    F <- rnorm(n)
+    F <- random(n)
     F <- orthog(F, V[, 1:k])
     V[, k + 1] <- F / norm2(F)
   }
@@ -512,7 +515,7 @@ Use `set.seed` first for reproducibility.")
     if (is.na(S) || S < eps2)
     {
       if (verbose) message_once("invariant subspace found", flag=mflag)
-      W[, j_w] <- rnorm(nrow(W))
+      W[, j_w] <- random(nrow(W))
       if (w_dim > 1) W[, j] <- orthog(W[, j], W[, 1:(j - 1)])
       W[, j_w] <- W[, j_w] / norm2(W[, j_w])
       S <- 0
@@ -548,7 +551,7 @@ Use `set.seed` first for reproducibility.")
         if (R < eps2)
         {
           if (verbose) message_once("invariant subspace found", flag=mflag)
-          F <- matrix(rnorm(dim(V)[1]), dim(V)[1], 1)
+          F <- matrix(random(dim(V)[1]), dim(V)[1], 1)
           F <- orthog(F, V[, 1:j, drop=FALSE])
           V[, j + 1] <- F / norm2(F)
           R <- 0
@@ -594,7 +597,7 @@ Use `set.seed` first for reproducibility.")
         if (S < eps2)
         {
           if (verbose) message_once("invariant subspace found", flag=mflag)
-          W[, jp1_w] <- rnorm(nrow(W))
+          W[, jp1_w] <- random(nrow(W))
           if (w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
           W[, jp1_w] <- W[, jp1_w] / norm2(W[, jp1_w])
           S <- 0
