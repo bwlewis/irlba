@@ -92,7 +92,7 @@ for (FAST in c(FALSE, TRUE))
   }
 
   # Test right-only option
-  L <- irlba(A, 2, tol=1e-3, right_only=TRUE, fastpath=FAST)
+  L <- irlba(A, 2, tol=1e-3, right_only=TRUE, fastpath=FAST, work=20)
   S <- svd(A, nu=2, nv=2)
   if (!isTRUE(all.equal(L$d, S$d[1:2])))
   {
