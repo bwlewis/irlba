@@ -288,7 +288,6 @@ irlb (double *A,                // Input data matrix (double case)
         }
       mprod++;
       R_CheckUserInterrupt ();
-
 /* optionally apply shift in square cases m = n */
       if (shift)
         {
@@ -304,7 +303,6 @@ irlb (double *A,                // Input data matrix (double case)
           for (kk = 0; kk < m; ++kk)
             W[jj + kk] = W[jj + kk] - beta;
         }
-
       if (iter > 0)
         orthog (W, W + j * m, T, m, j, 1);
       S = F77_NAME (dnrm2) (&m, W + j * m, &inc);
@@ -366,7 +364,6 @@ irlb (double *A,                // Input data matrix (double case)
                   R = 1.0 / R_F;
                   R_F = 0;
                 }
-
               memmove (V + (j + 1) * n, F, n * sizeof (double));
               F77_NAME (dscal) (&n, &R, V + (j + 1) * n, &inc);
               B[j * work + j] = S;
@@ -460,6 +457,7 @@ irlb (double *A,                // Input data matrix (double case)
         res[kk] = R_F * BU[kk * work + (j - 1)];
 /* Update k to be the number of converged singular values. */
       convtests (j, nu, tol, svtol, Smax, svratio, res, &k, &converged, S);
+
       if (converged == 1)
         {
           iter++;
@@ -530,6 +528,13 @@ __attribute__ ((visibility ("default")))
 void
 R_init_irlba (DllInfo * dll)
 {
+
+  R_RegisterCCallable("irlba", "orthog",
+                      (DL_FUNC) &orthog);
+  R_RegisterCCallable("irlba", "irlb",
+                      (DL_FUNC) &irlb);
+
+
   R_registerRoutines (dll, NULL, CallEntries, NULL, NULL);
   R_useDynamicSymbols (dll, 0);
   M_R_cholmod_start (&chol_c);
