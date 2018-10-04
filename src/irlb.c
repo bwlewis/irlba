@@ -530,9 +530,9 @@ R_init_irlba (DllInfo * dll)
 {
 
   R_RegisterCCallable("irlba", "orthog",
-                      (DL_FUNC) &orthog);
+                      orthog);
   R_RegisterCCallable("irlba", "irlb",
-                      (DL_FUNC) &irlb);
+                      irlb);
 
 
   R_registerRoutines (dll, NULL, CallEntries, NULL, NULL);

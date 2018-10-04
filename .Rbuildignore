@@ -2,3 +2,5 @@
 .lintr
 .git
 TODO
+^.*\.Rproj$
+^\.Rproj\.user$
