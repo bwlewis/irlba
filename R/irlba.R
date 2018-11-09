@@ -544,7 +544,11 @@ Use `set.seed` first for reproducibility.")
 #     Optionally apply shift, scale, deflate
       if (!is.null(shift)) F <- F + shift * W[, j_w]
       if (!is.null(scale)) F <- F / scale
-      if (deflate) F <- F - sum(W[, j_w]) * dv
+      if (deflate) {
+        sub <- sum(W[, j_w]) * dv
+        if (!is.null(scale)) sub <- sub / scale
+        F <- F - sub
+      }
       mprod <- mprod + 1
       F <- drop(F - S * V[, j])
 #     Orthogonalize
