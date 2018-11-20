@@ -14,5 +14,4 @@ r_github_packages:
   - jimhester/lintr
 
 after_success:
-  - Rscript -e 'lintr::lint_package()'
   - Rscript -e 'covr::codecov()'
