@@ -94,7 +94,7 @@ for (FAST in c(FALSE, TRUE))
   # Test right-only option
   L <- irlba(A, 2, tol=1e-3, right_only=TRUE, fastpath=FAST, work=20)
   S <- svd(A, nu=2, nv=2)
-  if (!isTRUE(all.equal(L$d, S$d[1:2])))
+  if (isTRUE(max(L$d - S$d[1:2]) > 1e-3))
   {
     stop("Failed right_only test", " fastpath=", FAST)
   }
@@ -176,6 +176,18 @@ for (FAST in c(FALSE, TRUE))
   if (isTRUE(max(abs(out$d - l$d)) > 1e-3))
   {
     stop("Failed centering test (n > m) fastpath=", FAST)
+  }
+
+  # test for https://github.com/bwlewis/irlba/issues/42
+  set.seed(1234)
+  a <- matrix(rnorm(10000), ncol=20)
+  center <- runif(ncol(a))
+  scale <- runif(ncol(a))
+  L <- irlba(a, 5, scale=scale, center=center, fastpath=FAST)
+  S <- svd(scale(a, center=center, scale=scale))
+  if (isTRUE(max(abs(S$d[1:5] - L$d)) > 1e-3))
+  {
+    stop("Failed scale + center test fastpath=", FAST)
   }
 }
 

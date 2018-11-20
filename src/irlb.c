@@ -343,8 +343,12 @@ irlb (double *A,                // Input data matrix (double case)
             {
               beta = 0;
               for (kk = 0; kk < m; ++kk) beta += W[j *m + kk];
-              for (kk = 0; kk < n; ++kk)
-                F[kk] = F[kk] - beta * center[kk]; // XXX XXX XXX
+              if (scale)
+                for (kk = 0; kk < n; ++kk)
+                  F[kk] = F[kk] - beta * center[kk] / scale[kk];
+              else
+                for (kk = 0; kk < n; ++kk)
+                  F[kk] = F[kk] - beta * center[kk];
             }
           SS = -S;
           F77_NAME (daxpy) (&n, &SS, V + j * n, &inc, F, &inc);
