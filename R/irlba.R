@@ -308,8 +308,12 @@ function(A,                     # data matrix
 # Check for tiny problem, use standard SVD in that case. Make definition of 'tiny' larger?
   if (min(m, n) < 6)
   {
+    A <- as.matrix(A) # avoid need to define "+" and "/" for arbitrary matrix types.
     if (verbose) message("Tiny problem detected, using standard `svd` function.")
-    if (!is.null(scale)) A <- A / scale
+    if (!is.null(scale)) {
+      A <- sweep(A, 2, scale, "/")
+      dv <- dv / scale # scale the centering vector.
+    }
     if (!is.null(shift)) A <- A + diag(shift, nrow(A), ncol(A))
     if (deflate)
     {
@@ -540,7 +544,11 @@ Use `set.seed` first for reproducibility.")
 #     Optionally apply shift, scale, deflate
       if (!is.null(shift)) F <- F + shift * W[, j_w]
       if (!is.null(scale)) F <- F / scale
-      if (deflate) F <- F - sum(W[, j_w]) * dv
+      if (deflate) {
+        sub <- sum(W[, j_w]) * dv
+        if (!is.null(scale)) sub <- sub / scale
+        F <- F - sub
+      }
       mprod <- mprod + 1
       F <- drop(F - S * V[, j])
 #     Orthogonalize
