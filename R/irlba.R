@@ -487,13 +487,9 @@ Use `set.seed` first for reproducibility.")
     }
     if (interchange) avj <- mult(VJ, A)
     else avj <- mult(A, VJ)
-#   Handle sparse products.
-    if ("Matrix" %in% attributes(class(avj)) && "x" %in% slotNames(avj))
-    {
-      if (length(avj@x) == nrow(W)) avj <- slot(avj, "x")
-      else avj <- as.vector(avj)
-    }
-    W[, j_w] <- avj
+
+#   Handle non-ordinary arrays as products.
+    W[, j_w] <- as.vector(avj)
     mprod <- mprod + 1
 
 #   Optionally apply shift
