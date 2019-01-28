@@ -206,3 +206,4 @@ Baglama, James, and Lothar Reichel. "Augmented implicitly restarted Lanczos bidi
 \seealso{
 \code{\link{svd}}, \code{\link{prcomp}}, \code{\link{partial_eigen}}, \code{\link{svdr}}
 }
+

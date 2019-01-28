@@ -111,3 +111,4 @@ approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 200
 \seealso{
 \code{\link{irlba}}, \code{\link{svd}}, \code{rsvd} in the rsvd package
 }
+
