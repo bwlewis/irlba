@@ -79,8 +79,8 @@ prcomp_irlba <- function(x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, .
     warning("The `tol` truncation argument from `prcomp` is not supported by
 `prcomp_irlba`. If specified, `tol` is passed to the `irlba` function to
 control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
-# Try to convert to a matrix...
-  if (!is.matrix(x)) x <- as.matrix(x)
+# Try to convert data frame to matrix...
+  if (is.data.frame(x)) x <- as.matrix(x)
   args <- list(A=x, nv=n)
   if (is.logical(center))
   {
