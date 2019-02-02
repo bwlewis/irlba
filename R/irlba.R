@@ -453,6 +453,9 @@ Use `set.seed` first for reproducibility.")
     V[, k + 1] <- F / norm2(F)
   }
 
+# Change du to be non-NULL, for non-fastpath'able matrices with non-NULL scale.
+  if (deflate && is.null(du)) du <- 1
+
 # ---------------------------------------------------------------------
 # Main iteration
 # ---------------------------------------------------------------------
