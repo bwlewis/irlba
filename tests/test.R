@@ -208,3 +208,15 @@ if (!isTRUE(all.equal(L$d, tail(svd(x)$d, 5))))
 {
   stop("Failed smallest svd test")
 }
+
+# test for https://github.com/bwlewis/irlba/issues/47 (again, fastpath always FALSE)
+set.seed(2345)
+a <- spMatrix(50, 40, x=runif(200), i=sample(50, 200, replace=TRUE), j=sample(40, 200, replace=TRUE))
+center <- runif(ncol(a))
+scale <- runif(ncol(a))
+L <- irlba(a, 5, scale=scale, center=center)
+S <- svd(scale(a, center=center, scale=scale))
+if (isTRUE(max(abs(S$d[1:5] - L$d)) > 1e-3))
+{
+  stop("Failed scale + center test for non-fastpath'able matrices")
+}
