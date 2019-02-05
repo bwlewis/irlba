@@ -1,0 +1,22 @@
+Package build checklist for irlba
+---------------------------------
+
+I. If no changes to C code in src/ directory, then
+
+  1. Locally run:
+
+     R CMD build irlba
+     R CMD check --as-cran irlba_x.x.x.tar.gz
+
+  2. If step 1. passes, upload to R winbuilder and check against at least
+     R-devel, see https://win-builder.r-project.org/upload.aspx.
+
+  3. If step 2. passes, then OK to submit to CRAN.
+
+
+
+II. After changes to C code in src/ directory, then
+
+  1. Locally run rchk, see https://github.com/kalibera/rchk.
+
+  2. Goto step I. above.
