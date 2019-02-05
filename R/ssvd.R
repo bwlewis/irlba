@@ -186,7 +186,7 @@ ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
     sign(y) * pmax(sweep(a, 2, lambda, `-`), 0)
   }
   s$v <- s$d * s$v
-  iter <- 1
+  iter <- 0
   delta_u <- Inf
   while (delta_u > tol && iter < maxit)
   {
@@ -200,11 +200,11 @@ ssvd <- function(x, k=1, n=2, maxit=500, tol=1e-3, center=FALSE, scale.=FALSE, a
     } else
     {
       xsv <- x %*% s$v
-      s$u <- qr.Q(qr(x %*% s$v))
+      s$u <- qr.Q(qr(xsv))
     }
     # Maintain sign (possibly messed up by QR)
     s$u <- sweep(s$u, 2, apply(xsv, 2, function(x) sign(head(x[x!=0], 1))) / apply(s$u, 2, function(x) sign(head(x[x!=0], 1))), `*`)
-    delta_u <- 1 - abs(crossprod(u, s$u))
+    delta_u <- max(1 - diag(abs(crossprod(u, s$u))))
     iter <- iter + 1
   }
   if (iter >= maxit)
