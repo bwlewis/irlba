@@ -3,7 +3,7 @@ Package build checklist for irlba
 
 Some steps are optional depending on the nature of the source code changes.
 
-1. If any changes in the src/ directory, then run rchj, see
+1. If any changes in the src/ directory, then run rchk, see
    https://github.com/kalibera/rchk.
 
 2. Locally run:
