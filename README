@@ -8,7 +8,8 @@ details and examples).
 
 * irlba() partial SVD function
 * ssvd() l1-penalized matrix decomposition for sparse PCA (based on Shen and
-  Huang's algorithm)
+  Huang's algorithm), see https://bwlewis.github.io/irlba/ssvd.html for
+  examples
 * prcomp_irlba()  principal components function similar to the prcomp
   function in stats package for computing the first few principal components
   of large matrices
