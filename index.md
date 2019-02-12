@@ -64,7 +64,7 @@ And, some interesting related recent work by Musco and colleagues:
 
 This is a bugfix release.
 
-- Man contributions by <a href="https://github.com/LTLA">LTLA</a> fixing issues
+- Many contributions by <a href="https://github.com/LTLA">LTLA</a> fixing issues
 in prcomp-style methods, among others.
 
 ## New in 2.3.2 (January, 2018)
