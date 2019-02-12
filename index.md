@@ -36,7 +36,7 @@ examples).
 ## Status
 
 <a href="https://travis-ci.org/bwlewis/irlba">
-<img src="https://travis-ci.org/bwlewis/irlba.svg?branch=master" alt="Travis CI status"></img>
+<img src="https://travis-ci.org/bwlewis/irlba.svg?branch=master" alt="Travis CI status"/>
 </a>
 <a href="https://codecov.io/gh/bwlewis/irlba">
   <img src="https://codecov.io/gh/bwlewis/irlba/branch/master/graph/badge.svg" alt="Codecov" />
