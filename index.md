@@ -17,7 +17,7 @@ The augmented implicitly restarted Lanczos bidiagonalization algorithm (IRLBA)
 finds a few approximate largest singular values and corresponding singular
 vectors of a sparse or dense matrix using a method of Baglama and Reichel.
 
-> J. Baglama and L. Reichel, SIAM J. Sci. Comput. (2005). (http://www.math.uri.edu/~jbaglama/papers/paper14.pdf)
+> J. Baglama and L. Reichel, SIAM J. Sci. Comput. (2005). [paper14.pdf](http://www.math.uri.edu/~jbaglama/papers/paper14.pdf)
 
 It is a fast and memory-efficient way to compute a partial SVD, principal
 components, and some specialized partial eigenvalue decompositions.  I
@@ -28,7 +28,7 @@ The package provides the following functions (see help on each for details and
 examples).
 
 * `irlba()` partial SVD function
-* `ssvd()` l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang's algorithm)--see https://bwlewis.github.io/irlba/ssvd.html  for more details
+* `ssvd()` l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang's algorithm)--see [https://bwlewis.github.io/irlba/ssvd.html](https://bwlewis.github.io/irlba/ssvd.html)  for more details
 * `prcomp_irlba()`  principal components function similar to the `prcomp` function in stats package for computing the first few principal components of large matrices
 * `svdr()` alternate partial SVD function based on randomized SVD
 * `partial_eigen()` a very limited partial eigenvalue decomposition for symmetric matrices (see the [RSpectra](https://cran.r-project.org/package=RSpectra) package for more comprehensive truncated eigenvalue decomposition); see also https://bwlewis.github.io/irlba/comparison.html for more notes on RSpectra.
@@ -69,16 +69,16 @@ in prcomp-style methods, among others.
 
 ## New in 2.3.2 (January, 2018)
 
-- Fixed a regression in `prcomp_irlba()` discovered by Xiaojie Qiu, see https://github.com/bwlewis/irlba/issues/25, and other related problems reported in https://github.com/bwlewis/irlba/issues/32.
+- Fixed a regression in `prcomp_irlba()` discovered by Xiaojie Qiu, see [https://github.com/bwlewis/irlba/issues/25](https://github.com/bwlewis/irlba/issues/25), and other related problems reported in [https://github.com/bwlewis/irlba/issues/32](https://github.com/bwlewis/irlba/issues/32).
 - Added rchk testing to pre-CRAN submission tests.
 - Fixed a sign bug in `ssvd()` found by Alex Poliakov.
 
 
 # What's new in Version 2.3.1 (October, 2017)?
 
-- Fixed an `irlba()` bug associated with centering (PCA), see https://github.com/bwlewis/irlba/issues/21.
+- Fixed an `irlba()` bug associated with centering (PCA), see [https://github.com/bwlewis/irlba/issues/21](https://github.com/bwlewis/irlba/issues/21).
 - Fixed `irlba()` scaling to conform to `scale`, see https://github.com/bwlewis/irlba/issues/22.
-- Improved `prcomp_irlba()` from a suggestion by N. Benjamin Erichson, see https://github.com/bwlewis/irlba/issues/23.
+- Improved `prcomp_irlba()` from a suggestion by N. Benjamin Erichson, see [https://github.com/bwlewis/irlba/issues/23](https://github.com/bwlewis/irlba/issues/23).
 - Significanty changed/improved `svdr()` convergence criterion.
 - Added a version of Shen and Huang's Sparse PCA/SVD L1-penalized matrix decomposition (`ssvd()`).
 - Fixed many valgrind errors inadvertently introduced in the C code a while ago.
@@ -137,26 +137,30 @@ svd(sweep(A, 2, col_scale, FUN=`/`))$d[1:3]
 
 # Vignettes
 
-The package vignette (PDF): https://cran.r-project.org/web/packages/irlba/irlba.pdf.
+The package vignette (PDF): 
+[https://cran.r-project.org/web/packages/irlba/irlba.pdf](https://cran.r-project.org/web/packages/irlba/irlba.pdf).
 
 This example uses a special one-sided basis option and a custom matrix product
 to compute the top three principal components of the entire 1000 Genomes
 Project variant data set (whole genome variants for 2,504 people):
-http://bwlewis.github.io/1000_genomes_examples/PCA_whole_genome.html The
-example optionally works in parallel and finishes in only 8 minutes on a 4 node
-Linux cluster.
+[http://bwlewis.github.io/1000_genomes_examples/PCA_whole_genome.html](http://bwlewis.github.io/1000_genomes_examples/PCA_whole_genome.html).
+The example optionally works in parallel and finishes in only 8 minutes on a 4
+node Linux cluster.
 
-https://bwlewis.github.io/irlba/comparison.html compares the irlba package
-with the RSpectra package, a high-quality eigenvalue solver for R.
+[https://bwlewis.github.io/irlba/comparison.html](https://bwlewis.github.io/irlba/comparison.html)
+compares the irlba package with the RSpectra package, a high-quality eigenvalue
+solver for R.
 
 ## Other applications
 
-The newe `tcor` algorithm (http://arxiv.org/abs/1512.07246) and R package
-(https://github.com/bwlewis/tcor -- not yet on CRAN) use irlba to compute
+The newe `tcor` algorithm 
+[http://arxiv.org/abs/1512.07246](http://arxiv.org/abs/1512.07246)
+ and R package
+([https://github.com/bwlewis/tcor](https://github.com/bwlewis/tcor) -- not yet on CRAN) use irlba to compute
 thresholded correlation matrices very quickly. This example computes the most
 highly correlated gene expressions from the Cancer Genome Atlas RNASeq gene
 expression data for breast cancer:
-https://github.com/bwlewis/tcor/blob/master/vignettes/brca.Rmd.
+[https://github.com/bwlewis/tcor/blob/master/vignettes/brca.Rmd](https://github.com/bwlewis/tcor/blob/master/vignettes/brca.Rmd).
 
 Many more applications will appear here soon, check back!
 
