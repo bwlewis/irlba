@@ -41,9 +41,7 @@ examples).
 <a href="https://codecov.io/gh/bwlewis/irlba">
   <img src="https://codecov.io/gh/bwlewis/irlba/branch/master/graph/badge.svg" alt="Codecov" />
 </a>
-<a href="https://www.r-pkg.org/pkg/irlba">
-  <img src="http://cranlogs.r-pkg.org/badges/irlba" />
-</a>
+[![](https://cranlogs.r-pkg.org/badges/irlba)]("https://www.r-pkg.org/pkg/irlba")
 <a href="https://cran.r-project.org/package=irlba">
   <img src="https://www.r-pkg.org/badges/version/irlba" />
 </a>
