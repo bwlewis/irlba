@@ -62,6 +62,13 @@ And, some interesting related recent work by Musco and colleagues:
 - Jin, Chi, et al. "Robust shift-and-invert preconditioning: Faster and more sample efficient algorithms for eigenvector computation." arXiv preprint arXiv:1510.08896 (2015).
 - Musco, Cameron, and Christopher Musco. "Randomized block krylov methods for stronger and faster approximate singular value decomposition." Advances in Neural Information Processing Systems. 2015.
 
+## New in 2.3.3 (Februrary, 2019)
+
+This is a bugfix release.
+
+- Man contributions by <a href="https://github.com/LTLA">LTLA</a> fixing issues
+in prcomp-style methods, among others.
+
 ## New in 2.3.2 (January, 2018)
 
 - Fixed a regression in `prcomp_irlba()` discovered by Xiaojie Qiu, see https://github.com/bwlewis/irlba/issues/25, and other related problems reported in https://github.com/bwlewis/irlba/issues/32.
