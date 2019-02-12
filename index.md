@@ -91,7 +91,7 @@ in prcomp-style methods, among others.
 - We re-introduced a solver for estimating the smallest singular values of a matrix and associated singular vector spaces. The solver is based on the oringial Harmonic Ritz vector augmentation method of Baglama and Reichel.  Beware that this method is somewhat experimental and may fail to converge, or may converge poorly, to estimated singular values for very ill-conditioned matrices. Along with block methods for irlba, this is an active area of work--feel free to contribute!
 - The mult() argument is deprecated and will be removed in a future version. Instead, we now recommend simply defining a custom class with a custom multiplcation operator. The example below illustrates the old and new approaches.
 
-```{r, eval=FALSE}
+```
 library(irlba)
 set.seed(1)
 A <- matrix(rnorm(100), 10)
@@ -169,7 +169,7 @@ The `mult` argument is deprecated and will be removed in a future version. We
 now recommend simply defining a custom class with a custom multiplcation
 operator.  The example below illustrates the old and new approaches.
 
-```{r}
+```
 library(irlba)
 set.seed(1)
 A <- matrix(rnorm(100), 10)
