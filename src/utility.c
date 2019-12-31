@@ -93,3 +93,50 @@ convtests (int Bsz, int n, double tol, double svtol, double Smax,
   *converged = 0;
   return;
 }
+
+void Rmult(char trans, int m, int n, SEXP X, double * v, double * out, SEXP rho) {
+  static SEXP mult_symb = NULL;
+  static SEXP cross_symb = NULL;
+  
+  SEXP s, t;
+  t = s = PROTECT(allocList(3));
+  SET_TYPEOF(s, LANGSXP);
+
+  SEXP V, result, coerced;
+
+  if (trans=='n') {
+    if (mult_symb == NULL) {
+      mult_symb = installChar(asChar(mkString("irlba_mult_single")));
+    }
+
+    V = PROTECT(allocVector(REALSXP, n));
+    memcpy(REAL(V), v, n * sizeof(double));
+
+    SETCAR(t, mult_symb); t = CDR(t);
+    SETCAR(t, X); t = CDR(t);
+    SETCAR(t, V);
+
+    result = eval(s, rho);
+    coerced = PROTECT(coerceVector(result, REALSXP));
+    memcpy(out, REAL(coerced), m * sizeof(double));
+    
+  } else {
+    if (cross_symb == NULL) {
+      cross_symb = installChar(asChar(mkString("irlba_cross_single")));
+    }
+
+    V = PROTECT(allocVector(REALSXP, m));
+    memcpy(REAL(V), v, m * sizeof(double));
+
+    SETCAR(t, cross_symb); t = CDR(t);
+    SETCAR(t, X); t = CDR(t);
+    SETCAR(t, V);
+
+    result = eval(s, rho);
+    coerced = PROTECT(coerceVector(result, REALSXP));
+    memcpy(out, REAL(coerced), n * sizeof(double));
+  }
+
+  UNPROTECT(3);
+  return;
+}

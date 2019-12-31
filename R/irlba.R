@@ -332,8 +332,6 @@ function(A,                     # data matrix
 
 # Try to use the fast C-language code path
   if (deflate) fastpath <- fastpath && is.null(du)
-# Only matrix, dgCMatrix supported by fastpath
-  fastpath <- fastpath && (("Matrix" %in% attributes(class(A)) && ("dgCMatrix" %in% class(A))) || "matrix" %in% class(A))
   if (fastpath && missingmult && !iscomplex && !right_only)
   {
     RESTART <- 0L
@@ -356,7 +354,14 @@ Use `set.seed` first for reproducibility.")
       v <- NULL
     }
 
-    SP <- ifelse(is.matrix(A), 0L, 1L)
+    SP <- if (is.matrix(A)) {
+        0L
+    } else if (is(A, "dgCMatrix")) {
+        1L
+    } else {
+        2L
+    }
+
     if (verbose) message("irlba: using fast C implementation")
     SCALE <- NULL
     SHIFT <- NULL
@@ -378,7 +383,8 @@ Use `set.seed` first for reproducibility.")
     }
     ans <- .Call(C_IRLB, A, as.integer(k), as.double(v), as.integer(work),
                  as.integer(maxit), as.double(tol), as.double(eps2), as.integer(SP),
-                 as.integer(RESTART), RV, RW, RS, SCALE, SHIFT, CENTER, as.double(svtol))
+                 as.integer(RESTART), RV, RW, RS, SCALE, SHIFT, CENTER, as.double(svtol),
+                 nrow(A), ncol(A), environment()) 
     if (ans[[6]] == 0 || ans[[6]] == -2)
     {
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")

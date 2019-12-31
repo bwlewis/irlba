@@ -70,3 +70,11 @@ message_once <- function(..., flag)
   flag$flag <- TRUE
   message(...)
 }
+
+irlba_mult_single <- function(X, V) {
+    drop(X %*% V)
+}
+
+irlba_cross_single <- function(X, V) {
+    drop(crossprod(X, V))
+}

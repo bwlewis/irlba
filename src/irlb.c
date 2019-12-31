@@ -92,29 +92,29 @@ RNORM (int n)
 SEXP
 IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
       SEXP MULT, SEXP RESTART, SEXP RV, SEXP RW, SEXP RS, SEXP SCALE,
-      SEXP SHIFT, SEXP CENTER, SEXP SVTOL)
+      SEXP SHIFT, SEXP CENTER, SEXP SVTOL,
+      SEXP NROW, SEXP NCOL, SEXP RHO)
 {
   SEXP ANS, S, U, V;
   double *V1, *U1, *W, *F, *B, *BU, *BV, *BS, *BW, *res, *T, *scale, *shift,
     *center, *SVRATIO;
   int i, iter, mprod, ret;
-  int m, n;
+  
+  int m = INTEGER(NROW)[0];
+  int n = INTEGER(NCOL)[0];
 
   int mult = INTEGER (MULT)[0];
   void *AS = NULL;
   double *A = NULL;
   switch (mult)
     {
+    case 2:
+      break;
     case 1:
       AS = (void *) AS_CHM_SP (X);
-      int *dims = INTEGER (GET_SLOT (X, install ("Dim")));
-      m = dims[0];
-      n = dims[1];
       break;
     default:
       A = REAL (X);
-      m = nrows (X);
-      n = ncols (X);
     }
   int nu = INTEGER (NU)[0];
   int work = INTEGER (WORK)[0];
@@ -171,9 +171,9 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
         B[i + work * i] = REAL (RS)[i];
     }
   ret =
-    irlb (A, AS, mult, m, n, nu, work, maxit, restart, tol, scale, shift, center,
+    irlb (A, AS, X, mult, m, n, nu, work, maxit, restart, tol, scale, shift, center,
           REAL (S), REAL (U), REAL (V), &iter, &mprod, eps, lwork, V1, U1, W,
-          F, B, BU, BV, BS, BW, res, T, svtol, SVRATIO);
+          F, B, BU, BV, BS, BW, res, T, svtol, SVRATIO, RHO);
   SET_VECTOR_ELT (ANS, 0, S);
   SET_VECTOR_ELT (ANS, 1, U);
   SET_VECTOR_ELT (ANS, 2, V);
@@ -195,9 +195,10 @@ IRLB (SEXP X, SEXP NU, SEXP INIT, SEXP WORK, SEXP MAXIT, SEXP TOL, SEXP EPS,
  * all data must be allocated by caller, required sizes listed below
  */
 int
-irlb (double *A,                // Input data matrix (double case)
+irlb (double *A,                // input data matrix (double case)
       void *AS,                 // input data matrix (sparse case)
-      int mult,                 // 0 -> use double *A, 1 -> use AS
+      SEXP MAT,                 // input data matrix (other case) 
+      int mult,                 // 0 -> use double *A, 1 -> use AS, 2 -> use R.
       int m,                    // data matrix number of rows, must be > 3.
       int n,                    // data matrix number of columns, must be > 3.
       int nu,                   // dimension of solution
@@ -228,7 +229,8 @@ irlb (double *A,                // Input data matrix (double case)
       double *res,              // work
       double *T,                // lwork
       double svtol,             // svtol limit
-      double *svratio)          // convtest extra storage vector of length work
+      double *svratio,          // convtest extra storage vector of length work
+      SEXP RHO)                 // environment for R-level evaluation
 {
   double d, S, R, alpha, beta, R_F, SS;
   double *x;
@@ -277,6 +279,9 @@ irlb (double *A,                // Input data matrix (double case)
 
       switch (mult)
         {
+        case 2:
+          Rmult('n', m, n, MAT, x, W + j * m, RHO);
+          break;
         case 1:
           dsdmult ('n', m, n, AS, x, W + j * m);
           break;
@@ -316,6 +321,9 @@ irlb (double *A,                // Input data matrix (double case)
         {
           switch (mult)
             {
+            case 2:
+              Rmult('t', m, n, MAT, W + j * m, F, RHO);
+              break;
             case 1:
               dsdmult ('t', m, n, AS, W + j * m, F);
               break;
@@ -383,6 +391,9 @@ irlb (double *A,                // Input data matrix (double case)
                 }
               switch (mult)
                 {
+                case 2:
+                  Rmult('n', m, n, MAT, x, W + (j + 1) * m, RHO);
+                  break;
                 case 1:
                   dsdmult ('n', m, n, AS, x, W + (j + 1) * m);
                   break;
@@ -522,7 +533,7 @@ irlba_R_cholmod_error (int status, const char *file, int line,
 }
 
 static const R_CallMethodDef CallEntries[] = {
-  {"IRLB", (DL_FUNC) & IRLB, 16},
+  {"IRLB", (DL_FUNC) & IRLB, 19},
   {NULL, NULL, 0}
 };
 

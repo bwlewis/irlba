@@ -34,10 +34,20 @@ dsdmult(char transpose, // 't' -> op(a) = t(a), non-transposed a otherwise
         double *b,      // double precision dense vector
         double *c);     // output
 
+void 
+Rmult(char trans, 
+      int m, 
+      int n, 
+      SEXP X, 
+      double * v, 
+      double * out, 
+      SEXP rho);
+
 /* IRLB function for sparse or dense double-precision valued matrices */
 int
 irlb(double *A,     // input data matrix (dense case)
      void *AS,      // input data matrix (sparse case)
+     SEXP MAT,      // input data matrix (other case)
      int mult,      // 0 -> A is double *, 1-> A is sparse double *
      int m,         // data matrix number of rows
      int n,         // data matrix number of columns
@@ -68,4 +78,5 @@ irlb(double *A,     // input data matrix (dense case)
      double *res,   // working storage  work
      double *T,     // working storage lwork
      double svtol,  // svtol tolerance on maximum ratio change per singular value per iteration
-     double *SVRATIO);  // working storage nu
+     double *SVRATIO, // working storage nu
+     SEXP RHO);     // R environment
