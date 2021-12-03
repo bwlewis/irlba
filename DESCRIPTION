@@ -5,13 +5,14 @@ Title: Fast Truncated Singular Value Decomposition and Principal Components
 Version: 2.3.4
 Date: 2021-12-02
 Authors@R: c(
-    person("Jim", "Baglama", rol=c("aut", "cph"), email="jbaglama@uri.edu"),
+    person("Jim", "Baglama", role=c("aut", "cph"), email="jbaglama@uri.edu"),
     person("Lothar", "Reichel", role=c("aut", "cph"), email="reichel@math.kent.edu"),
     person("B. W.", "Lewis", role=c("aut","cre","cph"), email="blewis@illposed.net"))
 Description: Fast and memory efficient methods for truncated singular value
     decomposition and principal components analysis of large sparse and dense
     matrices.
 Depends:
+    R (>= 3.6.2),
     Matrix
 LinkingTo: Matrix
 Imports:
