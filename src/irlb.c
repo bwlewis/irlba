@@ -22,12 +22,17 @@
 #include <assert.h>
 #include <math.h>
 
+#define USE_FC_LEN_T
+#include <Rconfig.h>
+#include "R_ext/BLAS.h"
+#ifndef FCONE
+# define FCONE
+#endif
 #include <R.h>
 #define USE_RINTERNALS
 #include <Rinternals.h>
 #include <Rdefines.h>
 
-#include "R_ext/BLAS.h"
 #include "R_ext/Lapack.h"
 #include "R_ext/Rdynload.h"
 #include "R_ext/Utils.h"
@@ -284,7 +289,7 @@ irlb (double *A,                // Input data matrix (double case)
           alpha = 1;
           beta = 0;
           F77_NAME (dgemv) ("n", &m, &n, &alpha, (double *) A, &m, x,
-                            &inc, &beta, W + j * m, &inc);
+                            &inc, &beta, W + j * m, &inc FCONE);
         }
       mprod++;
       R_CheckUserInterrupt ();
@@ -323,7 +328,7 @@ irlb (double *A,                // Input data matrix (double case)
               alpha = 1.0;
               beta = 0.0;
               F77_NAME (dgemv) ("t", &m, &n, &alpha, (double *) A, &m,
-                                W + j * m, &inc, &beta, F, &inc);
+                                W + j * m, &inc, &beta, F, &inc FCONE);
             }
           mprod++;
           R_CheckUserInterrupt ();
@@ -390,7 +395,7 @@ irlb (double *A,                // Input data matrix (double case)
                   alpha = 1.0;
                   beta = 0.0;
                   F77_NAME (dgemv) ("n", &m, &n, &alpha, (double *) A, &m,
-                                    x, &inc, &beta, W + (j + 1) * m, &inc);
+                                    x, &inc, &beta, W + (j + 1) * m, &inc FCONE);
                 }
               mprod++;
               R_CheckUserInterrupt ();
@@ -442,7 +447,7 @@ irlb (double *A,                // Input data matrix (double case)
       memmove (BU, B, work * work * sizeof (double));   // Make a working copy of B
       int *BI = (int *) T;
       F77_NAME (dgesdd) ("O", &work, &work, BU, &work, BS, BU, &work, BV,
-                         &work, BW, &lwork, BI, &info);
+                         &work, BW, &lwork, BI, &info FCONE);
       R_F = F77_NAME (dnrm2) (&n, F, &inc);
       R = 1.0 / R_F;
       F77_NAME (dscal) (&n, &R, F, &inc);
@@ -473,7 +478,7 @@ irlb (double *A,                // Input data matrix (double case)
       alpha = 1;
       beta = 0;
       F77_NAME (dgemm) ("n", "t", &n, &k, &j, &alpha, V, &n, BV, &work, &beta,
-                        V1, &n);
+                        V1, &n FCONE FCONE);
       memmove (V, V1, n * k * sizeof (double));
       memmove (V + n * k, F, n * sizeof (double));
 
@@ -488,7 +493,7 @@ irlb (double *A,                // Input data matrix (double case)
       alpha = 1;
       beta = 0;
       F77_NAME (dgemm) ("n", "n", &m, &k, &j, &alpha, W, &m, BU, &work, &beta,
-                        U1, &m);
+                        U1, &m FCONE FCONE);
       memmove (W, U1, m * k * sizeof (double));
       iter++;
     }
@@ -498,9 +503,9 @@ irlb (double *A,                // Input data matrix (double case)
   alpha = 1;
   beta = 0;
   F77_NAME (dgemm) ("n", "n", &m, &nu, &work, &alpha, W, &m, BU, &work, &beta,
-                    U, &m);
+                    U, &m FCONE FCONE);
   F77_NAME (dgemm) ("n", "t", &n, &nu, &work, &alpha, V, &n, BV, &work, &beta,
-                    V1, &n);
+                    V1, &n FCONE FCONE);
   memmove (V, V1, n * nu * sizeof (double));
 
   *ITER = iter;
