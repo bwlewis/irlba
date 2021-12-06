@@ -22,9 +22,13 @@
 #include <assert.h>
 #include <math.h>
 
+#define USE_FC_LEN_T
+#include <Rconfig.h>
+#include <R_ext/BLAS.h>
+#ifndef FCONE
+# define FCONE
+#endif
 #include "Rinternals.h"
-#include "R_ext/BLAS.h"
-#include "R_ext/Lapack.h"
 
 #include "irlb.h"
 
@@ -44,11 +48,11 @@ orthog (double *X, double *Y, double *T, int xm, int xn, int yn)
   int inc = 1;
   memset (T, 0, xn * yn * sizeof (double));
   // T = t(X) * Y
-  F77_NAME (dgemv) ("t", &xm, &xn, &a, X, &xm, Y, &inc, &b, T, &inc);
+  F77_CALL (dgemv) ("t", &xm, &xn, &a, X, &xm, Y, &inc, &b, T, &inc FCONE);
   // Y = Y - X * T
   a = -1.0;
   b = 1.0;
-  F77_NAME (dgemv) ("n", &xm, &xn, &a, X, &xm, T, &inc, &b, Y, &inc);
+  F77_CALL (dgemv) ("n", &xm, &xn, &a, X, &xm, T, &inc, &b, Y, &inc FCONE);
 }
 
 

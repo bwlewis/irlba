@@ -2,8 +2,8 @@ Package: irlba
 Type: Package
 Title: Fast Truncated Singular Value Decomposition and Principal Components
     Analysis for Large Dense and Sparse Matrices
-Version: 2.3.4
-Date: 2021-12-02
+Version: 2.3.5
+Date: 2021-12-05
 Authors@R: c(
     person("Jim", "Baglama", role=c("aut", "cph"), email="jbaglama@uri.edu"),
     person("Lothar", "Reichel", role=c("aut", "cph"), email="reichel@math.kent.edu"),

@@ -261,11 +261,11 @@ irlb (double *A,                // Input data matrix (double case)
 /*  Normalize starting vector */
       if (iter == 0 && restart == 0)
         {
-          d = F77_NAME (dnrm2) (&n, V, &inc);
+          d = F77_CALL (dnrm2) (&n, V, &inc);
           if (d < eps)
             return -1;
           d = 1 / d;
-          F77_NAME (dscal) (&n, &d, V, &inc);
+          F77_CALL (dscal) (&n, &d, V, &inc);
         }
       else
         j = k;
@@ -288,7 +288,7 @@ irlb (double *A,                // Input data matrix (double case)
         default:
           alpha = 1;
           beta = 0;
-          F77_NAME (dgemv) ("n", &m, &n, &alpha, (double *) A, &m, x,
+          F77_CALL (dgemv) ("n", &m, &n, &alpha, (double *) A, &m, x,
                             &inc, &beta, W + j * m, &inc FCONE);
         }
       mprod++;
@@ -310,11 +310,11 @@ irlb (double *A,                // Input data matrix (double case)
         }
       if (iter > 0)
         orthog (W, W + j * m, T, m, j, 1);
-      S = F77_NAME (dnrm2) (&m, W + j * m, &inc);
+      S = F77_CALL (dnrm2) (&m, W + j * m, &inc);
       if (S < eps && j == 0)
         return -4;
       SS = 1.0 / S;
-      F77_NAME (dscal) (&m, &SS, W + j * m, &inc);
+      F77_CALL (dscal) (&m, &SS, W + j * m, &inc);
 
 /* The Lanczos process */
       while (j < work)
@@ -327,7 +327,7 @@ irlb (double *A,                // Input data matrix (double case)
             default:
               alpha = 1.0;
               beta = 0.0;
-              F77_NAME (dgemv) ("t", &m, &n, &alpha, (double *) A, &m,
+              F77_CALL (dgemv) ("t", &m, &n, &alpha, (double *) A, &m,
                                 W + j * m, &inc, &beta, F, &inc FCONE);
             }
           mprod++;
@@ -356,12 +356,12 @@ irlb (double *A,                // Input data matrix (double case)
                   F[kk] = F[kk] - beta * center[kk];
             }
           SS = -S;
-          F77_NAME (daxpy) (&n, &SS, V + j * n, &inc, F, &inc);
+          F77_CALL (daxpy) (&n, &SS, V + j * n, &inc, F, &inc);
           orthog (V, F, T, n, j + 1, 1);
 
           if (j + 1 < work)
             {
-              R_F = F77_NAME (dnrm2) (&n, F, &inc);
+              R_F = F77_CALL (dnrm2) (&n, F, &inc);
               R = 1.0 / R_F;
               if (R_F < eps)        // near invariant subspace
                 {
@@ -369,12 +369,12 @@ irlb (double *A,                // Input data matrix (double case)
                   for (kk = 0; kk < n; ++kk)
                     F[kk] = REAL (FOO)[kk];
                   orthog (V, F, T, n, j + 1, 1);
-                  R_F = F77_NAME (dnrm2) (&n, F, &inc);
+                  R_F = F77_CALL (dnrm2) (&n, F, &inc);
                   R = 1.0 / R_F;
                   R_F = 0;
                 }
               memmove (V + (j + 1) * n, F, n * sizeof (double));
-              F77_NAME (dscal) (&n, &R, V + (j + 1) * n, &inc);
+              F77_CALL (dscal) (&n, &R, V + (j + 1) * n, &inc);
               B[j * work + j] = S;
               B[(j + 1) * work + j] = R_F;
 /* optionally apply scale */
@@ -394,7 +394,7 @@ irlb (double *A,                // Input data matrix (double case)
                 default:
                   alpha = 1.0;
                   beta = 0.0;
-                  F77_NAME (dgemv) ("n", &m, &n, &alpha, (double *) A, &m,
+                  F77_CALL (dgemv) ("n", &m, &n, &alpha, (double *) A, &m,
                                     x, &inc, &beta, W + (j + 1) * m, &inc FCONE);
                 }
               mprod++;
@@ -416,11 +416,11 @@ irlb (double *A,                // Input data matrix (double case)
                 }
 /* One step of classical Gram-Schmidt */
               R = -R_F;
-              F77_NAME (daxpy) (&m, &R, W + j * m, &inc, W + (j + 1) * m,
+              F77_CALL (daxpy) (&m, &R, W + j * m, &inc, W + (j + 1) * m,
                                 &inc);
 /* full re-orthogonalization of W_{j+1} */
               orthog (W, W + (j + 1) * m, T, m, j + 1, 1);
-              S = F77_NAME (dnrm2) (&m, W + (j + 1) * m, &inc);
+              S = F77_CALL (dnrm2) (&m, W + (j + 1) * m, &inc);
               SS = 1.0 / S;
               if (S < eps)
                 {
@@ -429,13 +429,13 @@ irlb (double *A,                // Input data matrix (double case)
                   for (kk = 0; kk < m; ++kk)
                     W[jj + kk] = REAL (FOO)[kk];
                   orthog (W, W + (j + 1) * m, T, m, j + 1, 1);
-                  S = F77_NAME (dnrm2) (&m, W + (j + 1) * m, &inc);
+                  S = F77_CALL (dnrm2) (&m, W + (j + 1) * m, &inc);
                   SS = 1.0 / S;
-                  F77_NAME (dscal) (&m, &SS, W + (j + 1) * m, &inc);
+                  F77_CALL (dscal) (&m, &SS, W + (j + 1) * m, &inc);
                   S = 0;
                 }
               else
-                F77_NAME (dscal) (&m, &SS, W + (j + 1) * m, &inc);
+                F77_CALL (dscal) (&m, &SS, W + (j + 1) * m, &inc);
             }
           else
             {
@@ -446,11 +446,11 @@ irlb (double *A,                // Input data matrix (double case)
 
       memmove (BU, B, work * work * sizeof (double));   // Make a working copy of B
       int *BI = (int *) T;
-      F77_NAME (dgesdd) ("O", &work, &work, BU, &work, BS, BU, &work, BV,
+      F77_CALL (dgesdd) ("O", &work, &work, BU, &work, BS, BU, &work, BV,
                          &work, BW, &lwork, BI, &info FCONE);
-      R_F = F77_NAME (dnrm2) (&n, F, &inc);
+      R_F = F77_CALL (dnrm2) (&n, F, &inc);
       R = 1.0 / R_F;
-      F77_NAME (dscal) (&n, &R, F, &inc);
+      F77_CALL (dscal) (&n, &R, F, &inc);
 /* Force termination after encountering linear dependence */
       if (R_F < eps)
         R_F = 0;
@@ -477,7 +477,7 @@ irlb (double *A,                // Input data matrix (double case)
 
       alpha = 1;
       beta = 0;
-      F77_NAME (dgemm) ("n", "t", &n, &k, &j, &alpha, V, &n, BV, &work, &beta,
+      F77_CALL (dgemm) ("n", "t", &n, &k, &j, &alpha, V, &n, BV, &work, &beta,
                         V1, &n FCONE FCONE);
       memmove (V, V1, n * k * sizeof (double));
       memmove (V + n * k, F, n * sizeof (double));
@@ -492,7 +492,7 @@ irlb (double *A,                // Input data matrix (double case)
 /*   Update the left approximate singular vectors */
       alpha = 1;
       beta = 0;
-      F77_NAME (dgemm) ("n", "n", &m, &k, &j, &alpha, W, &m, BU, &work, &beta,
+      F77_CALL (dgemm) ("n", "n", &m, &k, &j, &alpha, W, &m, BU, &work, &beta,
                         U1, &m FCONE FCONE);
       memmove (W, U1, m * k * sizeof (double));
       iter++;
@@ -502,9 +502,9 @@ irlb (double *A,                // Input data matrix (double case)
   memmove (s, BS, nu * sizeof (double));        /* Singular values */
   alpha = 1;
   beta = 0;
-  F77_NAME (dgemm) ("n", "n", &m, &nu, &work, &alpha, W, &m, BU, &work, &beta,
+  F77_CALL (dgemm) ("n", "n", &m, &nu, &work, &alpha, W, &m, BU, &work, &beta,
                     U, &m FCONE FCONE);
-  F77_NAME (dgemm) ("n", "t", &n, &nu, &work, &alpha, V, &n, BV, &work, &beta,
+  F77_CALL (dgemm) ("n", "t", &n, &nu, &work, &alpha, V, &n, BV, &work, &beta,
                     V1, &n FCONE FCONE);
   memmove (V, V1, n * nu * sizeof (double));
 
