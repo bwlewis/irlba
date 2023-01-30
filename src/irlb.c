@@ -559,10 +559,26 @@ R_unload_irlba (DllInfo * dll)
 }
 
 
+
+typedef int (*cholmod_sdmult_func)
+(
+    /* ---- input ---- */
+    cholmod_sparse *A,  /* sparse matrix to multiply */
+    int transpose,      /* use A if 0, or A' otherwise */
+    double alpha [2],   /* scale factor for A */
+    double beta [2],    /* scale factor for Y */
+    cholmod_dense *X,   /* dense matrix to multiply */
+    /* ---- in/out --- */
+    cholmod_dense *Y,   /* resulting dense matrix */
+    /* --------------- */
+    cholmod_common *Common
+);
+
 void
 dsdmult (char transpose, int m, int n, void * a, double *b, double *c)
 {
-  DL_FUNC sdmult = R_GetCCallable ("Matrix", "cholmod_sdmult");
+  cholmod_sdmult_func sdmult;
+  sdmult = (cholmod_sdmult_func) R_GetCCallable ("Matrix", "cholmod_sdmult");
   int t = transpose == 't' ? 1 : 0;
   CHM_SP cha = (CHM_SP) a;
 
