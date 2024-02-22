@@ -69,63 +69,43 @@
 #' @seealso \code{\link{prcomp}}
 #' @import Matrix
 #' @importFrom stats rnorm prcomp sd var
-#' @importFrom methods slotNames slot
+#' @importFrom methods slotNames slot hasArg
 #' @export
 prcomp_irlba <- function(x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, ...)
 {
-  a <- names(as.list(match.call()))
-  ans <- list(scale=scale.)
-  if ("tol" %in% a)
+  if (hasArg("tol"))
     warning("The `tol` truncation argument from `prcomp` is not supported by
 `prcomp_irlba`. If specified, `tol` is passed to the `irlba` function to
 control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
+
 # Try to convert data frame to matrix...
   if (is.data.frame(x)) x <- as.matrix(x)
+
+  col_means <- colMeans(x)
+  center <- if (!is.logical(center)) center else if (center) col_means else 0
+
+  col_vars <- (colMeans(x^2) - 2*col_means*center + center^2) / (1 - 1/nrow(x))
+  scale. <- if (!is.logical(scale.)) scale. else if (scale.) sqrt(col_vars) else 1
+
   args <- list(A=x, nv=n)
-  if (is.logical(center))
-  {
-    if (center) args$center <- colMeans(x)
-  } else args$center <- center
-  if (is.logical(scale.))
-  {
-      if (is.numeric(args$center))
-      {
-        f <- function(i) sqrt(sum((x[, i] - args$center[i]) ^ 2) / (nrow(x) - 1L))
-        scale. <- vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE)
-        if (ans$scale) ans$totalvar <- ncol(x)
-        else ans$totalvar <- sum(scale. ^ 2)
-      } else
-      {
-        if (ans$scale)
-        {
-          scale. <- apply(x, 2L, function(v) sqrt(sum(v ^ 2) / max(1, length(v) - 1L)))
-          f <- function(i) sqrt(sum((x[, i] / scale.[i]) ^ 2) / (nrow(x) - 1L))
-          ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE) ^ 2)
-        } else
-        {
-          f <- function(i) sum(x[, i] ^ 2) / (nrow(x) - 1L)
-          ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE))
-        }
-      }
-      if (ans$scale) args$scale <- scale.
-  } else
-  {
-    args$scale <- scale.
-    f <- function(i) sqrt(sum((x[, i] / scale.[i]) ^ 2) / (nrow(x) - 1L))
-    ans$totalvar <- sum(vapply(seq(ncol(x)), f, pi, USE.NAMES=FALSE))
-  }
-  if (!missing(...)) args <- c(args, list(...))
+  if(!isTRUE(all(center==0))) args$center <- center # center & scale are only supplied to irlba if
+  if(!isTRUE(all(scale.==1))) args$scale <- scale.  # centering/scaling would actually be performed
+  args <- c(args, list(...))
 
   s <- do.call(irlba, args=args)
-  ans$sdev <- s$d / sqrt(max(1, nrow(x) - 1))
-  ans$rotation <- s$v
-  colnames(ans$rotation) <- paste("PC", seq(1, ncol(ans$rotation)), sep="")
-  ans$center <- args$center
+  ans <-list(
+    sdev = s$d / sqrt(nrow(x) - 1),
+    rotation = s$v,
+    center = if(is.null(args$center)) FALSE else args$center,
+    scale = if(is.null(args$center)) FALSE else args$center
+  )
+  colnames(ans$rotation) <- paste("PC", seq_len(ncol(ans$rotation)), sep="")
   if (retx)
   {
-    ans <- c(ans, list(x = sweep(s$u, 2, s$d, FUN=`*`)))
-    colnames(ans$x) <- paste("PC", seq(1, ncol(ans$rotation)), sep="")
+    ans$x <- s$u %*% diag(s$d)
+    colnames(ans$x) <- colnames(ans$rotation)
   }
+  ans$totalvar <- sum(col_vars/scale.^2)
   class(ans) <- c("irlba_prcomp", "prcomp")
   ans
 }
