@@ -1,5 +1,5 @@
 #' Find a few approximate largest singular values and corresponding
-#' singular vectors of a matrix.
+#' singular vectors of a matrix
 #'
 #' The randomized method for truncated SVD by P. G. Martinsson and colleagues
 #' finds a few approximate largest singular values and corresponding
