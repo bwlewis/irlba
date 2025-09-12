@@ -2,7 +2,7 @@
 % Please edit documentation in R/eigen.R
 \name{partial_eigen}
 \alias{partial_eigen}
-\title{Find a few approximate largest eigenvalues and corresponding eigenvectors of a symmetric matrix.}
+\title{Find a few approximate largest eigenvalues and corresponding eigenvectors of a symmetric matrix}
 \usage{
 partial_eigen(x, n = 5, symmetric = TRUE, ...)
 }
@@ -19,7 +19,7 @@ eigenvectors of \code{t(x) \%*\% x} instead.}
 }
 \value{
 Returns a list with entries:
-\itemize{
+\describe{
   \item{values}{ n approximate largest eigenvalues}
   \item{vectors}{ n approximate corresponding eigenvectors}
 }
@@ -63,4 +63,3 @@ Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and
 \seealso{
 \code{\link{eigen}}, \code{\link{irlba}}
 }
-

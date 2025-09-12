@@ -2,7 +2,7 @@
 % Please edit documentation in R/prcomp.R
 \name{summary.irlba_prcomp}
 \alias{summary.irlba_prcomp}
-\title{Summary method for truncated pca objects computed by \code{prcomp_irlba}.}
+\title{Summary method for truncated pca objects computed by \code{prcomp_irlba}}
 \usage{
 \method{summary}{irlba_prcomp}(object, ...)
 }
@@ -12,6 +12,5 @@
 \item{...}{Optional arguments passed to \code{summary}.}
 }
 \description{
-Summary method for truncated pca objects computed by \code{prcomp_irlba}.
+Summary method for truncated pca objects computed by \code{prcomp_irlba}
 }
-

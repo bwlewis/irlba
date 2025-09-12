@@ -2,10 +2,20 @@
 % Please edit documentation in R/ssvd.R
 \name{ssvd}
 \alias{ssvd}
-\title{Sparse regularized low-rank matrix approximation.}
+\title{Sparse regularized low-rank matrix approximation}
 \usage{
-ssvd(x, k = 1, n = 2, maxit = 500, tol = 0.001, center = FALSE,
-  scale. = FALSE, alpha = 0, tsvd = NULL, ...)
+ssvd(
+  x,
+  k = 1,
+  n = 2,
+  maxit = 500,
+  tol = 0.001,
+  center = FALSE,
+  scale. = FALSE,
+  alpha = 0,
+  tsvd = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A numeric real- or complex-valued matrix or real-valued sparse matrix.}
@@ -48,15 +58,15 @@ to perform a regularized sparse PCA.}
 }
 \value{
 A list containing the following components:
-\itemize{
-   \item{u} {regularized left singular vectors with orthonormal columns}
-   \item{d} {regularized upper-triangluar projection matrix so that \code{x \%*\% v == u \%*\% d}}
-   \item{v} {regularized, sparse right singular vectors with columns of unit norm}
-   \item{center, scale} {the centering and scaling used, if any}
-   \item{lambda} {the per-column regularization parameter found to obtain the desired sparsity}
-   \item{iter} {number of soft thresholding iterations}
-   \item{n} {value of input parameter \code{n}}
-   \item{alpha} {value of input parameter \code{alpha}}
+\describe{
+   \item{u}{regularized left singular vectors with orthonormal columns}
+   \item{d}{regularized upper-triangluar projection matrix so that \code{x \%*\% v == u \%*\% d}}
+   \item{v}{regularized, sparse right singular vectors with columns of unit norm}
+   \item{center, scale}{the centering and scaling used, if any}
+   \item{lambda}{the per-column regularization parameter found to obtain the desired sparsity}
+   \item{iter}{number of soft thresholding iterations}
+   \item{n}{value of input parameter \code{n}}
+   \item{alpha}{value of input parameter \code{alpha}}
 }
 }
 \description{
@@ -84,22 +94,22 @@ Unlike standard SVD or PCA, the columns of the returned \code{v} when \code{k > 
 \note{
 Our \code{ssvd} implementation of the Shen-Huang method makes the following choices:
 \enumerate{
-\item{The l1 penalty is the only available penalty function. Other penalties may appear in the future.}
-\item{Given a desired number of nonzero elements in \code{v}, value(s) for the \eqn{\lambda}{lambda}
-      penalty are determined to achieve the sparsity goal subject to the parameter \code{alpha}.}
-\item{An experimental block implementation is used for results with rank greater than 1 (when \code{k > 1})
-      instead of the deflation method described in the reference.}
-\item{The choice of a penalty lambda associated with a given number of desired nonzero
+\item The l1 penalty is the only available penalty function. Other penalties may appear in the future.
+\item Given a desired number of nonzero elements in \code{v}, value(s) for the \eqn{\lambda}{lambda}
+      penalty are determined to achieve the sparsity goal subject to the parameter \code{alpha}.
+\item An experimental block implementation is used for results with rank greater than 1 (when \code{k > 1})
+      instead of the deflation method described in the reference.
+\item The choice of a penalty lambda associated with a given number of desired nonzero
       components is not unique. The \code{alpha} parameter, a scalar between zero and one,
       selects any possible value of lambda that produces the desired number of
       nonzero entries. The default \code{alpha = 0} selects a penalized solution with
       largest corresponding value of \code{d} in the 1-d case. Think of \code{alpha} as
-      fine-tuning of the penalty.}
-\item{Our method returns an upper-triangular matrix \code{d} when \code{k > 1} so
+      fine-tuning of the penalty.
+\item Our method returns an upper-triangular matrix \code{d} when \code{k > 1} so
       that \code{x \%*\% v == u \%*\% d}. Non-zero
       elements above the diagonal result from non-orthogonality of the \code{v} matrix,
       providing a simple interpretation of cumulative information, or explained variance
-      in the PCA case, via the singular value decomposition of \code{d \%*\% t(v)}.}
+      in the PCA case, via the singular value decomposition of \code{d \%*\% t(v)}.
 }
 
 What if you have no idea for values of the argument \code{n} (the desired sparsity)?
@@ -167,8 +177,7 @@ par(oldpar)
 }
 \references{
 \itemize{
-  \item{Shen, Haipeng, and Jianhua Z. Huang. "Sparse principal component analysis via regularized low rank matrix approximation." Journal of multivariate analysis 99.6 (2008): 1015-1034.}
-  \item{Witten, Tibshirani and Hastie (2009) A penalized matrix decomposition, with applications to sparse principal components and canonical correlation analysis. _Biostatistics_ 10(3): 515-534.}
+  \item Shen, Haipeng, and Jianhua Z. Huang. "Sparse principal component analysis via regularized low rank matrix approximation." Journal of multivariate analysis 99.6 (2008): 1015-1034. 
+  \item Witten, Tibshirani and Hastie (2009) A penalized matrix decomposition, with applications to sparse principal components and canonical correlation analysis. _Biostatistics_ 10(3): 515-534.
 }
 }
-
