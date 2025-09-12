@@ -1,4 +1,4 @@
-#' Find a few approximate largest eigenvalues and corresponding eigenvectors of a symmetric matrix.
+#' Find a few approximate largest eigenvalues and corresponding eigenvectors of a symmetric matrix
 #'
 #' Use \code{partial_eigen} to estimate a subset of the largest (most positive)
 #' eigenvalues and corresponding eigenvectors of a symmetric dense or sparse
@@ -13,7 +13,7 @@
 #'
 #' @return
 #' Returns a list with entries:
-#' \itemize{
+#' \describe{
 #'   \item{values}{ n approximate largest eigenvalues}
 #'   \item{vectors}{ n approximate corresponding eigenvectors}
 #' }

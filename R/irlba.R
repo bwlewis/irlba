@@ -1,5 +1,5 @@
 #' Find a few approximate singular values and corresponding
-#' singular vectors of a matrix.
+#' singular vectors of a matrix
 #'
 #' The augmented implicitly restarted Lanczos bidiagonalization algorithm
 #' (IRLBA) finds a few approximate largest (or, optionally, smallest) singular
@@ -108,18 +108,18 @@
 #'
 #' The function may generate the following warnings:
 #' \itemize{
-#'   \item{"did not converge--results might be invalid!; try increasing work or maxit"
+#'   \item "did not converge--results might be invalid!; try increasing work or maxit"
 #'   means that the algorithm didn't
 #'   converge -- this is potentially a serious problem and the returned results may not be valid. \code{irlba}
 #'   reports a warning here instead of an error so that you can inspect whatever is returned. If this
-#'   happens, carefully heed the warning and inspect the result. You may also try setting \code{fastpath=FALSE}.}
-#'   \item{"You're computing a large percentage of total singular values, standard svd might work better!"
+#'   happens, carefully heed the warning and inspect the result. You may also try setting \code{fastpath=FALSE}.
+#'   \item "You're computing a large percentage of total singular values, standard svd might work better!"
 #'     \code{irlba} is designed to efficiently compute a few of the largest singular values and associated
 #'      singular vectors of a matrix. The standard \code{svd} function will be more efficient for computing
-#'      large numbers of singular values than \code{irlba}.}
-#'    \item{"convergence criterion below machine epsilon" means that the product of \code{tol} and the
+#'      large numbers of singular values than \code{irlba}.
+#'   \item "convergence criterion below machine epsilon" means that the product of \code{tol} and the
 #'      largest estimated singular value is really small and the normal convergence criterion is only
-#'      met up to round off error.}
+#'      met up to round off error.
 #' }
 #' The function might return an error for several reasons including a situation when the starting
 #' vector \code{v} is near the null space of the matrix. In that case, try a different \code{v}.
