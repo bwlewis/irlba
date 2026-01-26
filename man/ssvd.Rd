@@ -4,8 +4,18 @@
 \alias{ssvd}
 \title{Sparse regularized low-rank matrix approximation.}
 \usage{
-ssvd(x, k = 1, n = 2, maxit = 500, tol = 0.001, center = FALSE,
-  scale. = FALSE, alpha = 0, tsvd = NULL, ...)
+ssvd(
+  x,
+  k = 1,
+  n = 2,
+  maxit = 500,
+  tol = 0.001,
+  center = FALSE,
+  scale. = FALSE,
+  alpha = 0,
+  tsvd = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A numeric real- or complex-valued matrix or real-valued sparse matrix.}
@@ -48,16 +58,15 @@ to perform a regularized sparse PCA.}
 }
 \value{
 A list containing the following components:
-\itemize{
-   \item{u} {regularized left singular vectors with orthonormal columns}
-   \item{d} {regularized upper-triangluar projection matrix so that \code{x \%*\% v == u \%*\% d}}
-   \item{v} {regularized, sparse right singular vectors with columns of unit norm}
-   \item{center, scale} {the centering and scaling used, if any}
-   \item{lambda} {the per-column regularization parameter found to obtain the desired sparsity}
-   \item{iter} {number of soft thresholding iterations}
-   \item{n} {value of input parameter \code{n}}
-   \item{alpha} {value of input parameter \code{alpha}}
-}
+\item{u}{regularized left singular vectors with orthonormal columns}
+\item{d}{regularized upper-triangular projection matrix so that \code{x \%*\% v == u \%*\% d}}
+\item{v}{regularized, sparse right singular vectors with columns of unit norm}
+\item{center}{the centering used, if any}
+\item{scale}{the scaling used, if any}
+\item{lambda}{the per-column regularization parameter found to obtain the desired sparsity}
+\item{iter}{number of soft thresholding iterations}
+\item{n}{value of input parameter \code{n}}
+\item{alpha}{value of input parameter \code{alpha}}
 }
 \description{
 Estimate an \eqn{{\ell}1}{l1}-penalized
@@ -171,4 +180,3 @@ par(oldpar)
   \item{Witten, Tibshirani and Hastie (2009) A penalized matrix decomposition, with applications to sparse principal components and canonical correlation analysis. _Biostatistics_ 10(3): 515-534.}
 }
 }
-

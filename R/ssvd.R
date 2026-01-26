@@ -48,18 +48,16 @@
 #' of nonzero elements in each column of \code{v} specified by \code{n}.
 #' Unlike standard SVD or PCA, the columns of the returned \code{v} when \code{k > 1} may not be orthogonal.
 #'
-#' @return
-#' A list containing the following components:
-#' \itemize{
-#'    \item{u} {regularized left singular vectors with orthonormal columns}
-#'    \item{d} {regularized upper-triangluar projection matrix so that \code{x \%*\% v == u \%*\% d}}
-#'    \item{v} {regularized, sparse right singular vectors with columns of unit norm}
-#'    \item{center, scale} {the centering and scaling used, if any}
-#'    \item{lambda} {the per-column regularization parameter found to obtain the desired sparsity}
-#'    \item{iter} {number of soft thresholding iterations}
-#'    \item{n} {value of input parameter \code{n}}
-#'    \item{alpha} {value of input parameter \code{alpha}}
-#' }
+#' @return A list containing the following components:
+#' \item{u}{regularized left singular vectors with orthonormal columns}
+#' \item{d}{regularized upper-triangular projection matrix so that \code{x \%*\% v == u \%*\% d}}
+#' \item{v}{regularized, sparse right singular vectors with columns of unit norm}
+#' \item{center}{the centering used, if any}
+#' \item{scale}{the scaling used, if any}
+#' \item{lambda}{the per-column regularization parameter found to obtain the desired sparsity}
+#' \item{iter}{number of soft thresholding iterations}
+#' \item{n}{value of input parameter \code{n}}
+#' \item{alpha}{value of input parameter \code{alpha}}
 #' @note
 #' Our \code{ssvd} implementation of the Shen-Huang method makes the following choices:
 #' \enumerate{

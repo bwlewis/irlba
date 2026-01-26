@@ -2,8 +2,8 @@ Package: irlba
 Type: Package
 Title: Fast Truncated Singular Value Decomposition and Principal
         Components Analysis for Large Dense and Sparse Matrices
-Version: 2.3.5.1
-Date: 2021-12-05
+Version: 2.3.6
+Date: 2026-01-25
 Authors@R: c(
     person("Jim", "Baglama", role=c("aut", "cph"), email="jbaglama@uri.edu"),
     person("Lothar", "Reichel", role=c("aut", "cph"), email="reichel@math.kent.edu"),
@@ -16,7 +16,7 @@ LinkingTo: Matrix
 Imports: stats, methods
 License: GPL-3
 BugReports: https://github.com/bwlewis/irlba/issues
-RoxygenNote: 5.0.1
+RoxygenNote: 7.3.3
 NeedsCompilation: yes
 Packaged: 2022-10-03 15:17:05 UTC; ripley
 Author: Jim Baglama [aut, cph],
@@ -24,4 +24,5 @@ Author: Jim Baglama [aut, cph],
   B. W. Lewis [aut, cre, cph]
 Maintainer: B. W. Lewis <blewis@illposed.net>
 Repository: CRAN
+Encoding: UTF-8
 Date/Publication: 2022-10-03 18:38:49 UTC

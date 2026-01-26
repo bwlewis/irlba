@@ -37,19 +37,18 @@ equal the number of columns of \code{x} can be supplied.}
 }
 \value{
 A list with class "prcomp" containing the following components:
-\itemize{
-   \item{sdev} {the standard deviations of the principal components (i.e.,
+\item{sdev}{the standard deviations of the principal components (i.e.,
          the square roots of the eigenvalues of the
          covariance/correlation matrix, though the calculation is
          actually done with the singular values of the data matrix).}
-  \item{rotation} {the matrix of variable loadings (i.e., a matrix whose columns
+\item{rotation}{the matrix of variable loadings (i.e., a matrix whose columns
          contain the eigenvectors).}
-  \item {x} {if \code{retx} is \code{TRUE} the value of the rotated data (the centred
+\item{x}{if \code{retx} is \code{TRUE} the value of the rotated data (the centred
          (and scaled if requested) data multiplied by the \code{rotation}
         matrix) is returned.  Hence, \code{cov(x)} is the diagonal matrix
          \code{diag(sdev^2)}.}
-  \item{center, scale} {the centering and scaling used, or \code{FALSE}.}
-}
+\item{center}{the centering used, or \code{FALSE}.}
+\item{scale}{the scaling used, or \code{FALSE}.}
 }
 \description{
 Efficient computation of a truncated principal components analysis of a given data matrix
@@ -83,4 +82,3 @@ summary(p2)
 \seealso{
 \code{\link{prcomp}}
 }
-

@@ -19,10 +19,8 @@ eigenvectors of \code{t(x) \%*\% x} instead.}
 }
 \value{
 Returns a list with entries:
-\itemize{
-  \item{values}{ n approximate largest eigenvalues}
-  \item{vectors}{ n approximate corresponding eigenvectors}
-}
+\item{values}{n approximate largest eigenvalues}
+\item{vectors}{n approximate corresponding eigenvectors}
 }
 \description{
 Use \code{partial_eigen} to estimate a subset of the largest (most positive)
@@ -63,4 +61,3 @@ Augmented Implicitly Restarted Lanczos Bidiagonalization Methods, J. Baglama and
 \seealso{
 \code{\link{eigen}}, \code{\link{irlba}}
 }
-

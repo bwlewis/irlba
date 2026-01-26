@@ -11,12 +11,9 @@
 #'   eigenvectors of \code{t(x) \%*\% x} instead.
 #' @param ... optional additional parameters passed to the \code{irlba} function.
 #'
-#' @return
-#' Returns a list with entries:
-#' \itemize{
-#'   \item{values}{ n approximate largest eigenvalues}
-#'   \item{vectors}{ n approximate corresponding eigenvectors}
-#' }
+#' @return Returns a list with entries:
+#' \item{values}{n approximate largest eigenvalues}
+#' \item{vectors}{n approximate corresponding eigenvectors}
 #'
 #' @note
 #' Specify \code{symmetric=FALSE} to compute the largest \code{n} eigenvalues

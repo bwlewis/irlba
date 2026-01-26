@@ -5,8 +5,16 @@
 \title{Find a few approximate largest singular values and corresponding
 singular vectors of a matrix.}
 \usage{
-svdr(x, k, tol = 1e-05, it = 100L, extra = min(10L, dim(x) - k),
-  center = NULL, Q = NULL, return.Q = FALSE)
+svdr(
+  x,
+  k,
+  tol = 1e-05,
+  it = 100L,
+  extra = min(10L, dim(x) - k),
+  center = NULL,
+  Q = NULL,
+  return.Q = FALSE
+)
 }
 \arguments{
 \item{x}{numeric real- or complex-valued matrix or real-valued sparse matrix.}
@@ -111,4 +119,3 @@ approximate matrix decompositions N. Halko, P. G. Martinsson, J. Tropp. Sep. 200
 \seealso{
 \code{\link{irlba}}, \code{\link{svd}}, \code{rsvd} in the rsvd package
 }
-

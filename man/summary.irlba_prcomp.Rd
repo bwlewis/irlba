@@ -14,4 +14,3 @@
 \description{
 Summary method for truncated pca objects computed by \code{prcomp_irlba}.
 }
-
