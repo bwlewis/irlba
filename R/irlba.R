@@ -39,6 +39,7 @@
 #'   column of \code{A}; must be as long as the number of columns of \code{A} and may
 #'   not be used together with the deflation options below (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
+#' @param mult DEPRECATED optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
 #' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the
 #'     reference R implementation. See the notes for more details.
 #' @param svtol additional stopping tolerance on maximum allowed absolute relative change across each
@@ -91,6 +92,12 @@
 #' to estimate the partial svd of \code{A + diag(shift, nrow(A), nrow(A))}
 #' (without explicitly forming the shifted matrix).
 #'
+#' (Deprecated) Specify an optional alternative matrix multiplication operator in the
+#' \code{mult} parameter. \code{mult} must be a function of two arguments,
+#' and must handle both cases where one argument is a vector and the other
+#' a matrix. This option is deprecated and will be removed in a future version.
+#' The new preferred method simply uses R itself to define a custom matrix class
+#' with your user-defined matrix multiplication operator. See the examples.
 #'
 #' Use the \code{v} option to supply a starting vector for the iterative
 #' method. A random vector is used by default (precede with \code{set.seed()}
@@ -186,6 +193,7 @@ function(A,                     # data matrix
          scale=NULL,            # optional column scaling
          center=NULL,           # optional column centering
          shift=NULL,            # optional shift for square matrices
+         mult=NULL,             # optional custom matrix multiplication func.
          fastpath=TRUE,         # use the faster C implementation if possible
          svtol=tol,             # stopping tolerance percent change in estimated svs
          smallest=FALSE,        # set to TRUE to estimate subspaces associated w/smallest singular values
@@ -248,8 +256,13 @@ function(A,                     # data matrix
   m <- nrow(A)
   n <- ncol(A)
   if (is.null(nu)) nu <- nv
-  mult <- `%*%`
+  if (!is.null(mult) && deflate) stop("the mult parameter can't be specified together with deflation parameters")
   missingmult <- FALSE
+  if (is.null(mult))
+  {
+    missingmult <- TRUE
+    mult <- `%*%`
+  }
   k <- max(nu, nv)
   if (k <= 0)  stop("max(nu, nv) must be positive")
   if (k > min(m - 1, n - 1)) stop("max(nu, nv) must be strictly less than min(nrow(A), ncol(A))")
@@ -371,8 +384,8 @@ Use `set.seed` first for reproducibility.")
       names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
       ans$u <- matrix(head(ans$u, m * nu), nrow=m, ncol=nu)
       ans$v <- matrix(head(ans$v, n * nv), nrow=n, ncol=nv)
-      if (isTRUE(tol * ans$d[1] < eps)) warning("convergence criterion below machine epsilon")
-      if (isTRUE((ans[[6]] == -2))) warning("did not converge--results might be invalid!; try increasing work or maxit")
+      if (tol * ans$d[1] < eps) warning("convergence criterion below machine epsilon")
+      if (ans[[6]] == -2) warning("did not converge--results might be invalid!; try increasing work or maxit")
       return(ans[-6])
     }
     errors <- c("invalid dimensions",

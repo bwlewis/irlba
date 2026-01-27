@@ -19,6 +19,7 @@ irlba(
   scale = NULL,
   center = NULL,
   shift = NULL,
+  mult = NULL,
   fastpath = TRUE,
   svtol = tol,
   smallest = FALSE,
@@ -70,6 +71,8 @@ column of \code{A}; must be as long as the number of columns of \code{A} and may
 not be used together with the deflation options below (see notes).}
 
 \item{shift}{optional shift value (square matrices only, see notes).}
+
+\item{mult}{DEPRECATED optional custom matrix multiplication function (default is \code{\%*\%}, see notes).}
 
 \item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the
 reference R implementation. See the notes for more details.}
@@ -133,6 +136,12 @@ The optional \code{shift} scalar valued argument applies only to square matrices
 to estimate the partial svd of \code{A + diag(shift, nrow(A), nrow(A))}
 (without explicitly forming the shifted matrix).
 
+(Deprecated) Specify an optional alternative matrix multiplication operator in the
+\code{mult} parameter. \code{mult} must be a function of two arguments,
+and must handle both cases where one argument is a vector and the other
+a matrix. This option is deprecated and will be removed in a future version.
+The new preferred method simply uses R itself to define a custom matrix class
+with your user-defined matrix multiplication operator. See the examples.
 
 Use the \code{v} option to supply a starting vector for the iterative
 method. A random vector is used by default (precede with \code{set.seed()}

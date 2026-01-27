@@ -17,13 +17,19 @@ examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
 An overview web page is here: https://bwlewis.github.io/irlba/.
 
+## New in 2.3.3
+
+- Several important reported problems with sparse matrices other than class
+  dgCMatrix and prcomp_irlba, and many bug fixes contributed by Aaron Lun, see for
+  instance: https://github.com/bwlewis/irlba/issues/47.
+
 ## New in 2.3.2
 
 - Fixed a regression in `prcomp_irlba()` discovered by Xiaojie Qiu, see https://github.com/bwlewis/irlba/issues/25, and other related problems reported in https://github.com/bwlewis/irlba/issues/32.
 - Added rchk testing to pre-CRAN submission tests.
 - Fixed a sign bug in `ssvd()` found by Alex Poliakov.
 
-## What's new in Version 2.3.1?
+## New in Version 2.3.1?
 
 - Fixed an `irlba()` bug associated with centering (PCA), see https://github.com/bwlewis/irlba/issues/21.
 - Fixed `irlba()` scaling to conform to `scale`, see https://github.com/bwlewis/irlba/issues/22.
