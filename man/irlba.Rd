@@ -19,8 +19,6 @@ irlba(
   scale = NULL,
   center = NULL,
   shift = NULL,
-  mult = NULL,
-  fastpath = TRUE,
   svtol = tol,
   smallest = FALSE,
   ...
@@ -39,8 +37,7 @@ irlba(
 
 \item{reorth}{if \code{TRUE}, apply full reorthogonalization to both SVD bases, otherwise
 only apply reorthogonalization to the right SVD basis vectors; the latter case is cheaper per
-iteration but, overall, may require more iterations for convergence. Automatically \code{TRUE}
-when \code{fastpath=TRUE} (see below).}
+iteration but, overall, may require more iterations for convergence.}
 
 \item{tol}{convergence is determined when \eqn{\|A^TU - VS\| < tol\|A\|}{||A^T U - VS|| < tol*||A||},
 and when the maximum relative change in estimated singular values from one iteration to the
@@ -57,7 +54,7 @@ to restart the algorithm from where it left off (see the notes).}
 (\code{TRUE}) or both sets of vectors (\code{FALSE}). The right_only option can be
 cheaper to compute and use much less memory when \code{nrow(A) >> ncol(A)} but note
 that obtained solutions typically lose accuracy due to lack of re-orthogonalization in the
-algorithm and that \code{right_only = TRUE} sets \code{fastpath = FALSE} (only use this option
+algorithm and that \code{right_only = TRUE} (only use this option
 for really large problems that run out of memory and when \code{nrow(A) >> ncol(A)}).
 Consider increasing the \code{work} option to improve accuracy with \code{right_only=TRUE}.}
 
@@ -71,11 +68,6 @@ column of \code{A}; must be as long as the number of columns of \code{A} and may
 not be used together with the deflation options below (see notes).}
 
 \item{shift}{optional shift value (square matrices only, see notes).}
-
-\item{mult}{DEPRECATED optional custom matrix multiplication function (default is \code{\%*\%}, see notes).}
-
-\item{fastpath}{try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the
-reference R implementation. See the notes for more details.}
 
 \item{svtol}{additional stopping tolerance on maximum allowed absolute relative change across each
 estimated singular value between iterations.
@@ -129,19 +121,12 @@ truncated SVD of \code{sweep(A, 2, center, FUN=`-`)},
 without explicitly forming the centered matrix. \code{center}
 must be a vector of length equal to the number of columns of \code{A}.
 This option may be used to efficiently compute principal components without
-explicitly forming the centered matrix (which can, importantly, preserve
+explicitly forming the centered matrix (importantly, preserving
 sparsity in the matrix). See the examples.
 
 The optional \code{shift} scalar valued argument applies only to square matrices; use it
 to estimate the partial svd of \code{A + diag(shift, nrow(A), nrow(A))}
 (without explicitly forming the shifted matrix).
-
-(Deprecated) Specify an optional alternative matrix multiplication operator in the
-\code{mult} parameter. \code{mult} must be a function of two arguments,
-and must handle both cases where one argument is a vector and the other
-a matrix. This option is deprecated and will be removed in a future version.
-The new preferred method simply uses R itself to define a custom matrix class
-with your user-defined matrix multiplication operator. See the examples.
 
 Use the \code{v} option to supply a starting vector for the iterative
 method. A random vector is used by default (precede with \code{set.seed()}
@@ -156,7 +141,7 @@ The function may generate the following warnings:
   means that the algorithm didn't
   converge -- this is potentially a serious problem and the returned results may not be valid. \code{irlba}
   reports a warning here instead of an error so that you can inspect whatever is returned. If this
-  happens, carefully heed the warning and inspect the result. You may also try setting \code{fastpath=FALSE}.}
+  happens, carefully heed the warning and inspect the result.}
   \item{"You're computing a large percentage of total singular values, standard svd might work better!"
     \code{irlba} is designed to efficiently compute a few of the largest singular values and associated
      singular vectors of a matrix. The standard \code{svd} function will be more efficient for computing
@@ -167,10 +152,6 @@ The function may generate the following warnings:
 }
 The function might return an error for several reasons including a situation when the starting
 vector \code{v} is near the null space of the matrix. In that case, try a different \code{v}.
-
-The \code{fastpath=TRUE} option only supports real-valued matrices and sparse matrices
-of type \code{dgCMatrix} (for now). Other problems fall back to the reference
-R implementation.
 }
 \examples{
 set.seed(1)
@@ -182,8 +163,9 @@ S$d
 # Compare with svd
 svd(A)$d[1:3]
 
-# Restart the algorithm to compute more singular values
-# (starting with an existing solution S)
+# Restart the algorithm to compute 5 more singular values and vectors
+# (starting with a previous solution S). S1 will contain a solution
+# of dimension 8.
 S1 <- irlba(A, 5, v=S)
 
 # Estimate smallest singular values

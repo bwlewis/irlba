@@ -7,7 +7,7 @@ IRLBA stands for Augmented, <b>I</b>mplicitly <b>R</b>estarted <b>L</b>anczos
 functions (see help on each for details and examples).
 
 * `irlba()` partial SVD function
-* `ssvd()` l1-penalized matrix decompoisition for sparse PCA (based on Shen and Huang's algorithm)
+* `ssvd()` l1-penalized matrix decomposition for sparse PCA (based on Shen and Huang's algorithm)
 * `prcomp_irlba()`  principal components function similar to the `prcomp` function in stats package for computing the first few principal components of large matrices
 * `svdr()` alternate partial SVD function based on randomized SVD (see also the [rsvd](https://cran.r-project.org/package=rsvd) package by N. Benjamin Erichson for an alternative implementation)
 * `partial_eigen()` a very limited partial eigenvalue decomposition for symmetric matrices (see the [RSpectra](https://cran.r-project.org/package=RSpectra) package for more comprehensive truncated eigenvalue decomposition)
@@ -16,6 +16,13 @@ Help documentation for each function includes extensive documentation and
 examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
 An overview web page is here: https://bwlewis.github.io/irlba/.
+
+## New in 2.4.0
+
+- Re-factored and minimized C code wrappers, limiting them to fast dense matrix arithmetic. This change simplifies the package (no longer two fully separate code paths), preserves performance for the dense case, and expands Matrix/sparse support to more Matrix classes. It also eliminates direct use of internal SuiteSparse methods, which have proved to be slightly fragile over time. The `fastpath` option is deprecated.
+- Re-introduced full support for model deflation (see examples). That means that if your partial SVD subspace isn't big enough, you can efficiently carry on the algorithm from where you left off. This works for smallest and largest portions of the subspace.
+- Test coverage is expanded.
+- Despite the significant internal changes, everything should just work.
 
 ## New in 2.3.3
 
@@ -46,7 +53,7 @@ states, users are better off using the RSpectra package for eigenvalue
 computations (although not generally for singular value computations).
 
 The `mult` argument is deprecated and will be removed in a future version. We
-now recommend simply defining a custom class with a custom multiplcation
+now recommend simply defining a custom class with a custom multiplication
 operator.  The example below illustrates the old and new approaches.
 
 ```{r}

@@ -14,8 +14,7 @@
 #' @param work working subspace dimension, larger values can speed convergence at the cost of more memory use.
 #' @param reorth if \code{TRUE}, apply full reorthogonalization to both SVD bases, otherwise
 #'   only apply reorthogonalization to the right SVD basis vectors; the latter case is cheaper per
-#'   iteration but, overall, may require more iterations for convergence. Automatically \code{TRUE}
-#'   when \code{fastpath=TRUE} (see below).
+#'   iteration but, overall, may require more iterations for convergence.
 #' @param tol convergence is determined when \eqn{\|A^TU - VS\| < tol\|A\|}{||A^T U - VS|| < tol*||A||},
 #'   and when the maximum relative change in estimated singular values from one iteration to the
 #'   next is less than \code{svtol = tol} (see \code{svtol} below),
@@ -29,7 +28,7 @@
 #'  (\code{TRUE}) or both sets of vectors (\code{FALSE}). The right_only option can be
 #'  cheaper to compute and use much less memory when \code{nrow(A) >> ncol(A)} but note
 #'  that obtained solutions typically lose accuracy due to lack of re-orthogonalization in the
-#'  algorithm and that \code{right_only = TRUE} sets \code{fastpath = FALSE} (only use this option
+#'  algorithm and that \code{right_only = TRUE} (only use this option
 #'  for really large problems that run out of memory and when \code{nrow(A) >> ncol(A)}).
 #'  Consider increasing the \code{work} option to improve accuracy with \code{right_only=TRUE}.
 #' @param verbose logical value that when \code{TRUE} prints status messages during the computation.
@@ -39,9 +38,6 @@
 #'   column of \code{A}; must be as long as the number of columns of \code{A} and may
 #'   not be used together with the deflation options below (see notes).
 #' @param shift optional shift value (square matrices only, see notes).
-#' @param mult DEPRECATED optional custom matrix multiplication function (default is \code{\%*\%}, see notes).
-#' @param fastpath try a fast C algorithm implementation if possible; set \code{fastpath=FALSE} to use the
-#'     reference R implementation. See the notes for more details.
 #' @param svtol additional stopping tolerance on maximum allowed absolute relative change across each
 #' estimated singular value between iterations.
 #' The default value of this parameter is to set it to \code{tol}. You can set \code{svtol=Inf} to
@@ -85,19 +81,12 @@
 #' without explicitly forming the centered matrix. \code{center}
 #' must be a vector of length equal to the number of columns of \code{A}.
 #' This option may be used to efficiently compute principal components without
-#' explicitly forming the centered matrix (which can, importantly, preserve
+#' explicitly forming the centered matrix (importantly, preserving
 #' sparsity in the matrix). See the examples.
 #'
 #' The optional \code{shift} scalar valued argument applies only to square matrices; use it
 #' to estimate the partial svd of \code{A + diag(shift, nrow(A), nrow(A))}
 #' (without explicitly forming the shifted matrix).
-#'
-#' (Deprecated) Specify an optional alternative matrix multiplication operator in the
-#' \code{mult} parameter. \code{mult} must be a function of two arguments,
-#' and must handle both cases where one argument is a vector and the other
-#' a matrix. This option is deprecated and will be removed in a future version.
-#' The new preferred method simply uses R itself to define a custom matrix class
-#' with your user-defined matrix multiplication operator. See the examples.
 #'
 #' Use the \code{v} option to supply a starting vector for the iterative
 #' method. A random vector is used by default (precede with \code{set.seed()}
@@ -112,7 +101,7 @@
 #'   means that the algorithm didn't
 #'   converge -- this is potentially a serious problem and the returned results may not be valid. \code{irlba}
 #'   reports a warning here instead of an error so that you can inspect whatever is returned. If this
-#'   happens, carefully heed the warning and inspect the result. You may also try setting \code{fastpath=FALSE}.}
+#'   happens, carefully heed the warning and inspect the result.}
 #'   \item{"You're computing a large percentage of total singular values, standard svd might work better!"
 #'     \code{irlba} is designed to efficiently compute a few of the largest singular values and associated
 #'      singular vectors of a matrix. The standard \code{svd} function will be more efficient for computing
@@ -123,10 +112,6 @@
 #' }
 #' The function might return an error for several reasons including a situation when the starting
 #' vector \code{v} is near the null space of the matrix. In that case, try a different \code{v}.
-#'
-#' The \code{fastpath=TRUE} option only supports real-valued matrices and sparse matrices
-#' of type \code{dgCMatrix} (for now). Other problems fall back to the reference
-#' R implementation.
 #'
 #' @references
 #' Baglama, James, and Lothar Reichel. "Augmented implicitly restarted Lanczos bidiagonalization methods." SIAM Journal on Scientific Computing 27.1 (2005): 19-42.
@@ -141,8 +126,9 @@
 #' # Compare with svd
 #' svd(A)$d[1:3]
 #'
-#' # Restart the algorithm to compute more singular values
-#' # (starting with an existing solution S)
+#' # Restart the algorithm to compute 5 more singular values and vectors
+#' # (starting with a previous solution S). S1 will contain a solution
+#' # of dimension 8.
 #' S1 <- irlba(A, 5, v=S)
 #'
 #' # Estimate smallest singular values
@@ -187,98 +173,85 @@ function(A,                     # data matrix
          work=nv + 7,           # working subspace size
          reorth=TRUE,           # TRUE=full reorthogonalization
          tol=1e-5,              # stopping tolerance
-         v=NULL,                # optional starting vector or restart
-         right_only=FALSE,      # TRUE=only return V
+         v=NULL,                # optional starting vector or previous run output for deflated restart
+         right_only=FALSE,      # TRUE=only return V (may not work with `smallest`)
          verbose=FALSE,         # display status messages
          scale=NULL,            # optional column scaling
-         center=NULL,           # optional column centering
+         center=NULL,           # optional column centering, mutually exclusive with deflation
          shift=NULL,            # optional shift for square matrices
-         mult=NULL,             # optional custom matrix multiplication func.
-         fastpath=TRUE,         # use the faster C implementation if possible
          svtol=tol,             # stopping tolerance percent change in estimated svs
          smallest=FALSE,        # set to TRUE to estimate subspaces associated w/smallest singular values
-         ...)                   # optional experimental or deprecated arguments
+         ...)                   # optional experimental and deprecated arguments
 {
 # ---------------------------------------------------------------------
 # Check input parameters
 # ---------------------------------------------------------------------
-  ropts <- options(warn=1) # immediately show warnings
+  if(is.atomic(A) && !isTRUE(typeof(A) %in% c("double", "complex"))) {
+    warning("A is neither real nor complex-valued. Attempting to coerce A to real values (double-precision numbers). This might not be what you intend, beware!")
+    storage.mode(A) <- "double"
+  }
+  if(!oknum(A)) {
+    stop("Data matrix A must contain finite, non-missing numeric (real or complex) values (atomic matrix- or Matrix-classed).")
+  }
+  if(is.null(dim(A)) || min(dim(A), na.rm=TRUE) < 1) {
+    stop("A is not matrix-like.")
+  }
+  COMPLEX <- is.complex(A)
+  if(!is.logical(smallest)) stop("smallest must be a valid logical value")
+  ropts <- options(warn=1, irlba.verbose=verbose) # immediately show warnings, set message log level
+  on.exit(options(ropts))
   mflag <- new.env()
   mflag$flag <- FALSE
-  on.exit(options(ropts))
-  interchange <- FALSE
+  INTERCHANGE <- FALSE
   eps <- .Machine$double.eps
-  # hidden support for old, removed (previously deprecated) parameters
-  # this is here as a convenience to keep old code working without change
-  # also supports experimental features not yet promoted to the api
+  random <- rnorm # default RNG
+
   mcall <- as.list(match.call())
-  random <- eval(mcall[["rng"]])
-  if (is.null(random)) random <- rnorm # default RNG
-  # Maximum number of Ritz vectors to use in augmentation, may be less
-  # depending on workspace size.
-  maxritz <- eval(mcall[["maxritz"]]) # experimental
+  warn_deprecated <- if(isTRUE(mcall[["warn_on_deprecated"]])) {
+    warning
+  } else {
+    invisible
+  }
+  if(!is.null(mcall[["rng"]])) random <- eval(mcall[["rng"]])
+  # Maximum number of Ritz vectors to use in augmentation, may be less depending on workspace size.
+  maxritz <- eval(mcall[["maxritz"]])
   if (is.null(maxritz)) maxritz <- 3
   eps2 <- eval(mcall[["invariant_subspace_tolerance"]])
   if (is.null(eps2)) eps2 <- eps ^ (4 / 5)
-  du <- eval(mcall[["du"]]) # deprecated
-  dv <- eval(mcall[["dv"]]) # deprecated
-  ds <- eval(mcall[["ds"]]) # deprecated
-  deflate <- is.null(du) + is.null(ds) + is.null(dv)
-  if (is.logical(scale) && ! scale) scale <- NULL
-  if (is.logical(shift) && ! shift) shift <- NULL
-  if (is.logical(center) && ! center) center <- NULL
-  if (smallest) fastpath <- FALSE  # for now anyway
-  if (any(dim(A) > 2 ^ 32 - 1)) fastpath <- FALSE # for now
-  if (deflate == 3)
+  if(!is.null(mcall[["fastpath"]])) warn_deprecated("The `fastpath` option is deprecated.")
+
+  if(isFALSE(scale) || !oknum(scale)) scale <- NULL
+  if(isFALSE(shift) || !oknum(shift)) shift <- NULL
+  if(isFALSE(center)) center <- NULL
+  CENTER <- if(!is.null(center))
   {
-    deflate <- FALSE
-  } else if (deflate == 0)
-  {
-    deflate <- TRUE
-    warning("The deflation options have been deprecated. Please modify your code to not use them.")
-    if (length(ds) > 1) stop("deflation limited to one dimension")
-    if (!is.null(dim(du))) du <- du[, 1]
-    if (!is.null(dim(dv))) dv <- dv[, 1]
-  } else stop("all three du ds dv parameters must be specified for deflation")
-  if (!is.null(center))
-  {
-    if (is.logical(center) && center) center <- colMeans(A)
-    if (deflate) stop("the center parameter can't be specified together with deflation parameters")
-    if (length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
-    if (fastpath && ! right_only) du <- NULL
-    else du <- 1
-    ds <- 1
-    dv <- center
-    deflate <- TRUE
+    if(isTRUE(center)) center <- colMeans(A)
+    if(length(center) != ncol(A)) stop("center must be a vector of length ncol(A)")
+    if(!oknum(center)) stop("center must contain valid numeric values")
+    TRUE
+  } else {
+    FALSE
   }
-  if ("integer" == typeof(A)) A <- A + 0.0
-  iscomplex <- is.complex(A)
   m <- nrow(A)
   n <- ncol(A)
-  if (is.null(nu)) nu <- nv
-  if (!is.null(mult) && deflate) stop("the mult parameter can't be specified together with deflation parameters")
-  missingmult <- FALSE
-  if (is.null(mult))
-  {
-    missingmult <- TRUE
-    mult <- `%*%`
-  }
+  if(is.null(nu)) nu <- nv
   k <- max(nu, nv)
-  if (k <= 0)  stop("max(nu, nv) must be positive")
-  if (k > min(m - 1, n - 1)) stop("max(nu, nv) must be strictly less than min(nrow(A), ncol(A))")
-  if (k >= 0.5 * min(m, n))
+  if(!oknum(k) || isTRUE(k<=0)) stop("nv and/or nu must be finite positive integer values")
+  if(k > min(m - 1, n - 1)) stop("max(nu, nv) must be strictly less than min(nrow(A), ncol(A))")
+  if(k >= 0.5 * min(m, n))
   {
     warning("You're computing too large a percentage of total singular values, use a standard svd instead.")
   }
-  if (work <= 1) stop("work must be greater than 1")
-  if (tol < 0) stop("tol must be non-negative")
-  if (maxit <= 0) stop("maxit must be positive")
-  # work must be strictly larger than requested subspace dimension, except see right_only below
-  if (work <= k && ! right_only) work <- k + 1
-  if (work >= min(n, m))
+  work = round(work)
+  if(work <= 1 || !oknum(work)) stop("work must be greater than 1")
+  if(tol < 0 || !oknum(tol)) stop("tol must be a non-negative real number")
+  if(maxit <= 0 || !oknum(maxit)) stop("maxit must be positive")
+# work must be strictly larger than requested subspace dimension, except see right_only below
+  if(work <= k && ! right_only) work <- k + 1
+  if(work >= min(n, m))
   {
     work <- min(n, m)
-    if (work <= k)
+    if(work <= k)
     {
       k <- work - 1  # the best we can do! Need to reduce output subspace dimension
       warning("Requested subspace dimension too large! Reduced to ", k)
@@ -286,42 +259,39 @@ function(A,                     # data matrix
   }
   k_org <- k
   w_dim <- work
-  if (right_only)
+  if(right_only)
   {
     w_dim <- 1
-    fastpath <- FALSE
   }
-  if (n > m && smallest)
+  if(n > m && smallest)
   {
-    # Interchange dimensions m,n so that dim(A'A) = min(m,n) when seeking the
-    # smallest singular values; avoids finding zero-valued smallest singular values.
-    interchange <- TRUE
+    if(right_only) stop("`right_only` and `smallest` are mutually exclusive here, remove one.")
+    verbose("working on transpose problem for smallest singular values...")
+# Interchange dimensions m,n so that dim(A'A) = min(m,n) when seeking the
+# smallest singular values; avoids finding zero-valued smallest singular values.
+    INTERCHANGE <- TRUE
     temp <- m
     m <- n
     n <- temp
   }
 
-  if (verbose)
-  {
-    message("Working dimension size ", work)
-  }
+  verbose("Working dimension size ", work)
 # Check for tiny problem, use standard SVD in that case. Make definition of 'tiny' larger?
-  if (min(m, n) < 6)
+  if(min(m, n) < 6)
   {
     A <- as.matrix(A) # avoid need to define "+" and "/" for arbitrary matrix types.
-    if (verbose) message("Tiny problem detected, using standard `svd` function.")
-    if (!is.null(scale)) {
+    verbose("Tiny problem detected, using standard `svd` function.")
+    if(!is.null(scale)) {
       A <- sweep(A, 2, scale, "/")
       dv <- dv / scale # scale the centering vector.
     }
-    if (!is.null(shift)) A <- A + diag(shift, nrow(A), ncol(A))
-    if (deflate)
+    if(!is.null(shift)) A <- A + diag(shift, nrow(A), ncol(A))
+    if(CENTER)
     {
-      if (is.null(du)) du <- rep(1, nrow(A))
-      A <- A - (ds * du) %*% t(dv)
+      A <- A - rep(1, NROW(A)) %*% t(center)
     }
     s <- svd(A)
-    if (smallest)
+    if(smallest)
     {
       return(list(d=tail(s$d, k), u=s$u[, tail(seq(ncol(s$u)), k), drop=FALSE],
               v=s$v[, tail(seq(ncol(s$v), k)), drop=FALSE], iter=0, mprod=0))
@@ -330,100 +300,45 @@ function(A,                     # data matrix
               v=s$v[, 1:nv, drop=FALSE], iter=0, mprod=0))
   }
 
-# Try to use the fast C-language code path
-  if (deflate) fastpath <- fastpath && is.null(du)
-# Only matrix, dgCMatrix supported by fastpath
-  fastpath <- fastpath && (("Matrix" %in% attributes(class(A)) && ("dgCMatrix" %in% class(A))) || "matrix" %in% class(A))
-  if (fastpath && missingmult && !iscomplex && !right_only)
-  {
-    RESTART <- 0L
-    RV <- RW <- RS <- NULL
-    if (is.null(v))
-    {
-      v <- random(n)
-      if (verbose) message("Initializing starting vector v with samples from standard normal distribution.
-Use `set.seed` first for reproducibility.")
-    } else if (is.list(v))  # restarted case
-    {
-      if (is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
-      if (max(nu, nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
-      RESTART <- as.integer(length(v$d))
-      RND <- random(n)
-      RND <- orthog(RND, v$v)
-      RV <- cbind(v$v, RND / norm2(RND))
-      RW <- v$u
-      RS <- v$d
-      v <- NULL
-    }
-
-    SP <- ifelse(is.matrix(A), 0L, 1L)
-    if (verbose) message("irlba: using fast C implementation")
-    SCALE <- NULL
-    SHIFT <- NULL
-    CENTER <- NULL
-    if (!is.null(scale))
-    {
-      if (length(scale) != ncol(A)) stop("scale length must match number of matrix columns")
-      SCALE <- as.double(scale)
-    }
-    if (!is.null(shift))
-    {
-      if (length(shift) != 1) stop("shift length must be 1")
-      SHIFT <- as.double(shift)
-    }
-    if (deflate)
-    {
-      if (length(center) != ncol(A)) stop("the centering vector length must match the number of matrix columns")
-      CENTER <- as.double(center)
-    }
-    ans <- .Call(C_IRLB, A, as.integer(k), as.double(v), as.integer(work),
-                 as.integer(maxit), as.double(tol), as.double(eps2), as.integer(SP),
-                 as.integer(RESTART), RV, RW, RS, SCALE, SHIFT, CENTER, as.double(svtol))
-    if (ans[[6]] == 0 || ans[[6]] == -2)
-    {
-      names(ans) <- c("d", "u", "v", "iter", "mprod", "err")
-      ans$u <- matrix(head(ans$u, m * nu), nrow=m, ncol=nu)
-      ans$v <- matrix(head(ans$v, n * nv), nrow=n, ncol=nv)
-      if (tol * ans$d[1] < eps) warning("convergence criterion below machine epsilon")
-      if (ans[[6]] == -2) warning("did not converge--results might be invalid!; try increasing work or maxit")
-      return(ans[-6])
-    }
-    errors <- c("invalid dimensions",
-                "didn't converge",
-                "out of memory",
-                "starting vector near the null space",
-                "linear dependency encountered")
-    erridx <- abs(ans[[6]])
-    if (erridx > 1)
-      warning("fast code path error ", errors[erridx], "; re-trying with fastpath=FALSE.", immediate.=TRUE)
-  }
-
-# Allocate memory for W and F:
   W <- matrix(0.0, m, w_dim)
   F <- matrix(0.0, n, 1)
-  restart <- FALSE
-  if (is.list(v))
+  DEFLATE <- if(is.list(v))
   {
-    if (is.null(v$v) || is.null(v$d) || is.null(v$u)) stop("restart requires left and right singular vectors")
-    if (max(nu, nv) <= min(ncol(v$u), ncol(v$v))) return(v) # Nothing to do!
-    right_only <- FALSE
-    W[, 1:ncol(v$u)] <- v$u
-    d <- v$d
+    if(CENTER) stop("Sorry, centering is not compatible with deflation restarting in this implementation.")
+    if(right_only) stop("Deflation (restarting) is not compatible with the right_only=TRUE option.")
+    verbose("double-sided deflation")
     V <- matrix(0.0, n, work)
-    V[, 1:ncol(v$v)] <- v$v
-    restart <- TRUE
-  } else if (is.null(v))
+    V[, 1] <- random(n)
+    if(m == n) {
+      V[, 1] <- orthog(V[,1], v$u)
+      V[, 1] <- orthog(V[,1], v$v)
+    } else V[, 1] <- if(INTERCHANGE) {
+      orthog(V[,1], v$u)
+    } else {
+      orthog(V[,1], v$v)
+    }
+    TRUE
+  } else if(is.null(v))
   {
 # If starting matrix v is not given then set V to be an (n x 1) matrix of
 # normally distributed random numbers.  In any case, allocate V appropriate to
 # problem size:
     V <- matrix(0.0, n, work)
     V[, 1] <- random(n)
+    FALSE
   } else
   {
 # user-supplied starting subspace
     V <- matrix(0.0, n, work)
     V[1:length(v)] <- v
+    v <- NULL
+    FALSE
+  }
+
+  if(COMPLEX) {
+    W <- W + 0i
+    F <- F + 0i
+    V <- V + 0i
   }
 
 # ---------------------------------------------------------------------
@@ -442,20 +357,6 @@ Use `set.seed` first for reproducibility.")
                              # B est. cond(A)
   lastsv <- c()              # estimated sv in last iteration
 
-# Check for user-supplied restart condition
-  if (restart)
-  {
-    B <- cbind(diag(d), 0)
-    k <- length(d)
-
-    F <- random(n)
-    F <- orthog(F, V[, 1:k])
-    V[, k + 1] <- F / norm2(F)
-  }
-
-# Change du to be non-NULL, for non-fastpath'able matrices with non-NULL scale.
-  if (deflate && is.null(du)) du <- 1
-
 # ---------------------------------------------------------------------
 # Main iteration
 # ---------------------------------------------------------------------
@@ -467,13 +368,13 @@ Use `set.seed` first for reproducibility.")
 # and       t(A)W = VB + Ft(E)
 # This routine updates W, V, F, B, mprod
 #
-# Note on scale and center: These options are applied implicitly below
-# for maximum computational efficiency. This complicates their application
-# somewhat, but saves a few flops.
+# Note on scale and center: These options are applied implicitly below for
+# computational efficiency. This complicates their application somewhat, but
+# saves a few flops. This also applies to deflation (algorithm restarting).
 # ---------------------------------------------------------------------
     j <- 1
 #   Normalize starting vector:
-    if (iter == 1 && !restart)
+    if(iter == 1)
     {
       V[, 1] <- V[, 1] / norm2(V[, 1])
     }
@@ -484,43 +385,39 @@ Use `set.seed` first for reproducibility.")
 #   Compute W=AV
 #   Optionally apply scale
     VJ <- V[, j]
-    if (!is.null(scale))
+    if(!is.null(scale))
     {
       VJ <- VJ / scale
     }
-    if (interchange) avj <- mult(VJ, A)
-    else avj <- mult(A, VJ)
-
-#   Handle non-ordinary arrays as products.
-    W[, j_w] <- as.vector(avj)
+    W[, j_w] <- drop(mult(A, VJ, INTERCHANGE, u=v$u))
     mprod <- mprod + 1
 
 #   Optionally apply shift
-    if (!is.null(shift))
+    if(!is.null(shift))
     {
       W[, j_w] <- W[, j_w] + shift * VJ
     }
 
-#   Optionally apply deflation
-    if (deflate)
+#   Optionally apply centering
+    if(CENTER)
     {
-      W[, j_w] <- W[, j_w] - ds * drop(cross(dv, VJ)) * du
+      W[, j_w] <- W[, j_w] - drop(cross(center, VJ))
     }
 
 #   Orthogonalize W
-    if (iter != 1 && w_dim > 1 && reorth)
+    if(iter != 1 && w_dim > 1 && reorth)
     {
       W[, j] <- orthog(W[, j, drop=FALSE], W[, 1:(j - 1), drop=FALSE])
     }
 
     S <- norm2(W[, j_w, drop=FALSE])
 #   Check for linearly dependent vectors
-    if (is.na(S) || S < eps2 && j == 1) stop("starting vector near the null space")
-    if (is.na(S) || S < eps2)
+    if(is.na(S) || S < eps2 && j == 1) stop("starting vector near the null space")
+    if(is.na(S) || S < eps2)
     {
-      if (verbose) message_once("invariant subspace found", flag=mflag)
+      if(isTRUE(getOption("irlba.verbose"))) message_once("invariant subspace found", flag=mflag)
       W[, j_w] <- random(nrow(W))
-      if (w_dim > 1) W[, j] <- orthog(W[, j], W[, 1:(j - 1)])
+      if(w_dim > 1) W[, j] <- orthog(W[, j], W[, 1:(j - 1)])
       W[, j_w] <- W[, j_w] / norm2(W[, j_w])
       S <- 0
     }
@@ -530,35 +427,33 @@ Use `set.seed` first for reproducibility.")
     while (j <= work)
     {
       j_w <- ifelse(w_dim > 1, j, 1)
-      if (iscomplex)
+      if(COMPLEX)
       {
-        if (interchange) F <- Conj(t(drop(mult(A, Conj(drop(W[, j_w]))))))
-        else F <- Conj(t(drop(mult(Conj(drop(W[, j_w])), A))))
+        F <- Conj(t(mult(W[, j_w], A, INTERCHANGE, u=v$u, i=2, tx=TRUE)))
       }
       else
       {
-        if (interchange) F <- t(drop(mult(A, drop(W[, j_w]))))
-        else F <- t(drop(mult(drop(W[, j_w]), A)))
+        F <- t(mult(W[, j_w], A, INTERCHANGE, u=v$u, i=2, tx=TRUE))
       }
-#     Optionally apply shift, scale, deflate
-      if (!is.null(shift)) F <- F + shift * W[, j_w]
-      if (!is.null(scale)) F <- F / scale
-      if (deflate) {
-        sub <- sum(W[, j_w]) * dv
-        if (!is.null(scale)) sub <- sub / scale
+#     Optionally apply shift, scale, center
+      if(!is.null(shift)) F <- F + shift * W[, j_w]
+      if(!is.null(scale)) F <- F / scale
+      if(CENTER) {
+        sub <- sum(W[, j_w]) * center
+        if(!is.null(scale)) sub <- sub / scale
         F <- F - sub
       }
       mprod <- mprod + 1
       F <- drop(F - S * V[, j])
 #     Orthogonalize
       F <- orthog(F, V[, 1:j, drop=FALSE])
-      if (j + 1 <= work)
+      if(j + 1 <= work)
       {
         R <- norm2(F)
 #       Check for linear dependence
-        if (R < eps2)
+        if(R < eps2)
         {
-          if (verbose) message_once("invariant subspace found", flag=mflag)
+          if(isTRUE(getOption("irlba.verbose"))) message_once("invariant subspace found", flag=mflag)
           F <- matrix(random(dim(V)[1]), dim(V)[1], 1)
           F <- orthog(F, V[, 1:j, drop=FALSE])
           V[, j + 1] <- F / norm2(F)
@@ -567,46 +462,45 @@ Use `set.seed` first for reproducibility.")
         else V[, j + 1] <- F / R
 
 #       Compute block diagonal matrix
-        if (is.null(B)) B <- cbind(S, R)
-        else            B <- rbind(cbind(B, 0), c(rep(0, ncol(B) - 1), S, R))
+        if(is.null(B)) B <- cbind(S, R)
+        else           B <- rbind(cbind(B, 0), c(rep(0, ncol(B) - 1), S, R))
 
         jp1_w <- ifelse(w_dim > 1, j + 1, 1)
         w_old <- W[, j_w]
 
 #       Optionally apply scale
         VJP1 <- V[, j + 1]
-        if (!is.null(scale))
+        if(!is.null(scale))
         {
           VJP1 <- VJP1 / scale
         }
-        if (interchange) W[, jp1_w] <- drop(mult(drop(VJP1), A))
-        else W[, jp1_w] <- drop(mult(A, drop(VJP1)))
+        W[, jp1_w] <- drop(mult(A, VJP1, INTERCHANGE, u=v$u))
         mprod <- mprod + 1
 
 #       Optionally apply shift
-        if (!is.null(shift))
+        if(!is.null(shift))
         {
           W[, jp1_w] <- W[, jp1_w] + shift * VJP1
         }
 
-#       Optionally apply deflation
-        if (deflate)
+#       Optionally apply centering
+        if(CENTER)
         {
-          W[, jp1_w] <- W[, jp1_w] - ds * drop(cross(dv, VJP1)) * du
+          W[, jp1_w] <- W[, jp1_w] - drop(cross(center, VJP1))
         }
 
 #       One step of the classical Gram-Schmidt process
         W[, jp1_w] <- W[, jp1_w] - R * w_old
 
 #       Full reorthogonalization of W
-        if (reorth && w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
+        if(reorth && w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
         S <- norm2(W[, jp1_w])
 #       Check for linear dependence
-        if (S < eps2)
+        if(S < eps2)
         {
-          if (verbose) message_once("invariant subspace found", flag=mflag)
+          if(isTRUE(getOption("irlba.verbose"))) message_once("invariant subspace found", flag=mflag)
           W[, jp1_w] <- random(nrow(W))
-          if (w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
+          if(w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
           W[, jp1_w] <- W[, jp1_w] / norm2(W[, jp1_w])
           S <- 0
         }
@@ -633,7 +527,7 @@ Use `set.seed` first for reproducibility.")
 #   and estimate the cond(A) using approximations to the largest and
 #   smallest singular values. If a small singular value is less than sqrteps
 #   require two-sided reorthogonalization.
-    if (iter == 1)
+    if(iter == 1)
     {
       Smax <- Bsvd$d[1]
       Smin <- Bsvd$d[Bsz]
@@ -644,12 +538,12 @@ Use `set.seed` first for reproducibility.")
       Smin <- min(Smin, Bsvd$d[Bsz])
     }
     Smax <- max(eps23, Smax)
-    if (! reorth && Smin / Smax < sqrteps)
+    if(! reorth && Smin / Smax < sqrteps)
     {
       warning("The matrix is ill-conditioned. Basis will be reorthogonalized.")
       reorth <- TRUE
     }
-    if (smallest)
+    if(smallest)
     {
       jj <- seq(ncol(Bsvd$u), 1, by = -1)
       Bsvd$u <- Bsvd$u[, jj]
@@ -661,23 +555,20 @@ Use `set.seed` first for reproducibility.")
     R <- R_F * Bsvd$u[Bsz, , drop=FALSE]
 #   Check for convergence
     ct <- convtests(Bsz, tol, k_org, Bsvd, abs(R), k, Smax, lastsv, svtol, maxritz, work, S)
-    if (verbose)
-    {
-      message("iter= ", iter,
+    verbose("iter= ", iter,
               ", mprod= ", mprod,
               ", sv[", k_org, "]=", sprintf("%.2e", Bsvd$d[k_org]),
               ", %change=", sprintf("%.2e", (Bsvd$d[k_org] - lastsv[k_org])/Bsvd$d[k_org]),
               ", k=", ct$k)
-    }
     lastsv <- Bsvd$d
     k <- ct$k
 
 #   If all desired singular values converged, then exit main loop
-    if (ct$converged) break
-    if (iter >= maxit) break
+    if(ct$converged) break
+    if(iter >= maxit) break
 
 #   Compute the starting vectors and first block of B
-    if (smallest && (Smin / Smax > sqrteps))
+    if(smallest && (Smin / Smax > sqrteps))
     {
 #     Update the SVD of B to be the svd of [B ||F||E_m]
       Bsvd2.d <- Bsvd$d
@@ -711,7 +602,7 @@ Use `set.seed` first for reproducibility.")
     }
 
 #   Update the left approximate singular vectors
-    if (w_dim > 1)
+    if(w_dim > 1)
     {
       W[, 1:k] <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[, 1:k]
     }
@@ -722,23 +613,39 @@ Use `set.seed` first for reproducibility.")
 # End of the main iteration loop
 # Output results
 # ---------------------------------------------------------------------
-  if (!ct$converged) warning("did not converge--results might be invalid!; try increasing maxit or work")
+  if(!ct$converged) warning("did not converge--results might be invalid!; try increasing maxit or work")
   d <- Bsvd$d[1:k_org]
-  if (!right_only)
+  if(!right_only)
   {
-    u <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[, 1:k_org, drop=FALSE]
+    U <- W[, 1:(dim(Bsvd$u)[1]), drop=FALSE] %*% Bsvd$u[, 1:k_org, drop=FALSE]
   }
-  v <- V[, 1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[, 1:k_org, drop=FALSE]
-  if (smallest)
+  V <- V[, 1:(dim(Bsvd$v)[1]), drop=FALSE] %*% Bsvd$v[, 1:k_org, drop=FALSE]
+  if(smallest)
   {
     reverse <- seq(length(d), 1)
     d <- d[reverse]
-    if (!right_only) u <- u[, reverse]
-    v <- v[, reverse]
+    if(!right_only) U <- U[, reverse]
+    V <- V[, reverse]
   }
-  if (tol * d[1] < eps) warning("convergence criterion below machine epsilon")
-  if (right_only)
-    return(list(d=d, v=v[, 1:nv, drop=FALSE], iter=iter, mprod=mprod))
-  return(list(d=d, u=u[, 1:nu, drop=FALSE],
-              v=v[, 1:nv, drop=FALSE], iter=iter, mprod=mprod))
+  if(tol * d[1] < eps) warning("convergence criterion below machine epsilon")
+  if(right_only) {
+    return(list(d=d, v=V[, 1:nv, drop=FALSE], iter=iter, mprod=mprod))
+  }
+  U = U[, 1:nu, drop=FALSE]
+  V = V[, 1:nv, drop=FALSE]
+  if(DEFLATE) {
+    if(smallest) {
+      U = if(INTERCHANGE) cbind(U, v$v) else cbind(U, v$u)
+      V = if(INTERCHANGE) cbind(V, v$u) else cbind(V, v$v)
+      d = c(d, v$d)
+    } else {
+      U = cbind(v$u, U)
+      V = cbind(v$v, V)
+      d = c(v$d, d)
+    }
+  }
+  if(INTERCHANGE)  {
+    return(list(d=d, u=V, v=U, iter=iter, mprod=mprod))
+  }
+  list(d=d, u=U, v=V, iter=iter, mprod=mprod)
 }
