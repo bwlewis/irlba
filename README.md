@@ -19,7 +19,7 @@ An overview web page is here: https://bwlewis.github.io/irlba/.
 
 ## New in 2.4.0
 
-- Re-factored and minimized C code wrappers, limiting them to fast dense matrix arithmetic. This change simplifies the package (no longer two fully separate code paths), preserves performance for the dense case, and expands Matrix/sparse support to more Matrix classes. It also eliminates direct use of internal SuiteSparse methods, which have proved to be slightly fragile over time. The `fastpath` option is deprecated.
+- Re-factored and minimized C code wrappers, limiting them to fast dense matrix arithmetic. This change simplifies the package, largely preserves performance for the dense case, and expands Matrix/sparse support to more Matrix classes. It also eliminates direct use of internal hard-to-support SuiteSparse methods. The `fastpath` option is deprecated.
 - Re-introduced full support for model deflation (see examples). That means that if your partial SVD subspace isn't big enough, you can efficiently carry on the algorithm from where you left off. This works for smallest and largest portions of the subspace.
 - Test coverage is expanded.
 - Despite the significant internal changes, everything should just work.

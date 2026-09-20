@@ -97,10 +97,13 @@ SEXP direct_zgemm_c(SEXP A, SEXP B, SEXP transa, SEXP transb) {
 
 SEXP okatomic(SEXP x) {
   SEXPTYPE type = TYPEOF(x);
+  R_xlen_t n = XLENGTH(x);
+  if (n == 1) {
+    return ScalarLogical(1);
+  }
   if (type != REALSXP && type != CPLXSXP) {
     error("Input must be a numeric (real) or complex matrix.");
   }
-  R_xlen_t n = XLENGTH(x);
   if (type == REALSXP) {
     double *ptr = REAL(x);
     for (R_xlen_t i = 0; i < n; i++) {

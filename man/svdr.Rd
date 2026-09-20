@@ -34,7 +34,7 @@ column of \code{A} without explicitly forming the centered matrix (preserving sp
 Optionally specify \code{center=TRUE} as shorthand for \code{center=colMeans(x)}.
 Use for efficient principal components computation.}
 
-\item{Q}{optional initial random matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
+\item{Q}{optional initial subspace matrix, defaults to a matrix of size \code{ncol(x)} by \code{k + extra} with
 entries sampled from a normal random distribution.}
 
 \item{return.Q}{if \code{TRUE} return the \code{Q} matrix for restarting (see examples).}
@@ -50,7 +50,7 @@ Returns a list with entries:
 }
 }
 \description{
-The randomized method for truncated SVD by P. G. Martinsson and colleagues
+The randomized method for truncated SVD by Halko, Martinsson, and Tropp
 finds a few approximate largest singular values and corresponding
 singular vectors of a sparse or dense matrix. It is a fast and
 memory-efficient way to compute a partial SVD, similar in performance

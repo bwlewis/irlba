@@ -198,8 +198,11 @@ function(A,                     # data matrix
   }
   COMPLEX <- is.complex(A)
   if(!is.logical(smallest)) stop("smallest must be a valid logical value")
-  ropts <- options(warn=1, irlba.verbose=verbose) # immediately show warnings, set message log level
-  on.exit(options(ropts))
+  verbose <- if(isTRUE(verbose)) {
+    message
+  } else {
+    function(...) invisible()
+  }
   mflag <- new.env()
   mflag$flag <- FALSE
   INTERCHANGE <- FALSE
@@ -356,6 +359,7 @@ function(A,                     # data matrix
   Smin <- NULL               # Min value of all computed singular values of
                              # B est. cond(A)
   lastsv <- c()              # estimated sv in last iteration
+  clustered_count <- 0       # check for singular value clusters
 
 # ---------------------------------------------------------------------
 # Main iteration
@@ -415,7 +419,7 @@ function(A,                     # data matrix
     if(is.na(S) || S < eps2 && j == 1) stop("starting vector near the null space")
     if(is.na(S) || S < eps2)
     {
-      if(isTRUE(getOption("irlba.verbose"))) message_once("invariant subspace found", flag=mflag)
+      verbose("Near invariant subspace found, try increasing `work` if convergence fails")
       W[, j_w] <- random(nrow(W))
       if(w_dim > 1) W[, j] <- orthog(W[, j], W[, 1:(j - 1)])
       W[, j_w] <- W[, j_w] / norm2(W[, j_w])
@@ -426,6 +430,7 @@ function(A,                     # data matrix
 #   Lanczos process
     while (j <= work)
     {
+      invs <- 0
       j_w <- ifelse(w_dim > 1, j, 1)
       if(COMPLEX)
       {
@@ -451,9 +456,9 @@ function(A,                     # data matrix
       {
         R <- norm2(F)
 #       Check for linear dependence
-        if(R < eps2)
+        if(is.nan(R) || R < eps2)
         {
-          if(isTRUE(getOption("irlba.verbose"))) message_once("invariant subspace found", flag=mflag)
+          invs <- invs + 1
           F <- matrix(random(dim(V)[1]), dim(V)[1], 1)
           F <- orthog(F, V[, 1:j, drop=FALSE])
           V[, j + 1] <- F / norm2(F)
@@ -496,11 +501,11 @@ function(A,                     # data matrix
         if(reorth && w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
         S <- norm2(W[, jp1_w])
 #       Check for linear dependence
-        if(S < eps2)
+        if(is.nan(S) || S < eps2)
         {
-          if(isTRUE(getOption("irlba.verbose"))) message_once("invariant subspace found", flag=mflag)
+          invs <- invs + 1
           W[, jp1_w] <- random(nrow(W))
-          if(w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
+         if(w_dim > 1) W[, j + 1] <- orthog(W[, j + 1], W[, 1:j])
           W[, jp1_w] <- W[, jp1_w] / norm2(W[, jp1_w])
           S <- 0
         }
@@ -510,6 +515,15 @@ function(A,                     # data matrix
       {
 #       Add a last block to matrix B
         B <- rbind(B, c(rep(0, j - 1), S))
+      }
+
+
+
+
+      if(isTRUE(invs > 3)) {
+        verbose("Near-invariant subspace in Lanczos bidiagonalization, increasing working dimension")
+# XXX XXX WRITE ME XXX XXX
+        invs <- 0
       }
       j <- j + 1
     }
@@ -521,7 +535,8 @@ function(A,                     # data matrix
     F <- F / R_F
 #   Compute singular triplets of B, svd must return ordered singular
 #   values from largest to smallest.
-    Bsvd <- svd(B)
+    Bsvd <- tryCatch(svd(B), error=function(e) FALSE)
+    if(identical(Bsvd, FALSE)) break
 
 #   Estimate ||A|| using the largest singular value over all iterations
 #   and estimate the cond(A) using approximations to the largest and
@@ -551,6 +566,10 @@ function(A,                     # data matrix
       Bsvd$v <- Bsvd$v[, jj]
     }
 
+# XXX XXX also check for backwards progress smallest/largest cases and increase in work dimension ### XXX
+# XXX XXX XXX XXX
+
+
 #   Compute the residuals
     R <- R_F * Bsvd$u[Bsz, , drop=FALSE]
 #   Check for convergence
@@ -560,7 +579,43 @@ function(A,                     # data matrix
               ", sv[", k_org, "]=", sprintf("%.2e", Bsvd$d[k_org]),
               ", %change=", sprintf("%.2e", (Bsvd$d[k_org] - lastsv[k_org])/Bsvd$d[k_org]),
               ", k=", ct$k)
+
     lastsv <- Bsvd$d
+
+    if (!ct$converged && k_org < Bsz)
+    {
+      # scale-invariant relative gap
+      gap_abs <- min(abs(diff(Bsvd$d)))
+      ext_gap <- gap_abs / max(abs(Bsvd$d[k_org]), eps * Smax)
+      # k_org-th Ritz value change
+      rel_change_k <- abs(Bsvd$d[k_org] - lastsv[k_org]) / 
+                      max(abs(Bsvd$d[k_org]), eps * Smax)
+      if (ext_gap < sqrt(eps) && rel_change_k < svtol) {
+        clustered_count <- clustered_count + 1
+        maxritz <- maxritz + 1
+      } else {
+        clustered_count <- 0
+      }
+      # Expand working dimension if clustered
+      if (clustered_count > 1)
+      {
+        work_new <- min(work + 5, min(m, n) - 1)
+        if (work_new > work) {
+          verbose("Clustered spectrum: expanding work from ", work, " to ", work_new)
+          V_new <- matrix(if(COMPLEX) 0i else 0.0, n, work_new)
+          V_new[, 1:ncol(V)] <- V
+          V <- V_new
+          if (w_dim > 1) {
+            W_new <- matrix(if(COMPLEX) 0i else 0.0, m, work_new)
+            W_new[, 1:ncol(W)] <- W
+            W <- W_new
+          }
+          work <- work_new
+          clustered_count <- 0
+        }
+      }
+    }
+
     k <- ct$k
 
 #   If all desired singular values converged, then exit main loop

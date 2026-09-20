@@ -18,13 +18,11 @@ cross <- function(x, y)
     if(which_matrix(x)) { # dense matrix case
       return(gemm(x, x, TRUE))
     }
-    verbose("cross-product wrapper generic case")
     return(Conj(t(x)) %*% x)  # generic matrix object case (slow, memory is copied)
   }
   if((which_matrix(x) || is.null(dim(x))) && which_matrix(y)) {  # dense matrix case
     return(gemm(x, y, TRUE))
   }
-  verbose("cross-product wrapper generic case")
   Conj(t(x)) %*% y    # generic case
 }
 
@@ -95,9 +93,6 @@ oknum <- function(x) {
   .Call("okatomic", as.numeric(x@x))
 }
 
-verbose <- function(...) {
-  if(isTRUE(getOption("irlba.verbose"))) message(...)
-}
 
 gemm <- function(A, B, transA = FALSE, transB = FALSE) {
   transA <- as.logical(transA)
@@ -141,7 +136,6 @@ mult <- function(x,y,interchange=FALSE,u=NULL,i=1,tx=FALSE,ty=FALSE) {
     "Matrix"
   }
 
-  verbose("mult interchange, deflate, mtype, tx, ty: ", interchange, ",", !is.null(u), ",", mtype, ",", tx, ",", ty)
   DEFLATE = !is.null(u)
   if(isFALSE(DEFLATE)) {
     if(interchange) {

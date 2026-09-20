@@ -23,7 +23,8 @@ Some steps are optional depending on the nature of the source code changes.
 
     Reverse dependency checking can be tedious--lots of required OS-level
     dependencies must be installed and discovering those can be a long
-    iterative process that may take a while. Beware that packages may fail
-    due to issues unrelated to irlba in some cases.
+    iterative process that may take a while (many OS dependencies and non-CRAN
+    R package dependencies from the BioConductor may be required). Beware that
+    packages may fail due to issues unrelated to irlba in some cases.
 
 5. OK to submit to CRAN.
