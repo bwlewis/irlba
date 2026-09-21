@@ -88,9 +88,10 @@ oknum <- function(x) {
   if(is.atomic(x)) {
     return(.Call("okatomic", x))
   }
-  is_mat <- inherits(x, "Matrix")
-  if(!is_mat) return(FALSE)     # rules out any non-atomic matrix or Matrix objects.
-  .Call("okatomic", as.numeric(x@x))
+  if(inherits(x, "Matrix")) {
+    return(.Call("okatomic", as.numeric(x@x)))
+  }
+  TRUE  # NOTE! This liberally allows anything, for instance "DelayedMatrix" from the DelayedArray package, but with no sanity checks. Caveat emptor.
 }
 
 
@@ -119,8 +120,7 @@ gemm <- function(A, B, transA = FALSE, transB = FALSE) {
 
 
 # limited matrix multiplication wrapper, only for use internally This is highly
-# idiosyncratic to irlba, avoid using more generally. See "gemm" for general
-# use.
+# specific to irlba, avoid using more generally. See "gemm" for general use.
 # x, y: matrices to multiply
 # interchange: boolean, if TRUE compute y %*% x, otherwise x %*% y
 # U: optional deflation matrix, replace either x or y with, e.g., x = x- UU'x
