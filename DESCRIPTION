@@ -3,7 +3,7 @@ Type: Package
 Title: Fast Truncated Singular Value Decomposition and Principal
         Components Analysis for Large Dense and Sparse Matrices
 Version: 2.4.0
-Date: 2026-9-16
+Date: 2026-9-23
 Authors@R: c(
     person("Jim", "Baglama", role=c("aut", "cph"), email="jbaglama@uri.edu"),
     person("Lothar", "Reichel", role=c("aut", "cph"), email="reichel@math.kent.edu"),
@@ -25,4 +25,4 @@ Maintainer: B. W. Lewis <blewis@illposed.net>
 Repository: CRAN
 Encoding: UTF-8
 Date/Publication: 2022-10-03 18:38:49 UTC
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

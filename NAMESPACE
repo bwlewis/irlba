@@ -7,10 +7,14 @@ export(prcomp_irlba)
 export(ssvd)
 export(svdr)
 import(Matrix)
-importFrom(methods,slot)
-importFrom(methods,slotNames)
-importFrom(stats,prcomp)
-importFrom(stats,rnorm)
-importFrom(stats,sd)
-importFrom(stats,var)
+importFrom(methods,
+  slot,
+  slotNames
+)
+importFrom(stats,
+  prcomp,
+  rnorm,
+  sd,
+  var
+)
 useDynLib(irlba, .registration=TRUE, .fixes="C_")

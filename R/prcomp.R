@@ -74,9 +74,7 @@ prcomp_irlba <- function(x, n = 3, retx = TRUE, center = TRUE, scale. = FALSE, .
   a <- names(as.list(match.call()))
   ans <- list(scale=scale.)
   if ("tol" %in% a)
-    warning("The `tol` truncation argument from `prcomp` is not supported by
-`prcomp_irlba`. If specified, `tol` is passed to the `irlba` function to
-control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
+    warning("The `tol` truncation argument from `prcomp` is not supported by `prcomp_irlba`. If specified, `tol` is passed to the `irlba` function to control that algorithm's convergence tolerance. See `?prcomp_irlba` for help.")
 # Try to convert data frame to matrix...
   if (is.data.frame(x)) x <- as.matrix(x)
   args <- list(A=x, nv=n)

@@ -28,8 +28,8 @@
 #'  (\code{TRUE}) or both sets of vectors (\code{FALSE}). The right_only option can be
 #'  cheaper to compute and use much less memory when \code{nrow(A) >> ncol(A)} but note
 #'  that obtained solutions typically lose accuracy due to lack of re-orthogonalization in the
-#'  algorithm and that \code{right_only = TRUE} (only use this option
-#'  for really large problems that run out of memory and when \code{nrow(A) >> ncol(A)}).
+#'  algorithm. Avoid using this option. Only use this option
+#'  for really large problems that run out of memory and when \code{nrow(A) >> ncol(A)}.
 #'  Consider increasing the \code{work} option to improve accuracy with \code{right_only=TRUE}.
 #' @param verbose logical value that when \code{TRUE} prints status messages during the computation.
 #' @param scale optional column scaling vector whose values divide each column of \code{A};
@@ -134,7 +134,7 @@
 #' # Estimate smallest singular values
 #' irlba(A, 3, smallest=TRUE)$d
 #'
-#' #Compare with
+#' # Compare with
 #' tail(svd(A)$d, 3)
 #'
 #' # Principal components (see also prcomp_irlba)
@@ -170,9 +170,9 @@ irlba <-
 function(A,                     # data matrix
          nv=5, nu=nv,           # number of singular vectors to estimate
          maxit=1000,            # maximum number of iterations
-         work=nv + 7,           # working subspace size
+         work=nv + 16,          # working subspace size
          reorth=TRUE,           # TRUE=full reorthogonalization
-         tol=1e-5,              # stopping tolerance
+         tol=1e-7,              # stopping tolerance
          v=NULL,                # optional starting vector or previous run output for deflated restart
          right_only=FALSE,      # TRUE=only return V (may not work with `smallest`)
          verbose=FALSE,         # display status messages
@@ -251,9 +251,13 @@ function(A,                     # data matrix
   if(maxit <= 0 || !oknum(maxit)) stop("maxit must be positive")
 # work must be strictly larger than requested subspace dimension, except see right_only below
   if(work <= k && ! right_only) work <- k + 1
+# Check for deflation adjustment to work
+  if(is.list(v) && "d" %in% names(v) && is.numeric(v[["d"]])) {
+    work <- max(1, work - length(v[["d"]]) - 2)
+  }
   if(work >= min(n, m))
   {
-    work <- min(n, m)
+    work <- max(1, min(n, m) - 2)
     if(work <= k)
     {
       k <- work - 1  # the best we can do! Need to reduce output subspace dimension
@@ -517,12 +521,22 @@ function(A,                     # data matrix
         B <- rbind(B, c(rep(0, j - 1), S))
       }
 
-
-
-
       if(isTRUE(invs > 3)) {
+# TODO: WORK ON IMPROVING THIS EDGE CASE
         verbose("Near-invariant subspace in Lanczos bidiagonalization, increasing working dimension")
-# XXX XXX WRITE ME XXX XXX
+        work_new <- min(work + 5, min(m, n) - 1)
+        if (work_new > work) {
+          verbose("Expanding work from ", work, " to ", work_new)
+          V_new <- matrix(if(COMPLEX) 0i else 0.0, n, work_new)
+          V_new[, 1:ncol(V)] <- V
+          V <- V_new
+          if (w_dim > 1) {
+            W_new <- matrix(if(COMPLEX) 0i else 0.0, m, work_new)
+            W_new[, 1:ncol(W)] <- W
+            W <- W_new
+          }
+          work <- work_new
+        }
         invs <- 0
       }
       j <- j + 1
@@ -566,19 +580,19 @@ function(A,                     # data matrix
       Bsvd$v <- Bsvd$v[, jj]
     }
 
-# XXX XXX also check for backwards progress smallest/largest cases and increase in work dimension ### XXX
-# XXX XXX XXX XXX
-
+# TODO also check for backwards progress smallest/largest cases and increase in work dimension ###
 
 #   Compute the residuals
     R <- R_F * Bsvd$u[Bsz, , drop=FALSE]
 #   Check for convergence
-    ct <- convtests(Bsz, tol, k_org, Bsvd, abs(R), k, Smax, lastsv, svtol, maxritz, work, S)
+    ct <- convtests(Bsz, tol, k_org, Bsvd, abs(R), k, Smax, lastsv, svtol, maxritz, S)
     verbose("iter= ", iter,
               ", mprod= ", mprod,
               ", sv[", k_org, "]=", sprintf("%.2e", Bsvd$d[k_org]),
               ", %change=", sprintf("%.2e", (Bsvd$d[k_org] - lastsv[k_org])/Bsvd$d[k_org]),
-              ", k=", ct$k)
+              ", k=", ct$k,
+              ", work=", work,
+              ", Bsz=", Bsz)
 
     lastsv <- Bsvd$d
 
@@ -668,6 +682,13 @@ function(A,                     # data matrix
 # End of the main iteration loop
 # Output results
 # ---------------------------------------------------------------------
+# Deal with deflation/smallest subspace issue (TODO: improve this)
+  if(smallest && DEFLATE && min(Bsvd$d) < max(v$d, na.rm=TRUE)) {
+    bi <- Bsvd$d >= max(v$d, na.rm=TRUE)
+    Bsvd$d = Bsvd$d[bi]
+    Bsvd$u = Bsvd$u[,bi]
+    Bsvd$v = Bsvd$v[,bi]
+  }
   if(!ct$converged) warning("did not converge--results might be invalid!; try increasing maxit or work")
   d <- Bsvd$d[1:k_org]
   if(!right_only)

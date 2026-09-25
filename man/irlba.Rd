@@ -10,9 +10,9 @@ irlba(
   nv = 5,
   nu = nv,
   maxit = 1000,
-  work = nv + 7,
+  work = nv + 16,
   reorth = TRUE,
-  tol = 1e-05,
+  tol = 1e-07,
   v = NULL,
   right_only = FALSE,
   verbose = FALSE,
@@ -54,8 +54,8 @@ to restart the algorithm from where it left off (see the notes).}
 (\code{TRUE}) or both sets of vectors (\code{FALSE}). The right_only option can be
 cheaper to compute and use much less memory when \code{nrow(A) >> ncol(A)} but note
 that obtained solutions typically lose accuracy due to lack of re-orthogonalization in the
-algorithm and that \code{right_only = TRUE} (only use this option
-for really large problems that run out of memory and when \code{nrow(A) >> ncol(A)}).
+algorithm. Avoid using this option. Only use this option
+for really large problems that run out of memory and when \code{nrow(A) >> ncol(A)}.
 Consider increasing the \code{work} option to improve accuracy with \code{right_only=TRUE}.}
 
 \item{verbose}{logical value that when \code{TRUE} prints status messages during the computation.}
@@ -171,7 +171,7 @@ S1 <- irlba(A, 5, v=S)
 # Estimate smallest singular values
 irlba(A, 3, smallest=TRUE)$d
 
-#Compare with
+# Compare with
 tail(svd(A)$d, 3)
 
 # Principal components (see also prcomp_irlba)

@@ -40,11 +40,19 @@ testex("lgCMatrix", {
 
 testex("GitHub issue #7", {
   mx <- matrix(sample(1:10, 10 * 100, replace=TRUE), nrow=10)
-  S <- withCallingHandlers(
-    irlba(mx, nv = 2, center = colMeans(mx), right_only = TRUE),
-    warning = function(w) {
-      cat("caught atomic type coercion warning\t", file=stderr())
-      invokeRestart("muffleWarning")
+  S <- suppressWarnings(
+    {
+      irlba(mx, nv = 2, center = colMeans(mx))
+    }
+  )
+  stopifnot(all.equal(S$d, svd(sweep(mx, 2, colMeans(mx), FUN=`-`))$d[1:2]))
+})
+
+testex("GitHub issue #7, right_only = TRUE", {
+  mx <- matrix(sample(1:10, 10 * 100, replace=TRUE), nrow=100)
+  S <- suppressWarnings(
+    {
+      irlba(mx, nv = 2, center = colMeans(mx), right_only=TRUE)
     }
   )
   stopifnot(all.equal(S$d, svd(sweep(mx, 2, colMeans(mx), FUN=`-`))$d[1:2]))

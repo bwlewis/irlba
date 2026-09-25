@@ -2,6 +2,7 @@
 # Internal functions
 # ---------------------------------------------------------------------
 
+
 which_matrix <- function(x)
 {
    is.matrix(x) && !isS4(x)
@@ -53,12 +54,12 @@ orthog <- function(Y, X)
 # residuals
 # k
 # Smax
-# lastsv, svtol, work, S
+# lastsv, svtol, S
 #
 # Output parameter list
 # converged      TRUE/FALSE
 # k              Number of singular vectors returned
-convtests <- function(Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, maxritz, work, S)
+convtests <- function(Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, maxritz, S)
 {
 # Converged singular triplets
   subspace_converged <- residuals[1:k_org] < tol * Smax
@@ -67,22 +68,22 @@ convtests <- function(Bsz, tol, k_org, Bsvd, residuals, k, Smax, lastsv, svtol, 
   delta_converged <- (abs(Bsvd$d[1:k_org] - lastsv[1:k_org]) / Bsvd$d[1:k_org])  < svtol
   len_res <- sum(subspace_converged & delta_converged) # both
   if (is.na(len_res)) len_res <- 0
-  if (len_res >= k_org) return(list(converged=TRUE, k=k))
-  if (S == 0) return(list(converged=TRUE, k=k))
+  if (len_res >= k_org  || S == 0) return(list(converged=TRUE, k=k))
 # Not converged yet...
+# Note below Bsz must be at least 
+# Previous non-fastpath code:
 # Adjust k to include more vectors as the number of vectors converge, but not
 # too many (maxritz):
-  augment <- min(sum(subspace_converged), maxritz)
-  k <- min(max(k, k_org + augment), work - 1)
+#  augment <- min(sum(subspace_converged), maxritz)
+#  k <- min(max(k, k_org + augment), Bsz - 1)
+
+# Adopted from original fastpath C code, improves convergence in some cases, ignores maxritz:
+  k <- max(k, k_org + len_res)
+  k <- min(k, max(1, Bsz - 3))
+
   list(converged=FALSE, k=k)
 }
 
-message_once <- function(..., flag)
-{
-  if (flag$flag) return()
-  flag$flag <- TRUE
-  message(...)
-}
 
 oknum <- function(x) {
   if(is.atomic(x)) {
@@ -91,7 +92,7 @@ oknum <- function(x) {
   if(inherits(x, "Matrix")) {
     return(.Call("okatomic", as.numeric(x@x)))
   }
-  TRUE  # NOTE! This liberally allows anything, for instance "DelayedMatrix" from the DelayedArray package, but with no sanity checks. Caveat emptor.
+  TRUE  # NOTE! Liberally allows anything, for instance "DelayedMatrix" from the DelayedArray package, but with no sanity checks. Cave!
 }
 
 
