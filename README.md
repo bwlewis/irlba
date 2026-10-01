@@ -17,13 +17,13 @@ examples. Also see the package vignette, `vignette("irlba", package="irlba")`.
 
 An overview web page is here: https://bwlewis.github.io/irlba/.
 
-## New in 2.4.0
+## New in 2.4.1
 
 - Re-factored and minimized C code, limiting its use to fast dense matrix multiplication. This change simplifies the package, largely preserves performance for the dense case, and expands Matrix/sparse support to more Matrix classes. It also eliminates direct use of internal hard-to-support SuiteSparse methods. The `fastpath` option is deprecated.
 - Finally added support for efficient model deflation (see examples). That means that if your partial SVD subspace isn't big enough, you can efficiently carry on the algorithm from where you left off. This works for smallest and largest portions of the subspace. User-facing behavior is unchanged, but runs more efficiently now.
 - Test coverage is expanded.
 - Default tolerance slightly reduced and work dimension slightly increased for better default accuracy with minor performance cost.
-- Despite the significant internal changes, everything should just work.
+- Despite the significant internal changes and aside from the above tolerance changes, everything should work as before.
 
 ## New in 2.3.3
 
